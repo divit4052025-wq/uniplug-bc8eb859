@@ -60,7 +60,8 @@ function BrowsePage() {
   const [sort, setSort] = useState("Relevance");
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
+    const init = async () => {
+      const { data } = await supabase.auth.getSession();
       if (!data.session) {
         navigate({ to: "/student-signup" });
         return;
@@ -77,7 +78,8 @@ function BrowsePage() {
         price: m.price_inr,
       })));
       setReady(true);
-    });
+    };
+    void init();
   }, [navigate]);
 
   const onSelectSection = (key: SectionKey) => {
