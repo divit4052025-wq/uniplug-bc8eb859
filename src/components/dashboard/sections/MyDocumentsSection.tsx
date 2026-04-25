@@ -31,6 +31,7 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
     supabase
       .from("student_documents")
       .select("id, file_name, storage_path, size_bytes, created_at")
+      .eq("student_id", userId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
         if (cancelled) return;
@@ -40,7 +41,7 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [userId]);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
