@@ -63,8 +63,8 @@ function Dashboard() {
 
   const select = (key: SectionKey) => {
     setActive(key);
-    if (key === "progress" || key === "settings") {
-      setComingSoon(key === "progress" ? "Progress tracking" : "Settings");
+    if (key === "settings") {
+      setComingSoon("Settings");
       setTimeout(() => setComingSoon(null), 2200);
       return;
     }

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
+import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as MentorDashboardRouteImport } from './routes/mentor-dashboard'
 import { Route as LoginRouteImport } from './routes/login'
@@ -23,6 +24,11 @@ import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/pu
 const StudentSignupRoute = StudentSignupRouteImport.update({
   id: '/student-signup',
   path: '/student-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProgressRoute = ProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentorSignupRoute = MentorSignupRouteImport.update({
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/progress': typeof ProgressRoute
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -92,6 +99,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/progress': typeof ProgressRoute
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -105,6 +113,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/progress': typeof ProgressRoute
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -119,6 +128,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/progress'
     | '/student-signup'
     | '/mentor/$id'
     | '/api/public/hooks/send-reminders'
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/progress'
     | '/student-signup'
     | '/mentor/$id'
     | '/api/public/hooks/send-reminders'
@@ -143,6 +154,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/progress'
     | '/student-signup'
     | '/mentor/$id'
     | '/api/public/hooks/send-reminders'
@@ -156,6 +168,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
+  ProgressRoute: typeof ProgressRoute
   StudentSignupRoute: typeof StudentSignupRoute
   MentorIdRoute: typeof MentorIdRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
@@ -168,6 +181,13 @@ declare module '@tanstack/react-router' {
       path: '/student-signup'
       fullPath: '/student-signup'
       preLoaderRoute: typeof StudentSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/progress': {
+      id: '/progress'
+      path: '/progress'
+      fullPath: '/progress'
+      preLoaderRoute: typeof ProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentor-signup': {
@@ -244,6 +264,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
+  ProgressRoute: ProgressRoute,
   StudentSignupRoute: StudentSignupRoute,
   MentorIdRoute: MentorIdRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
