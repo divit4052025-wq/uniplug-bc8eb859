@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          created_at: string
+          date: string
+          duration: number
+          id: string
+          mentor_id: string
+          price: number
+          status: string
+          student_id: string
+          time_slot: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          duration?: number
+          id?: string
+          mentor_id: string
+          price?: number
+          status?: string
+          student_id: string
+          time_slot: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          duration?: number
+          id?: string
+          mentor_id?: string
+          price?: number
+          status?: string
+          student_id?: string
+          time_slot?: string
+        }
+        Relationships: []
+      }
       mentor_availability: {
         Row: {
           created_at: string
