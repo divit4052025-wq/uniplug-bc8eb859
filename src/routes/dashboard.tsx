@@ -8,6 +8,7 @@ import { MyPlugsSection } from "@/components/dashboard/sections/MyPlugsSection";
 import { UpcomingSessionsSection } from "@/components/dashboard/sections/UpcomingSessionsSection";
 import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSection";
 import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
+import { SessionNotesSection } from "@/components/dashboard/sections/SessionNotesSection";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -89,6 +90,7 @@ function Dashboard() {
           <div className="mt-8 space-y-12 animate-hero-rise">
             <MyPlugsSection studentId={userId} />
             <UpcomingSessionsSection studentId={userId} />
+            <SessionNotesSection studentId={userId} />
             <MySchoolsSection userId={userId} />
             <MyDocumentsSection userId={userId} />
           </div>
