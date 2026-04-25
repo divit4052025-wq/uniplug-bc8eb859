@@ -109,6 +109,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          price_inr: number
           status: Database["public"]["Enums"]["mentor_status"]
           university: string
           year: string
@@ -120,6 +121,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          price_inr?: number
           status?: Database["public"]["Enums"]["mentor_status"]
           university: string
           year: string
@@ -131,6 +133,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          price_inr?: number
           status?: Database["public"]["Enums"]["mentor_status"]
           university?: string
           year?: string
@@ -354,6 +357,7 @@ export type Database = {
           course: string
           full_name: string
           id: string
+          price_inr: number
           university: string
           year: string
         }[]
