@@ -14,6 +14,9 @@ export const Route = createFileRoute("/mentor-dashboard")({
   head: () => ({
     meta: [{ title: "Mentor Dashboard — UniPlug" }],
   }),
+  validateSearch: (search: Record<string, unknown>) => ({
+    edit: typeof search.edit === "string" ? (search.edit as string) : undefined,
+  }),
   component: MentorDashboard,
 });
 
@@ -26,6 +29,7 @@ const SECTION_TO_ANCHOR: Partial<Record<MentorSectionKey, string>> = {
 
 function MentorDashboard() {
   const navigate = useNavigate();
+  const { edit } = Route.useSearch();
   const [mentorId, setMentorId] = useState<string | null>(null);
   const [firstName, setFirstName] = useState("");
   const [status, setStatus] = useState<"pending" | "approved" | "rejected" | null>(null);
@@ -110,7 +114,11 @@ function MentorDashboard() {
             <ScheduleSection mentorId={mentorId} />
             <MentorUpcomingSessions mentorId={mentorId} />
             <MyStudentsSection mentorId={mentorId} />
-            <PostSessionNotesSection mentorId={mentorId} />
+            <PostSessionNotesSection
+              mentorId={mentorId}
+              editNoteId={edit ?? null}
+              onEditConsumed={() => navigate({ to: "/mentor-dashboard", search: {} })}
+            />
             <EarningsSection mentorId={mentorId} />
           </div>
         </div>
