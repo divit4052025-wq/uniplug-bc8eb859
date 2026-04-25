@@ -125,11 +125,10 @@ function HomePage() {
           {/* Headline anchored bottom-left */}
           <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
-            <img
-              src={(new URL("../assets/logos/wordmark-dark.png", import.meta.url)).href}
-              alt="UniPlug"
+            <Logo
+              variant="wordmark-dark"
               className="w-auto"
-              style={{ height: "clamp(120px, 22vw, 280px)", objectFit: "contain" }}
+              style={{ height: "clamp(120px, 22vw, 280px)" }}
             />
             <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
