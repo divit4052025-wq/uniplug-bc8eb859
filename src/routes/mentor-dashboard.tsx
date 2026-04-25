@@ -14,9 +14,12 @@ export const Route = createFileRoute("/mentor-dashboard")({
   head: () => ({
     meta: [{ title: "Mentor Dashboard — UniPlug" }],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
-    edit: typeof search.edit === "string" ? (search.edit as string) : undefined,
-  }),
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { edit?: string } => {
+    const edit = typeof search.edit === "string" ? (search.edit as string) : undefined;
+    return edit ? { edit } : {};
+  },
   component: MentorDashboard,
 });
 
