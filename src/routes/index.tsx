@@ -1,178 +1,151 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
-import { useReveal } from "@/hooks/use-reveal";
-import {
-  Search,
-  CalendarCheck,
-  Sparkles,
-  MessageCircle,
-  ShieldCheck,
-  Clock,
-  Star,
-  BadgeCheck,
-} from "lucide-react";
+import { Star } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "UniPlug — Your College Plug On Demand" },
+      { title: "UniPlug — Your College Plug" },
       {
         name: "description",
         content:
-          "Connect with university students already living your dream — paid 1:1 mentorship for Indian high schoolers applying to top universities.",
+          "Connect with university students already living your dream. 1:1 mentorship for Indian high schoolers applying to top universities worldwide.",
       },
-      { property: "og:title", content: "UniPlug — Your College Plug On Demand" },
+      { property: "og:title", content: "UniPlug — Your College Plug" },
       {
         property: "og:description",
         content:
-          "Real advice, real stories, real results. Book a Plug — a verified university student mentor — for one-on-one guidance.",
+          "Real advice from verified university student mentors. Browse Plugs, book a session, level up.",
       },
     ],
   }),
-  component: Home,
+  component: HomePage,
 });
 
-const steps = [
-  {
-    icon: Search,
-    title: "Browse Plugs",
-    desc: "Find a university student who has been exactly where you want to go.",
-  },
-  {
-    icon: CalendarCheck,
-    title: "Book a Session",
-    desc: "Pick a time, pay securely, get a private video link sent to you.",
-  },
-  {
-    icon: Sparkles,
-    title: "Level Up",
-    desc: "Get real talk, take notes, make your next move.",
-  },
+const stats = [
+  "500+ Verified Plugs",
+  "12 Countries",
+  "4.9 Average Rating",
 ];
 
 const mentors = [
   {
     name: "Aanya Mehta",
-    uni: "University of Oxford",
-    course: "PPE",
-    year: "2nd Year",
-    tags: ["Personal Statement", "Oxbridge Interviews"],
-    rating: 4.9,
+    university: "University of Oxford",
+    course: "PPE · Year 2",
+    tags: ["Oxbridge", "Personal Statement"],
+    rating: "4.9",
+    initials: "AM",
   },
   {
     name: "Rohan Iyer",
-    uni: "IIT Bombay",
-    course: "Computer Science",
-    year: "3rd Year",
-    tags: ["JEE Strategy", "CS Branch Choice"],
-    rating: 4.8,
+    university: "IIT Bombay",
+    course: "Computer Science · Year 3",
+    tags: ["JEE Strategy", "CS Apps"],
+    rating: "5.0",
+    initials: "RI",
   },
   {
-    name: "Saanvi Kapoor",
-    uni: "NUS Singapore",
-    course: "Business Analytics",
-    year: "Final Year",
-    tags: ["SAT Prep", "Scholarship Apps"],
-    rating: 5.0,
+    name: "Priya Shah",
+    university: "Warwick Business School",
+    course: "Economics · Year 2",
+    tags: ["UK Apps", "Interviews"],
+    rating: "4.8",
+    initials: "PS",
+  },
+  {
+    name: "Kabir Anand",
+    university: "NUS Singapore",
+    course: "Engineering · Year 4",
+    tags: ["Singapore", "Scholarships"],
+    rating: "4.9",
+    initials: "KA",
+  },
+  {
+    name: "Maya Reddy",
+    university: "UCL London",
+    course: "Architecture · Year 3",
+    tags: ["Portfolio", "Creative Apps"],
+    rating: "5.0",
+    initials: "MR",
   },
 ];
 
-const values = [
+const steps = [
   {
-    icon: MessageCircle,
-    title: "Real Talk",
-    desc: "Advice from people actually living it — not textbooks.",
+    n: "01",
+    title: "Browse Plugs",
+    body: "Find a university student who has been exactly where you want to go.",
   },
   {
-    icon: ShieldCheck,
-    title: "Verified Plugs",
-    desc: "Every mentor is manually verified by our team.",
+    n: "02",
+    title: "Book a Session",
+    body: "Pick a time, pay securely, get a private video link sent instantly.",
   },
   {
-    icon: Clock,
-    title: "Your Pace",
-    desc: "Book when you want, cancel anytime, no pressure.",
+    n: "03",
+    title: "Level Up",
+    body: "Real talk, real notes, real results. Your next move starts here.",
   },
 ];
 
-const unis = ["Oxford", "IIT", "Warwick", "NUS", "UCL", "LSE", "Cambridge", "Imperial"];
+const universities = [
+  "Oxford",
+  "IIT Bombay",
+  "Warwick",
+  "NUS",
+  "UCL",
+  "LSE",
+  "Cambridge",
+  "Imperial",
+];
 
-function Home() {
-  useReveal();
+function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#FFFCFB]">
       <Nav />
 
-      {/* Hero */}
-      <section
-        className="relative flex min-h-screen items-center overflow-hidden text-background"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.18 0 0) 0%, oklch(0.24 0.02 38) 50%, oklch(0.16 0.01 30) 100%)",
-        }}
-      >
-        <div
-          className="absolute inset-0 animate-breathe opacity-90"
-          aria-hidden
-          style={{
-            background:
-              "linear-gradient(135deg, oklch(0.18 0 0) 0%, oklch(0.26 0.03 38) 50%, oklch(0.16 0.01 30) 100%)",
-          }}
-        />
-        {/* floating particles */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
-          {Array.from({ length: 28 }).map((_, i) => {
-            const seedX = (i * 53) % 100;
-            const seedY = (i * 91) % 100;
-            const size = 4 + ((i * 7) % 10);
-            const isPink = i % 3 === 0;
-            return (
+      {/* SECTION 1 — HERO */}
+      <section className="relative bg-[#1A1A1A] text-white" style={{ minHeight: "calc(100vh - 73px)" }}>
+        <div className="mx-auto flex h-full max-w-7xl flex-col px-6 md:px-10" style={{ minHeight: "calc(100vh - 73px)" }}>
+          {/* Stat pills */}
+          <div className="flex flex-row flex-wrap gap-2 pt-8 md:absolute md:right-10 md:top-12 md:flex-col md:items-end md:gap-3 md:pt-0">
+            {stats.map((s) => (
               <span
-                key={i}
-                className="absolute rounded-full animate-float-slow"
-                style={{
-                  left: `${seedX}%`,
-                  top: `${seedY}%`,
-                  width: size,
-                  height: size,
-                  background: isPink ? "var(--brand-pink)" : "var(--brand-brown)",
-                  opacity: isPink ? 0.08 : 0.1,
-                  animationDelay: `${(i % 8) * 1.4}s`,
-                  animationDuration: `${18 + (i % 7) * 3}s`,
-                }}
-              />
-            );
-          })}
-        </div>
+                key={s}
+                className="inline-flex items-center rounded-full bg-[#EDE0DB] px-4 py-2 text-[14px] font-medium text-[#1A1A1A]"
+              >
+                {s}
+              </span>
+            ))}
+          </div>
 
-        <div className="relative mx-auto w-full max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
-          <div className="max-w-4xl animate-fade-in">
-            <span className="inline-flex items-center gap-2 rounded-full border border-background/15 bg-background/5 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur sm:text-xs">
-              <span className="h-2 w-2 rounded-full bg-primary animate-pulse-dot" />
-              Mentorship. Unfiltered
-            </span>
+          {/* Headline anchored bottom-left */}
+          <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
             <h1
-              className="mt-6 font-sans font-black uppercase leading-[0.95] tracking-tight text-background"
-              style={{ fontSize: "clamp(48px, 9vw, 96px)", fontFamily: '"Space Grotesk", "Inter", sans-serif', fontWeight: 900 }}
+              className="font-display font-bold text-white"
+              style={{
+                fontSize: "clamp(56px, 9vw, 112px)",
+                lineHeight: 1,
+                letterSpacing: "-2px",
+              }}
             >
-              Your College <span className="text-secondary">Plug</span>
-              <br /> On Demand
+              Your College Plug
             </h1>
-            <p className="mt-6 max-w-[85%] text-base font-light text-secondary sm:max-w-2xl sm:text-xl">
-              Connect with students already living your dream — real advice, real stories,
-              real results.
+            <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
+              Connect with students already living your dream.
             </p>
-            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 to="/student-signup"
-                className="rounded-full bg-primary px-8 py-4 text-center text-base font-semibold text-primary-foreground shadow-lift transition hover:-translate-y-0.5 hover:opacity-95"
+                className="inline-flex h-12 items-center justify-center rounded-full bg-[#C4907F] px-8 text-[14px] font-medium text-white transition hover:opacity-90"
               >
                 Find Your Plug
               </Link>
               <Link
                 to="/mentor-signup"
-                className="rounded-full border-2 border-background px-8 py-4 text-center text-base font-semibold text-background transition hover:bg-background hover:text-foreground"
+                className="inline-flex h-12 items-center justify-center rounded-full border border-white px-8 text-[14px] font-medium text-white transition hover:bg-white hover:text-[#1A1A1A]"
               >
                 Become a Plug
               </Link>
@@ -181,186 +154,160 @@ function Home() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="bg-background py-16 sm:py-24">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="reveal max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              The flow
-            </p>
-            <h2 className="mt-3 font-display text-4xl text-foreground sm:text-5xl lg:text-6xl">
-              How It Works
-            </h2>
-          </div>
-          <div className="mt-10 grid gap-4 sm:gap-6 md:grid-cols-3">
-            {steps.map((s, i) => (
-              <div
-                key={s.title}
-                className="reveal hover-lift rounded-2xl bg-card p-6 shadow-card"
-                data-delay={i * 120}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span
-                    className="font-display text-primary leading-none"
-                    style={{ fontSize: "clamp(44px, 6vw, 64px)", fontWeight: 800 }}
-                  >
-                    0{i + 1}
-                  </span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-foreground text-background sm:h-12 sm:w-12">
-                    <s.icon className="h-5 w-5 sm:h-6 sm:w-6" />
-                  </div>
-                </div>
-                <h3 className="mt-4 font-display text-xl text-foreground sm:text-2xl">
-                  {s.title}
-                </h3>
-                <p className="mt-2 text-sm font-light text-muted-foreground sm:text-base">
-                  {s.desc}
-                </p>
-              </div>
-            ))}
-          </div>
+      {/* SECTION 2 — MENTORS */}
+      <section className="bg-[#FFFCFB] py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-6 md:px-10">
+          <p className="text-[12px] font-medium uppercase text-[#C4907F]" style={{ letterSpacing: "4px" }}>
+            Meet Your Plugs
+          </p>
         </div>
-      </section>
-
-      {/* Meet your plugs */}
-      <section className="bg-background pb-16 sm:pb-24">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="reveal flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
-            <div className="max-w-xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                The roster
-              </p>
-              <h2 className="mt-3 font-display text-4xl text-foreground sm:text-5xl lg:text-6xl">
-                Meet Your Plugs
-              </h2>
-            </div>
-            <p className="text-sm font-light text-muted-foreground">
-              Hand-picked, manually verified, ridiculously helpful.
-            </p>
-          </div>
-
-          {/* Mobile: horizontal scroll. Desktop: 3-col grid */}
-          <div className="mt-8 -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 hide-scrollbar sm:gap-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
-            {mentors.map((m, i) => (
+        <div className="relative mt-8">
+          <div className="hide-scrollbar flex gap-5 overflow-x-auto px-6 pb-4 md:px-10">
+            {mentors.map((m) => (
               <article
                 key={m.name}
-                className="reveal hover-lift group relative w-[82%] shrink-0 snap-center rounded-2xl bg-card p-6 shadow-card sm:w-[70%] md:w-auto"
-                data-delay={i * 120}
+                className="flex shrink-0 flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-6"
+                style={{ width: "280px" }}
               >
-                <div className="flex items-center gap-4">
-                  <div className="relative h-16 w-16 overflow-hidden rounded-full bg-secondary ring-4 ring-background">
-                    <div
-                      className="h-full w-full"
-                      style={{
-                        background:
-                          "radial-gradient(circle at 30% 30%, var(--brand-pink), var(--brand-brown))",
-                      }}
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
-                      <h3 className="truncate font-display text-lg text-foreground sm:text-xl">
-                        {m.name}
-                      </h3>
-                      <BadgeCheck
-                        className="h-4 w-4 shrink-0 fill-primary text-primary-foreground"
-                        aria-label="Verified"
-                      />
-                    </div>
-                    <p className="truncate text-sm font-light text-muted-foreground">
-                      {m.uni}
-                    </p>
-                  </div>
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1A1A1A] text-[16px] font-medium text-[#FFFCFB]">
+                  {m.initials}
                 </div>
-                <div className="mt-4 space-y-1 text-sm font-light text-foreground/80">
-                  <p>{m.course}</p>
-                  <p className="text-muted-foreground">{m.year}</p>
-                </div>
+                <h3 className="mt-4 font-display text-[20px] font-bold text-[#1A1A1A]" style={{ letterSpacing: "-0.01em" }}>
+                  {m.name}
+                </h3>
+                <p className="mt-1 text-[14px] font-medium text-[#C4907F]">{m.university}</p>
+                <p className="mt-1 text-[13px] text-[#1A1A1A]/60">{m.course}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {m.tags.map((t) => (
                     <span
                       key={t}
-                      className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-foreground"
+                      className="inline-flex items-center rounded-full bg-[#1A1A1A] px-2.5 py-1 text-[11px] font-medium text-[#FFFCFB]"
                     >
                       {t}
                     </span>
                   ))}
                 </div>
-                <div className="mt-4 flex items-center gap-1 text-foreground">
-                  {Array.from({ length: 5 }).map((_, idx) => (
-                    <Star
-                      key={idx}
-                      className={`h-4 w-4 ${
-                        idx < Math.round(m.rating)
-                          ? "fill-primary text-primary"
-                          : "text-muted-foreground/30"
-                      }`}
-                    />
-                  ))}
-                  <span className="ml-2 text-sm font-medium">{m.rating.toFixed(1)}</span>
+                <div className="mt-3 flex items-center gap-1 text-[#C4907F]">
+                  <Star className="h-4 w-4 fill-current" />
+                  <span className="text-[13px] font-medium">{m.rating}</span>
                 </div>
-                <button className="mt-5 block w-full rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:opacity-95">
+                <button className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-[#C4907F] text-[13px] font-medium text-white transition hover:opacity-90">
                   Book Now
                 </button>
               </article>
             ))}
+            <div className="shrink-0" style={{ width: "1px" }} />
           </div>
+          {/* Right edge fade */}
+          <div
+            className="pointer-events-none absolute right-0 top-0 h-full w-24"
+            style={{ background: "linear-gradient(to left, #FFFCFB, transparent)" }}
+          />
         </div>
       </section>
 
-      {/* Why UniPlug */}
-      <section className="relative overflow-hidden bg-foreground py-16 text-background sm:py-24">
-        <div className="absolute inset-0 noise-overlay opacity-40" aria-hidden />
-        <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
-          <div className="reveal max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-secondary">
-              Why us
-            </p>
-            <h2 className="mt-3 font-display text-4xl text-background sm:text-5xl lg:text-6xl">
-              Why UniPlug
-            </h2>
-          </div>
-          <div className="mt-10 grid gap-4 sm:gap-6 md:grid-cols-3">
-            {values.map((v, i) => (
-              <div
-                key={v.title}
-                className="reveal hover-lift border-l-2 border-primary bg-background/[0.04] p-6 backdrop-blur"
-                data-delay={i * 120}
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-secondary text-foreground">
-                  <v.icon className="h-5 w-5" />
+      {/* SECTION 3 — HOW IT WORKS */}
+      <section className="bg-[#1A1A1A] py-20 text-white md:py-28">
+        <div className="mx-auto max-w-7xl px-6 md:px-10">
+          <div className="border-t border-[#333333] pt-10">
+            <div className="grid gap-12 md:grid-cols-3 md:gap-10">
+              {steps.map((s) => (
+                <div key={s.n} className="md:border-l-0 md:pl-0">
+                  <div className="font-display font-bold text-[#E8C4B8]" style={{ fontSize: "80px", lineHeight: 1 }}>
+                    {s.n}
+                  </div>
+                  <h3 className="mt-4 font-display text-[24px] font-semibold text-white">{s.title}</h3>
+                  <p className="mt-3 max-w-xs text-[15px] font-light text-[#EDE0DB]">{s.body}</p>
                 </div>
-                <h3 className="mt-5 font-display text-xl text-secondary sm:text-2xl">
-                  {v.title}
-                </h3>
-                <p className="mt-2 max-w-[85%] text-sm font-light text-background/75 sm:max-w-none sm:text-base">
-                  {v.desc}
-                </p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Social proof */}
-      <section className="bg-background py-12">
-        <div className="reveal mx-auto max-w-6xl px-5 text-center sm:px-8">
-          <p className="text-sm font-light text-muted-foreground sm:text-base">
-            Trusted by students applying to{" "}
-            <span className="font-medium text-foreground">
-              Oxford, IIT, Warwick, NUS, UCL
-            </span>{" "}
-            and more
+      {/* SECTION 4 — STATEMENT */}
+      <section className="bg-[#FFFCFB] py-32 md:py-44">
+        <div className="mx-auto max-w-5xl px-6 text-center md:px-10">
+          <p
+            className="font-display text-[#1A1A1A]"
+            style={{
+              fontSize: "clamp(36px, 5.5vw, 64px)",
+              fontWeight: 400,
+              lineHeight: 1.1,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Be the senior you wish you'd had.
           </p>
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            {unis.map((u) => (
-              <span
-                key={u}
-                className="rounded-full border border-border bg-card px-4 py-1.5 text-xs font-medium text-foreground"
+        </div>
+      </section>
+
+      {/* SECTION 5 — SOCIAL PROOF STRIP */}
+      <section className="bg-[#EDE0DB] py-8">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-3 gap-y-2 px-6 text-[14px] text-[#1A1A1A] md:px-10">
+          <span>Plugs currently studying at</span>
+          {universities.map((u) => (
+            <span
+              key={u}
+              className="inline-flex items-center rounded-full bg-[#1A1A1A] text-[12px] font-medium text-[#FFFCFB]"
+              style={{ padding: "8px 16px" }}
+            >
+              {u}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* SECTION 6 — DUAL CTA */}
+      <section className="bg-[#1A1A1A] py-20 text-white md:py-28">
+        <div className="mx-auto max-w-7xl px-6 md:px-10">
+          <div className="grid gap-14 md:grid-cols-2 md:gap-0">
+            <div className="md:pr-16">
+              <p
+                className="text-[11px] font-medium uppercase text-[#E8C4B8]"
+                style={{ letterSpacing: "3px" }}
               >
-                {u}
-              </span>
-            ))}
+                For Students
+              </p>
+              <h2
+                className="mt-4 font-display font-bold text-white"
+                style={{ fontSize: "clamp(40px, 5vw, 56px)", lineHeight: 1.05, letterSpacing: "-0.02em" }}
+              >
+                Find Your Plug
+              </h2>
+              <p className="mt-5 max-w-md text-[15px] font-light text-[#EDE0DB]">
+                Get real advice from someone who has been exactly where you want to go.
+              </p>
+              <Link
+                to="/student-signup"
+                className="mt-8 inline-flex h-12 items-center justify-center rounded-full bg-[#C4907F] px-8 text-[14px] font-medium text-white transition hover:opacity-90"
+              >
+                Get Started
+              </Link>
+            </div>
+            <div className="border-t border-[#333333] pt-14 md:border-l md:border-t-0 md:pl-16 md:pt-0">
+              <p
+                className="text-[11px] font-medium uppercase text-[#E8C4B8]"
+                style={{ letterSpacing: "3px" }}
+              >
+                For Mentors
+              </p>
+              <h2
+                className="mt-4 font-display font-bold text-white"
+                style={{ fontSize: "clamp(40px, 5vw, 56px)", lineHeight: 1.05, letterSpacing: "-0.02em" }}
+              >
+                Become a Plug
+              </h2>
+              <p className="mt-5 max-w-md text-[15px] font-light text-[#EDE0DB]">
+                Share your story, open doors, get paid.
+              </p>
+              <Link
+                to="/mentor-signup"
+                className="mt-8 inline-flex h-12 items-center justify-center rounded-full border border-white px-8 text-[14px] font-medium text-white transition hover:bg-white hover:text-[#1A1A1A]"
+              >
+                Apply Now
+              </Link>
+            </div>
           </div>
         </div>
       </section>
