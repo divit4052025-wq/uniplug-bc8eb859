@@ -1,9 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Resend } from "resend";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { studentReminderEmail, mentorReminderEmail } from "@/lib/email/templates";
 
 const FROM = "UniPlug <onboarding@resend.dev>";
+
+async function sendViaResend(apiKey: string, to: string, subject: string, html: string) {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ from: FROM, to, subject, html }),
+  });
+  if (!res.ok) throw new Error(`Resend ${res.status}: ${await res.text()}`);
+  return res.json();
+}
 
 // Returns the YYYY-MM-DD for "tomorrow" in IST (UTC+5:30) since bookings are India-facing.
 function tomorrowISTDate(): string {
@@ -24,7 +33,6 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
             headers: { "Content-Type": "application/json" },
           });
         }
-        const resend = new Resend(apiKey);
         const targetDate = tomorrowISTDate();
 
         const { data: bookings, error } = await supabaseAdmin
@@ -56,8 +64,8 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
             const sEmail = studentReminderEmail({ mentorName: mentor.full_name, date: b.date, timeSlot: b.time_slot });
             const mEmail = mentorReminderEmail({ studentName: student.full_name, date: b.date, timeSlot: b.time_slot });
             const results = await Promise.allSettled([
-              resend.emails.send({ from: FROM, to: student.email, subject: sEmail.subject, html: sEmail.html }),
-              resend.emails.send({ from: FROM, to: mentor.email, subject: mEmail.subject, html: mEmail.html }),
+              sendViaResend(apiKey, student.email, sEmail.subject, sEmail.html),
+              sendViaResend(apiKey, mentor.email, mEmail.subject, mEmail.html),
             ]);
             results.forEach((r, i) => {
               if (r.status === "rejected") {
