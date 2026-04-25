@@ -84,7 +84,7 @@ function Dashboard() {
           <DashboardTopbar firstName={firstName} />
           <div className="mt-8 space-y-12 animate-hero-rise">
             <MyPlugsSection />
-            <UpcomingSessionsSection />
+            <UpcomingSessionsSection studentId={userId} />
             <MySchoolsSection userId={userId} />
             <MyDocumentsSection userId={userId} />
           </div>

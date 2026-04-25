@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          created_at: string
+          date: string
+          duration: number
+          id: string
+          mentor_id: string
+          price: number
+          status: string
+          student_id: string
+          time_slot: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          duration?: number
+          id?: string
+          mentor_id: string
+          price?: number
+          status?: string
+          student_id: string
+          time_slot: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          duration?: number
+          id?: string
+          mentor_id?: string
+          price?: number
+          status?: string
+          student_id?: string
+          time_slot?: string
+        }
+        Relationships: []
+      }
       mentor_availability: {
         Row: {
           created_at: string
@@ -73,6 +109,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          price_inr: number
           status: Database["public"]["Enums"]["mentor_status"]
           university: string
           year: string
@@ -84,6 +121,7 @@ export type Database = {
           email: string
           full_name: string
           id: string
+          price_inr?: number
           status?: Database["public"]["Enums"]["mentor_status"]
           university: string
           year: string
@@ -95,6 +133,7 @@ export type Database = {
           email?: string
           full_name?: string
           id?: string
+          price_inr?: number
           status?: Database["public"]["Enums"]["mentor_status"]
           university?: string
           year?: string
@@ -294,7 +333,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_mentor_booking_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          full_name: string
+          id: string
+          university: string
+        }[]
+      }
+      get_student_booking_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          full_name: string
+          grade: string
+          id: string
+          school: string
+        }[]
+      }
+      list_approved_mentor_profiles: {
+        Args: never
+        Returns: {
+          countries: string[]
+          course: string
+          full_name: string
+          id: string
+          price_inr: number
+          university: string
+          year: string
+        }[]
+      }
     }
     Enums: {
       mentor_status: "pending" | "approved" | "rejected"

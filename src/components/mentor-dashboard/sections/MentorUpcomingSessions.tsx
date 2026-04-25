@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 
 type Row = {
   id: string;
-  scheduled_at: string;
+  date: string;
+  time_slot: string;
   student_id: string;
-  call_url: string | null;
   student?: {
     full_name: string;
     grade: string;
@@ -33,28 +33,26 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
   }, [mentorId]);
 
   const load = async () => {
-    const { data } = await supabase
-      .from("sessions")
-      .select("id, scheduled_at, student_id, call_url")
+    const { data } = await (supabase as any)
+      .from("bookings")
+      .select("id, date, time_slot, student_id")
       .eq("mentor_id", mentorId)
-      .eq("status", "upcoming")
-      .order("scheduled_at", { ascending: true });
-    const sessions = data ?? [];
-    const ids = Array.from(new Set(sessions.map((s) => s.student_id)));
+      .eq("status", "confirmed")
+      .order("date", { ascending: true })
+      .order("time_slot", { ascending: true });
+    const bookings = data ?? [];
+    const ids = Array.from(new Set(bookings.map((s: { student_id: string }) => s.student_id)));
     const studMap = new Map<string, { full_name: string; grade: string; school: string }>();
     if (ids.length) {
-      const { data: studs } = await supabase
-        .from("students")
-        .select("id, full_name, grade, school")
-        .in("id", ids);
-      (studs ?? []).forEach((s) => studMap.set(s.id, { full_name: s.full_name, grade: s.grade, school: s.school }));
+      const { data: studs } = await (supabase as any).rpc("get_student_booking_names", { _ids: ids });
+      (studs ?? []).forEach((s: { id: string; full_name: string; grade: string; school: string }) => studMap.set(s.id, { full_name: s.full_name, grade: s.grade, school: s.school }));
     }
     setRows(
-      sessions.map((s) => ({
+      bookings.map((s: { id: string; date: string; time_slot: string; student_id: string }) => ({
         id: s.id,
-        scheduled_at: s.scheduled_at,
+        date: s.date,
+        time_slot: s.time_slot,
         student_id: s.student_id,
-        call_url: s.call_url,
         student: studMap.get(s.student_id),
       }))
     );
@@ -85,7 +83,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
         ) : (
           <ul className="divide-y divide-[#EDE0DB]">
             {rows.map((r) => {
-              const dt = new Date(r.scheduled_at);
+              const dt = new Date(`${r.date}T00:00:00`);
               return (
                 <li
                   key={r.id}
@@ -99,7 +97,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                       {r.student?.grade} · {r.student?.school}
                     </p>
                     <p className="mt-1 text-[12px] text-[#1A1A1A]/60">
-                      {dt.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })} · {dt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      {dt.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })} · {r.time_slot}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -117,7 +115,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                       View Profile
                     </button>
                     <a
-                      href={r.call_url ?? "#"}
+                      href="#"
                       className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
                     >
                       Join Call
