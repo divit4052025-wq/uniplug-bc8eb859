@@ -9,6 +9,7 @@ import { UpcomingSessionsSection } from "@/components/dashboard/sections/Upcomin
 import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSection";
 import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
 import { SessionNotesSection } from "@/components/dashboard/sections/SessionNotesSection";
+import { resolveUserRole } from "@/lib/auth/role";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -43,6 +44,13 @@ function Dashboard() {
       }
       if ((session.user.email ?? "").toLowerCase() === "divitfatehpuria7@gmail.com") {
         navigate({ to: "/admin" });
+        return;
+      }
+      // Block mentors from the student dashboard
+      const role = await resolveUserRole(session.user.id, session.user.email);
+      if (cancelled) return;
+      if (role === "mentor") {
+        navigate({ to: "/mentor-dashboard", search: {} });
         return;
       }
       setUserId(session.user.id);
