@@ -360,6 +360,60 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_bookings: {
+        Args: never
+        Returns: {
+          created_at: string
+          date: string
+          id: string
+          mentor_id: string
+          mentor_name: string
+          price: number
+          status: string
+          student_id: string
+          student_name: string
+          time_slot: string
+        }[]
+      }
+      admin_list_mentors: {
+        Args: { _status?: string }
+        Returns: {
+          course: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          status: string
+          university: string
+          year: string
+        }[]
+      }
+      admin_list_students: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          full_name: string
+          grade: string
+          id: string
+          school: string
+        }[]
+      }
+      admin_set_mentor_status: {
+        Args: { _mentor_id: string; _status: string }
+        Returns: undefined
+      }
+      admin_stats: {
+        Args: never
+        Returns: {
+          revenue_this_month: number
+          sessions_this_month: number
+          total_mentors: number
+          total_revenue_all_time: number
+          total_sessions_all_time: number
+          total_students: number
+        }[]
+      }
       get_mentor_booking_names: {
         Args: { _ids: string[] }
         Returns: {
@@ -396,6 +450,7 @@ export type Database = {
           school: string
         }[]
       }
+      is_admin: { Args: never; Returns: boolean }
       list_approved_mentor_profiles: {
         Args: never
         Returns: {
