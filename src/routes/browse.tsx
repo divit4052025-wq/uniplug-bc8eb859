@@ -4,7 +4,6 @@ import { BadgeCheck, Filter, Search, Star, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
-import { BookingModal, type BookingMentor } from "@/components/booking/BookingModal";
 
 export const Route = createFileRoute("/browse")({
   head: () => ({
@@ -62,7 +61,6 @@ function BrowsePage() {
   const [ready, setReady] = useState(false);
   const [active, setActive] = useState<SectionKey>("browse");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [booking, setBooking] = useState<Mentor | null>(null);
   const [mentors, setMentors] = useState<Mentor[]>([]);
 
   const [search, setSearch] = useState("");
@@ -173,7 +171,7 @@ function BrowsePage() {
                 <MentorCard
                   key={m.id}
                   mentor={m}
-                  onBook={() => { if (!m.isExample) setBooking(m); }}
+                  onBook={() => { if (!m.isExample) navigate({ to: "/mentor/$id", params: { id: m.id } }); }}
                 />
               ))}
             </div>
@@ -188,14 +186,6 @@ function BrowsePage() {
       </main>
 
       <MobileBottomNav active={active} onSelect={onSelectSection} />
-
-      {booking && (
-        <BookingModal
-          mentor={{ id: booking.id, name: booking.name, university: booking.university, price: booking.price } satisfies BookingMentor}
-          onClose={() => setBooking(null)}
-          onBooked={() => { setBooking(null); navigate({ to: "/dashboard" }); }}
-        />
-      )}
 
       {/* Mobile drawer */}
       {drawerOpen && (
