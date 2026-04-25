@@ -169,7 +169,13 @@ function BrowsePage() {
             </div>
             <p className="mb-4 text-[13px] text-[#1A1A1A]/60">{filtered.length} mentor{filtered.length === 1 ? "" : "s"}</p>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((m) => <MentorCard key={m.id} mentor={m} onBook={() => setBooking(m)} />)}
+              {filtered.map((m) => (
+                <MentorCard
+                  key={m.id}
+                  mentor={m}
+                  onBook={() => { if (!m.isExample) setBooking(m); }}
+                />
+              ))}
             </div>
             {filtered.length === 0 && (
               <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
@@ -321,7 +327,12 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           </span>
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-display text-[18px] font-bold leading-tight text-[#1A1A1A]">{mentor.name}</h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-display text-[18px] font-bold leading-tight text-[#1A1A1A]">{mentor.name}</h3>
+            {mentor.isExample && (
+              <span className="shrink-0 rounded-full border border-[#1A1A1A]/20 bg-[#FFFCFB] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#1A1A1A]/70">Example</span>
+            )}
+          </div>
           <p className="mt-0.5 text-[14px] text-[#C4907F]">{mentor.university}</p>
           <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">{mentor.course} · {mentor.year}</p>
         </div>
@@ -341,8 +352,12 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         <span>₹{mentor.price.toLocaleString("en-IN")}</span>
       </div>
 
-      <button onClick={onBook} className="mt-5 w-full rounded-full bg-[#C4907F] py-2.5 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90">
-        Book Now
+      <button
+        onClick={onBook}
+        disabled={mentor.isExample}
+        className="mt-5 w-full rounded-full bg-[#C4907F] py-2.5 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {mentor.isExample ? "Example Profile" : "Book Now"}
       </button>
     </article>
   );
