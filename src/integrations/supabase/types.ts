@@ -14,7 +14,75 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      mentors: {
+        Row: {
+          countries: string[]
+          course: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          status: Database["public"]["Enums"]["mentor_status"]
+          university: string
+          year: string
+        }
+        Insert: {
+          countries?: string[]
+          course: string
+          created_at?: string
+          email: string
+          full_name: string
+          id: string
+          status?: Database["public"]["Enums"]["mentor_status"]
+          university: string
+          year: string
+        }
+        Update: {
+          countries?: string[]
+          course?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          status?: Database["public"]["Enums"]["mentor_status"]
+          university?: string
+          year?: string
+        }
+        Relationships: []
+      }
+      students: {
+        Row: {
+          countries: string[]
+          created_at: string
+          email: string
+          full_name: string
+          grade: string
+          id: string
+          phone: string
+          school: string
+        }
+        Insert: {
+          countries?: string[]
+          created_at?: string
+          email: string
+          full_name: string
+          grade: string
+          id: string
+          phone: string
+          school: string
+        }
+        Update: {
+          countries?: string[]
+          created_at?: string
+          email?: string
+          full_name?: string
+          grade?: string
+          id?: string
+          phone?: string
+          school?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +91,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      mentor_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +218,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      mentor_status: ["pending", "approved", "rejected"],
+    },
   },
 } as const
