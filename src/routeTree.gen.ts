@@ -19,6 +19,7 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 
@@ -72,6 +73,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SessionNotesNoteIdRoute = SessionNotesNoteIdRouteImport.update({
+  id: '/$noteId',
+  path: '/$noteId',
+  getParentRoute: () => SessionNotesRoute,
+} as any)
 const MentorIdRoute = MentorIdRouteImport.update({
   id: '/mentor/$id',
   path: '/mentor/$id',
@@ -93,9 +99,10 @@ export interface FileRoutesByFullPath {
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/progress': typeof ProgressRoute
-  '/session-notes': typeof SessionNotesRoute
+  '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
+  '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -107,9 +114,10 @@ export interface FileRoutesByTo {
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/progress': typeof ProgressRoute
-  '/session-notes': typeof SessionNotesRoute
+  '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
+  '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRoutesById {
@@ -122,9 +130,10 @@ export interface FileRoutesById {
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/progress': typeof ProgressRoute
-  '/session-notes': typeof SessionNotesRoute
+  '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
+  '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRouteTypes {
@@ -141,6 +150,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/mentor/$id'
+    | '/session-notes/$noteId'
     | '/api/public/hooks/send-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -155,6 +165,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/mentor/$id'
+    | '/session-notes/$noteId'
     | '/api/public/hooks/send-reminders'
   id:
     | '__root__'
@@ -169,6 +180,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/mentor/$id'
+    | '/session-notes/$noteId'
     | '/api/public/hooks/send-reminders'
   fileRoutesById: FileRoutesById
 }
@@ -181,7 +193,7 @@ export interface RootRouteChildren {
   MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
   ProgressRoute: typeof ProgressRoute
-  SessionNotesRoute: typeof SessionNotesRoute
+  SessionNotesRoute: typeof SessionNotesRouteWithChildren
   StudentSignupRoute: typeof StudentSignupRoute
   MentorIdRoute: typeof MentorIdRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
@@ -259,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/session-notes/$noteId': {
+      id: '/session-notes/$noteId'
+      path: '/$noteId'
+      fullPath: '/session-notes/$noteId'
+      preLoaderRoute: typeof SessionNotesNoteIdRouteImport
+      parentRoute: typeof SessionNotesRoute
+    }
     '/mentor/$id': {
       id: '/mentor/$id'
       path: '/mentor/$id'
@@ -276,6 +295,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SessionNotesRouteChildren {
+  SessionNotesNoteIdRoute: typeof SessionNotesNoteIdRoute
+}
+
+const SessionNotesRouteChildren: SessionNotesRouteChildren = {
+  SessionNotesNoteIdRoute: SessionNotesNoteIdRoute,
+}
+
+const SessionNotesRouteWithChildren = SessionNotesRoute._addFileChildren(
+  SessionNotesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -285,7 +316,7 @@ const rootRouteChildren: RootRouteChildren = {
   MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
   ProgressRoute: ProgressRoute,
-  SessionNotesRoute: SessionNotesRoute,
+  SessionNotesRoute: SessionNotesRouteWithChildren,
   StudentSignupRoute: StudentSignupRoute,
   MentorIdRoute: MentorIdRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,

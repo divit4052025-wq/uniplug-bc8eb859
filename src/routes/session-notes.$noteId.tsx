@@ -1,0 +1,208 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Check, Circle, Pencil } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+export const Route = createFileRoute("/session-notes/$noteId")({
+  head: () => ({
+    meta: [{ title: "Session Note — UniPlug" }],
+  }),
+  component: MentorNoteView,
+});
+
+type Loaded = {
+  id: string;
+  mentor_id: string;
+  student_id: string;
+  student_name: string;
+  date: string | null;
+  time_slot: string | null;
+  summary: string;
+  action_points: string[];
+  completions: Record<number, boolean>;
+  updated_at: string;
+  created_at: string;
+};
+
+function MentorNoteView() {
+  const { noteId } = Route.useParams();
+  const navigate = useNavigate();
+  const [note, setNote] = useState<Loaded | null>(null);
+  const [ready, setReady] = useState(false);
+  const [forbidden, setForbidden] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data: sessRes } = await supabase.auth.getSession();
+      if (cancelled) return;
+      const session = sessRes.session;
+      if (!session) {
+        navigate({ to: "/login" });
+        return;
+      }
+      const { data: row, error } = await supabase
+        .from("session_notes")
+        .select(
+          "id, mentor_id, student_id, booking_id, summary, action_points, created_at, updated_at",
+        )
+        .eq("id", noteId)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !row) {
+        setForbidden(true);
+        setReady(true);
+        return;
+      }
+      // Resolve student name + booking date
+      const [studsRes, bookingRes, compRes] = await Promise.all([
+        supabase.rpc("get_student_booking_names", { _ids: [row.student_id] }),
+        row.booking_id
+          ? supabase
+              .from("bookings")
+              .select("date, time_slot")
+              .eq("id", row.booking_id)
+              .maybeSingle()
+          : Promise.resolve({ data: null as { date: string; time_slot: string } | null }),
+        supabase
+          .from("action_point_completions")
+          .select("action_point_index, completed")
+          .eq("session_note_id", row.id),
+      ]);
+      const studentName =
+        (studsRes.data ?? []).find((s: { id: string; full_name: string }) => s.id === row.student_id)
+          ?.full_name ?? "Student";
+      const compMap: Record<number, boolean> = {};
+      (compRes.data ?? []).forEach(
+        (c: { action_point_index: number; completed: boolean }) =>
+          (compMap[c.action_point_index] = c.completed),
+      );
+      if (cancelled) return;
+      setNote({
+        id: row.id,
+        mentor_id: row.mentor_id,
+        student_id: row.student_id,
+        student_name: studentName,
+        date: bookingRes.data?.date ?? null,
+        time_slot: bookingRes.data?.time_slot ?? null,
+        summary: row.summary ?? "",
+        action_points: Array.isArray(row.action_points)
+          ? (row.action_points as string[])
+          : [],
+        completions: compMap,
+        updated_at: row.updated_at,
+        created_at: row.created_at,
+      });
+      setReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [noteId, navigate]);
+
+  if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
+
+  if (forbidden || !note) {
+    return (
+      <div className="min-h-screen bg-[#FFFCFB]">
+        <div className="mx-auto max-w-[800px] px-5 pb-20 pt-12 sm:px-8">
+          <Link
+            to="/mentor-dashboard"
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to dashboard
+          </Link>
+          <p className="mt-8 text-[14px] text-[#1A1A1A]/70">
+            This note is unavailable.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const wasEdited =
+    new Date(note.updated_at).getTime() - new Date(note.created_at).getTime() > 2000;
+
+  return (
+    <div className="min-h-screen bg-[#FFFCFB]">
+      <div className="mx-auto max-w-[800px] px-5 pb-20 pt-8 sm:px-8 md:pt-12">
+        <div className="flex items-center justify-between gap-3">
+          <Link
+            to="/mentor-dashboard"
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to dashboard
+          </Link>
+          <Link
+            to="/mentor-dashboard"
+            search={{ edit: note.id }}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#C4907F] px-4 text-[13px] font-medium text-white hover:opacity-90"
+          >
+            <Pencil className="h-3.5 w-3.5" /> Edit note
+          </Link>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-6 sm:p-8">
+          <p className="text-[11px] uppercase tracking-wide text-[#1A1A1A]/50">
+            {note.date ? new Date(note.date).toLocaleDateString() : "Session"}
+            {note.time_slot ? ` · ${note.time_slot}` : ""}
+          </p>
+          <h1 className="mt-1 font-display text-[28px] font-semibold text-[#1A1A1A] md:text-[32px]">
+            {note.student_name}
+          </h1>
+
+          <div className="mt-6">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
+              Session summary
+            </p>
+            <p className="mt-2 whitespace-pre-wrap text-[14px] leading-relaxed text-[#1A1A1A]">
+              {note.summary || "—"}
+            </p>
+          </div>
+
+          {note.action_points.length > 0 && (
+            <div className="mt-7">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
+                Action points
+              </p>
+              <ul className="mt-2 space-y-2">
+                {note.action_points.map((ap, i) => {
+                  const done = !!note.completions[i];
+                  return (
+                    <li key={i} className="flex items-start gap-2.5">
+                      {done ? (
+                        <span className="mt-0.5 grid h-5 w-5 place-content-center rounded-full bg-[#3F9D6E] text-white">
+                          <Check className="h-3 w-3" />
+                        </span>
+                      ) : (
+                        <Circle className="mt-0.5 h-5 w-5 text-[#1A1A1A]/30" />
+                      )}
+                      <span
+                        className={`text-[14px] ${
+                          done ? "text-[#1A1A1A]/60 line-through" : "text-[#1A1A1A]"
+                        }`}
+                      >
+                        {ap}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          <div className="mt-7 flex items-center gap-2 border-t border-[#EDE0DB] pt-4">
+            <p className="text-[11px] text-[#1A1A1A]/50">
+              Last updated {new Date(note.updated_at).toLocaleString()}
+            </p>
+            {wasEdited && (
+              <span className="rounded-full bg-[#C4907F]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#C4907F]">
+                Updated
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
