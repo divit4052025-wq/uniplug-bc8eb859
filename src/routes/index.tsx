@@ -123,6 +123,12 @@ function HomePage() {
 
           {/* Headline anchored bottom-left */}
           <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
+            <p
+              className="mb-5 text-[12px] font-medium uppercase text-[#C4907F]"
+              style={{ letterSpacing: "4px" }}
+            >
+              UniPlug
+            </p>
             <h1
               className="font-display font-bold text-white"
               style={{
