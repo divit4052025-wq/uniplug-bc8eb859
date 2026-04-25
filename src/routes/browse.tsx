@@ -60,7 +60,7 @@ function BrowsePage() {
   const [sort, setSort] = useState("Relevance");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!data.session) {
         navigate({ to: "/student-signup" });
         return;
@@ -320,9 +320,9 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
       <div className="mt-4 flex items-center justify-between text-[13px] text-[#1A1A1A]/70">
         <span className="inline-flex items-center gap-1">
           <Star className="h-3.5 w-3.5 fill-[#C4907F] text-[#C4907F]" />
-          <span className="font-medium text-[#1A1A1A]">{mentor.rating.toFixed(1)}</span>
+          <span className="font-medium text-[#1A1A1A]">Verified</span>
         </span>
-        <span>{mentor.sessions} sessions</span>
+        <span>₹{mentor.price.toLocaleString("en-IN")}</span>
       </div>
 
       <button onClick={onBook} className="mt-5 w-full rounded-full bg-[#C4907F] py-2.5 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90">
