@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Check, Circle, Pencil } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { resolveUserRole, dashboardPathForRole, type UserRole } from "@/lib/auth/role";
 
 export const Route = createFileRoute("/session-notes/$noteId")({
   head: () => ({
@@ -30,6 +31,7 @@ function MentorNoteView() {
   const [note, setNote] = useState<Loaded | null>(null);
   const [ready, setReady] = useState(false);
   const [forbidden, setForbidden] = useState(false);
+  const [role, setRole] = useState<UserRole>("unknown");
 
   useEffect(() => {
     let cancelled = false;
@@ -41,6 +43,9 @@ function MentorNoteView() {
         navigate({ to: "/login" });
         return;
       }
+      const r = await resolveUserRole(session.user.id, session.user.email);
+      if (cancelled) return;
+      setRole(r);
       const { data: row, error } = await supabase
         .from("session_notes")
         .select(
