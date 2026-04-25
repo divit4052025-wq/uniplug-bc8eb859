@@ -33,7 +33,7 @@ export function MobileBottomNav({
                 return;
               }
               if (it.key === "progress") {
-                navigate({ to: "/progress" });
+                navigate({ to: "/session-notes" });
                 return;
               }
               onSelect(it.key);

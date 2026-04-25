@@ -45,7 +45,7 @@ export function DashboardSidebar({ active, onSelect }: Props) {
                   return;
                 }
                 if (it.key === "progress") {
-                  navigate({ to: "/progress" });
+                  navigate({ to: "/session-notes" });
                   return;
                 }
                 onSelect(it.key);
