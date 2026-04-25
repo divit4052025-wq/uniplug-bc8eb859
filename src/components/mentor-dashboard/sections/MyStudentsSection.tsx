@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { X, FileText } from "lucide-react";
+import { X, FileText, Check, Circle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type StudentRow = {
@@ -11,13 +11,21 @@ type StudentRow = {
   last: string | null;
 };
 
+type StudentNote = {
+  id: string;
+  summary: string;
+  created_at: string;
+  action_points: string[];
+  completions: Record<number, boolean>;
+};
+
 export function MyStudentsSection({ mentorId }: { mentorId: string }) {
   const [rows, setRows] = useState<StudentRow[]>([]);
   const [open, setOpen] = useState<{
     name: string;
     docs: { id: string; file_name: string }[];
     schools: { id: string; name: string; category: string }[];
-    notes: { id: string; summary: string; created_at: string }[];
+    notes: StudentNote[];
   } | null>(null);
 
   useEffect(() => {
@@ -65,16 +73,36 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
       supabase.from("student_schools").select("id, name, category").eq("student_id", studentId),
       supabase
         .from("session_notes")
-        .select("id, summary, created_at")
+        .select("id, summary, created_at, action_points")
         .eq("student_id", studentId)
         .eq("mentor_id", mentorId)
         .order("created_at", { ascending: false }),
     ]);
+    const noteRows = notes ?? [];
+    const noteIds = noteRows.map((n) => n.id);
+    const compMap = new Map<string, Record<number, boolean>>();
+    if (noteIds.length) {
+      const { data: comps } = await supabase
+        .from("action_point_completions")
+        .select("session_note_id, action_point_index, completed")
+        .in("session_note_id", noteIds);
+      (comps ?? []).forEach((c) => {
+        const cur = compMap.get(c.session_note_id) ?? {};
+        cur[c.action_point_index] = c.completed;
+        compMap.set(c.session_note_id, cur);
+      });
+    }
     setOpen({
       name,
       docs: docs ?? [],
       schools: schools ?? [],
-      notes: notes ?? [],
+      notes: noteRows.map((n) => ({
+        id: n.id,
+        summary: n.summary ?? "",
+        created_at: n.created_at,
+        action_points: Array.isArray(n.action_points) ? (n.action_points as string[]) : [],
+        completions: compMap.get(n.id) ?? {},
+      })),
     });
   };
 
@@ -171,6 +199,27 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
                     <p className="mt-1 whitespace-pre-wrap text-[13px] text-[#1A1A1A]">
                       {n.summary || "—"}
                     </p>
+                    {n.action_points.length > 0 && (
+                      <ul className="mt-2 space-y-1">
+                        {n.action_points.map((ap, i) => {
+                          const done = !!n.completions[i];
+                          return (
+                            <li key={i} className="flex items-center gap-2 text-[12px]">
+                              {done ? (
+                                <span className="grid h-4 w-4 place-content-center rounded-full bg-[#3F9D6E] text-white">
+                                  <Check className="h-2.5 w-2.5" />
+                                </span>
+                              ) : (
+                                <Circle className="h-4 w-4 text-[#1A1A1A]/30" />
+                              )}
+                              <span className={done ? "text-[#1A1A1A]/60 line-through" : "text-[#1A1A1A]"}>
+                                {ap}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
