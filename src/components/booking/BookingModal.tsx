@@ -110,9 +110,13 @@ export function BookingModal({
       }).select("id").single();
       if (insErr) throw insErr;
       if (inserted?.id) {
-        void sendBookingEmails({ data: { bookingId: inserted.id } }).catch((e) =>
-          console.error("[booking-emails] dispatch failed", e),
-        );
+        // Await so the RPC actually completes before navigation; never block UX on email failure.
+        try {
+          const r = await sendBookingEmails({ data: { bookingId: inserted.id } });
+          console.log("[booking-emails] dispatch result", r);
+        } catch (e) {
+          console.error("[booking-emails] dispatch failed", e);
+        }
       }
       setSuccess(true);
       setTimeout(() => {
