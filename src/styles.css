@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -7,7 +7,7 @@
 
 @theme inline {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces", "Inter", ui-serif, Georgia, serif;
+  --font-display: "Syne", "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -98,8 +98,8 @@
   }
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
-    font-weight: 800;
-    letter-spacing: -0.02em;
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
 }
 
@@ -109,6 +109,15 @@
   .shadow-lift { box-shadow: var(--shadow-lift); }
   .animate-fade-in { animation: fade-in 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; }
   .animate-fade-up { animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .animate-breathe { animation: breathe 14s ease-in-out infinite alternate; background-size: 200% 200%; }
+  .animate-pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+  .animate-float-slow { animation: float-slow 22s ease-in-out infinite alternate; }
+  .noise-overlay {
+    background-image: repeating-linear-gradient(45deg, color-mix(in oklab, var(--brand-pink) 5%, transparent) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(-45deg, color-mix(in oklab, var(--brand-brown) 5%, transparent) 0 1px, transparent 1px 11px);
+  }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
   .reveal {
     opacity: 0;
     transform: translateY(24px);
@@ -135,4 +144,16 @@
 @keyframes aurora {
   0% { transform: translate3d(0, 0, 0) scale(1); }
   100% { transform: translate3d(3%, -4%, 0) scale(1.1); }
+}
+@keyframes breathe {
+  0% { background-position: 0% 0%; }
+  100% { background-position: 100% 100%; }
+}
+@keyframes pulse-dot {
+  0%, 100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-brown) 60%, transparent); }
+  50% { transform: scale(1.15); opacity: 0.85; box-shadow: 0 0 0 6px color-mix(in oklab, var(--brand-brown) 0%, transparent); }
+}
+@keyframes float-slow {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(20px, -30px, 0); }
 }

@@ -2,7 +2,16 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { useReveal } from "@/hooks/use-reveal";
-import { Search, CalendarCheck, Sparkles, MessageCircle, ShieldCheck, Clock, Star } from "lucide-react";
+import {
+  Search,
+  CalendarCheck,
+  Sparkles,
+  MessageCircle,
+  ShieldCheck,
+  Clock,
+  Star,
+  BadgeCheck,
+} from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -96,22 +105,65 @@ function Home() {
       <Nav />
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-foreground text-background">
-        <div className="aurora" aria-hidden />
-        <div className="relative mx-auto max-w-7xl px-5 py-24 sm:px-8 sm:py-32 lg:py-40">
+      <section
+        className="relative flex min-h-screen items-center overflow-hidden text-background"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.18 0 0) 0%, oklch(0.24 0.02 38) 50%, oklch(0.16 0.01 30) 100%)",
+        }}
+      >
+        <div
+          className="absolute inset-0 animate-breathe opacity-90"
+          aria-hidden
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.18 0 0) 0%, oklch(0.26 0.03 38) 50%, oklch(0.16 0.01 30) 100%)",
+          }}
+        />
+        {/* floating particles */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+          {Array.from({ length: 28 }).map((_, i) => {
+            const seedX = (i * 53) % 100;
+            const seedY = (i * 91) % 100;
+            const size = 4 + ((i * 7) % 10);
+            const isPink = i % 3 === 0;
+            return (
+              <span
+                key={i}
+                className="absolute rounded-full animate-float-slow"
+                style={{
+                  left: `${seedX}%`,
+                  top: `${seedY}%`,
+                  width: size,
+                  height: size,
+                  background: isPink ? "var(--brand-pink)" : "var(--brand-brown)",
+                  opacity: isPink ? 0.08 : 0.1,
+                  animationDelay: `${(i % 8) * 1.4}s`,
+                  animationDuration: `${18 + (i % 7) * 3}s`,
+                }}
+              />
+            );
+          })}
+        </div>
+
+        <div className="relative mx-auto w-full max-w-7xl px-5 py-24 sm:px-8 sm:py-28">
           <div className="max-w-4xl animate-fade-in">
-            <span className="inline-flex items-center gap-2 rounded-full border border-background/20 bg-background/5 px-4 py-1.5 text-xs uppercase tracking-widest text-secondary">
-              <span className="h-1.5 w-1.5 rounded-full bg-secondary" /> Mentorship, unfiltered
+            <span className="inline-flex items-center gap-2 rounded-full border border-background/15 bg-background/5 px-3.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.25em] text-secondary backdrop-blur sm:text-xs">
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse-dot" />
+              Mentorship. Unfiltered
             </span>
-            <h1 className="mt-6 font-display text-5xl leading-[1.02] text-background sm:text-7xl lg:text-8xl">
-              Your College <span className="text-secondary">Plug</span>
+            <h1
+              className="mt-6 font-display leading-[0.95] text-background"
+              style={{ fontSize: "clamp(48px, 9vw, 96px)" }}
+            >
+              Your College <span className="text-secondary italic">Plug</span>
               <br /> On Demand
             </h1>
-            <p className="mt-7 max-w-2xl text-lg font-light text-secondary sm:text-xl">
+            <p className="mt-6 max-w-[85%] text-base font-light text-secondary sm:max-w-2xl sm:text-xl">
               Connect with students already living your dream — real advice, real stories,
               real results.
             </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 to="/student-signup"
                 className="rounded-full bg-primary px-8 py-4 text-center text-base font-semibold text-primary-foreground shadow-lift transition hover:-translate-y-0.5 hover:opacity-95"
@@ -130,7 +182,7 @@ function Home() {
       </section>
 
       {/* How it works */}
-      <section className="bg-background py-24 sm:py-32">
+      <section className="bg-background py-16 sm:py-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="reveal max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
@@ -140,21 +192,30 @@ function Home() {
               How It Works
             </h2>
           </div>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:gap-6 md:grid-cols-3">
             {steps.map((s, i) => (
               <div
                 key={s.title}
-                className="reveal hover-lift rounded-3xl bg-card p-8 shadow-card"
+                className="reveal hover-lift rounded-2xl bg-card p-6 shadow-card"
                 data-delay={i * 120}
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-foreground text-background">
-                  <s.icon className="h-6 w-6" />
+                <div className="flex items-start justify-between gap-3">
+                  <span
+                    className="font-display text-primary leading-none"
+                    style={{ fontSize: "clamp(44px, 6vw, 64px)", fontWeight: 800 }}
+                  >
+                    0{i + 1}
+                  </span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-foreground text-background sm:h-12 sm:w-12">
+                    <s.icon className="h-5 w-5 sm:h-6 sm:w-6" />
+                  </div>
                 </div>
-                <div className="mt-6 flex items-center gap-3">
-                  <span className="font-display text-3xl text-primary">0{i + 1}</span>
-                  <h3 className="font-display text-2xl text-foreground">{s.title}</h3>
-                </div>
-                <p className="mt-3 text-base font-light text-muted-foreground">{s.desc}</p>
+                <h3 className="mt-4 font-display text-xl text-foreground sm:text-2xl">
+                  {s.title}
+                </h3>
+                <p className="mt-2 text-sm font-light text-muted-foreground sm:text-base">
+                  {s.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -162,7 +223,7 @@ function Home() {
       </section>
 
       {/* Meet your plugs */}
-      <section className="bg-background pb-24 sm:pb-32">
+      <section className="bg-background pb-16 sm:pb-24">
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div className="reveal flex flex-col items-start justify-between gap-4 md:flex-row md:items-end">
             <div className="max-w-xl">
@@ -177,11 +238,13 @@ function Home() {
               Hand-picked, manually verified, ridiculously helpful.
             </p>
           </div>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
+
+          {/* Mobile: horizontal scroll. Desktop: 3-col grid */}
+          <div className="mt-8 -mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 hide-scrollbar sm:gap-6 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
             {mentors.map((m, i) => (
               <article
                 key={m.name}
-                className="reveal hover-lift group rounded-3xl bg-card p-7 shadow-card"
+                className="reveal hover-lift group relative w-[82%] shrink-0 snap-center rounded-2xl bg-card p-6 shadow-card sm:w-[70%] md:w-auto"
                 data-delay={i * 120}
               >
                 <div className="flex items-center gap-4">
@@ -194,18 +257,26 @@ function Home() {
                       }}
                     />
                   </div>
-                  <div>
-                    <h3 className="font-display text-xl text-foreground">{m.name}</h3>
-                    <p className="text-sm font-light text-muted-foreground">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h3 className="truncate font-display text-lg text-foreground sm:text-xl">
+                        {m.name}
+                      </h3>
+                      <BadgeCheck
+                        className="h-4 w-4 shrink-0 fill-primary text-primary-foreground"
+                        aria-label="Verified"
+                      />
+                    </div>
+                    <p className="truncate text-sm font-light text-muted-foreground">
                       {m.uni}
                     </p>
                   </div>
                 </div>
-                <div className="mt-5 space-y-1 text-sm font-light text-foreground/80">
+                <div className="mt-4 space-y-1 text-sm font-light text-foreground/80">
                   <p>{m.course}</p>
                   <p className="text-muted-foreground">{m.year}</p>
                 </div>
-                <div className="mt-4 flex flex-wrap gap-2">
+                <div className="mt-3 flex flex-wrap gap-2">
                   {m.tags.map((t) => (
                     <span
                       key={t}
@@ -215,7 +286,7 @@ function Home() {
                     </span>
                   ))}
                 </div>
-                <div className="mt-5 flex items-center gap-1 text-foreground">
+                <div className="mt-4 flex items-center gap-1 text-foreground">
                   {Array.from({ length: 5 }).map((_, idx) => (
                     <Star
                       key={idx}
@@ -228,7 +299,7 @@ function Home() {
                   ))}
                   <span className="ml-2 text-sm font-medium">{m.rating.toFixed(1)}</span>
                 </div>
-                <button className="mt-6 w-full rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:opacity-95">
+                <button className="mt-5 block w-full rounded-full bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:-translate-y-0.5 hover:opacity-95">
                   Book Now
                 </button>
               </article>
@@ -238,8 +309,9 @@ function Home() {
       </section>
 
       {/* Why UniPlug */}
-      <section className="bg-foreground py-24 text-background sm:py-32">
-        <div className="mx-auto max-w-7xl px-5 sm:px-8">
+      <section className="relative overflow-hidden bg-foreground py-16 text-background sm:py-24">
+        <div className="absolute inset-0 noise-overlay opacity-40" aria-hidden />
+        <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
           <div className="reveal max-w-2xl">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-secondary">
               Why us
@@ -248,18 +320,22 @@ function Home() {
               Why UniPlug
             </h2>
           </div>
-          <div className="mt-14 grid gap-6 md:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:gap-6 md:grid-cols-3">
             {values.map((v, i) => (
               <div
                 key={v.title}
-                className="reveal hover-lift rounded-3xl border border-background/10 bg-background/[0.04] p-8 backdrop-blur"
+                className="reveal hover-lift border-l-2 border-primary bg-background/[0.04] p-6 backdrop-blur"
                 data-delay={i * 120}
               >
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-secondary text-foreground">
-                  <v.icon className="h-6 w-6" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-secondary text-foreground">
+                  <v.icon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-6 font-display text-2xl text-secondary">{v.title}</h3>
-                <p className="mt-3 text-base font-light text-background/75">{v.desc}</p>
+                <h3 className="mt-5 font-display text-xl text-secondary sm:text-2xl">
+                  {v.title}
+                </h3>
+                <p className="mt-2 max-w-[85%] text-sm font-light text-background/75 sm:max-w-none sm:text-base">
+                  {v.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -267,7 +343,7 @@ function Home() {
       </section>
 
       {/* Social proof */}
-      <section className="bg-background py-16">
+      <section className="bg-background py-12">
         <div className="reveal mx-auto max-w-6xl px-5 text-center sm:px-8">
           <p className="text-sm font-light text-muted-foreground sm:text-base">
             Trusted by students applying to{" "}
