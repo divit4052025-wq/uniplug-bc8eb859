@@ -31,8 +31,6 @@ type Mentor = {
   course: string;
   year: string;
   topics: [string, string];
-  rating: number;
-  sessions: number;
   price: number;
 };
 
@@ -52,6 +50,7 @@ function BrowsePage() {
   const [active, setActive] = useState<SectionKey>("browse");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [booking, setBooking] = useState<Mentor | null>(null);
+  const [mentors, setMentors] = useState<Mentor[]>([]);
 
   const [search, setSearch] = useState("");
   const [countries, setCountries] = useState<string[]>([]);
@@ -66,6 +65,17 @@ function BrowsePage() {
         navigate({ to: "/student-signup" });
         return;
       }
+      const { data: profiles } = await (supabase as any).rpc("list_approved_mentor_profiles");
+      setMentors((profiles ?? []).map((m: MentorProfile) => ({
+        id: m.id,
+        name: m.full_name,
+        university: m.university,
+        country: m.countries?.[0] ?? "Other",
+        course: m.course,
+        year: m.year,
+        topics: [m.course, m.year],
+        price: m.price_inr,
+      })));
       setReady(true);
     });
   }, [navigate]);
@@ -85,7 +95,7 @@ function BrowsePage() {
   };
 
   const filtered = useMemo(() => {
-    let list = MENTORS.filter((m) => {
+    let list = mentors.filter((m) => {
       if (search && !`${m.name} ${m.university}`.toLowerCase().includes(search.toLowerCase())) return false;
       if (countries.length && !countries.includes(m.country)) return false;
       if (universityQuery && !m.university.toLowerCase().includes(universityQuery.toLowerCase())) return false;
@@ -93,11 +103,11 @@ function BrowsePage() {
       if (years.length && !years.includes(m.year)) return false;
       return true;
     });
-    if (sort === "Rating") list = [...list].sort((a, b) => b.rating - a.rating);
+    if (sort === "Rating") list = [...list];
     if (sort === "Price Low to High") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "Price High to Low") list = [...list].sort((a, b) => b.price - a.price);
     return list;
-  }, [search, countries, universityQuery, courses, years, sort]);
+  }, [search, countries, universityQuery, courses, years, sort, mentors]);
 
   if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
