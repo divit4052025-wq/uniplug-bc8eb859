@@ -40,6 +40,10 @@ function Dashboard() {
         navigate({ to: "/student-signup" });
         return;
       }
+      if ((session.user.email ?? "").toLowerCase() === "divitfatehpuria7@gmail.com") {
+        navigate({ to: "/admin" });
+        return;
+      }
       setUserId(session.user.id);
       const { data: row } = await supabase
         .from("students")
