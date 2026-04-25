@@ -83,7 +83,7 @@ function Dashboard() {
         <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
           <DashboardTopbar firstName={firstName} />
           <div className="mt-8 space-y-12 animate-hero-rise">
-            <MyPlugsSection />
+            <MyPlugsSection studentId={userId} />
             <UpcomingSessionsSection studentId={userId} />
             <MySchoolsSection userId={userId} />
             <MyDocumentsSection userId={userId} />

@@ -32,6 +32,7 @@ type Mentor = {
   year: string;
   topics: [string, string];
   price: number;
+  isExample?: boolean;
 };
 
 type MentorProfile = {
@@ -43,6 +44,18 @@ type MentorProfile = {
   year: string;
   price_inr: number;
 };
+
+const PLACEHOLDER_MENTORS: Mentor[] = [
+  { id: "ex-1", name: "Aarav Mehta", university: "IIT Bombay", country: "India", course: "Engineering", year: "3rd Year", topics: ["Engineering", "JEE Prep"], price: 1800, isExample: true },
+  { id: "ex-2", name: "Priya Sharma", university: "Oxford", country: "UK", course: "Law", year: "2nd Year", topics: ["Law", "PPE Essays"], price: 2400, isExample: true },
+  { id: "ex-3", name: "Rohan Kapoor", university: "Warwick", country: "UK", course: "Business", year: "Final Year", topics: ["Business", "UCAS"], price: 2200, isExample: true },
+  { id: "ex-4", name: "Mei Lin Tan", university: "NUS", country: "Singapore", course: "Science", year: "2nd Year", topics: ["Science", "Scholarships"], price: 2000, isExample: true },
+  { id: "ex-5", name: "Ishaan Patel", university: "UCL", country: "UK", course: "Medicine", year: "1st Year", topics: ["Medicine", "BMAT"], price: 2600, isExample: true },
+  { id: "ex-6", name: "Sophie Williams", university: "LSE", country: "UK", course: "Social Sciences", year: "3rd Year", topics: ["Social Sciences", "Personal Statement"], price: 2300, isExample: true },
+  { id: "ex-7", name: "Ananya Iyer", university: "Cambridge", country: "UK", course: "Arts", year: "2nd Year", topics: ["Arts", "Interviews"], price: 2700, isExample: true },
+  { id: "ex-8", name: "Daniel Chen", university: "Imperial", country: "UK", course: "Engineering", year: "Final Year", topics: ["Engineering", "Portfolio"], price: 2500, isExample: true },
+  { id: "ex-9", name: "Kavya Nair", university: "IIT Bombay", country: "India", course: "Science", year: "1st Year", topics: ["Science", "Olympiad"], price: 1700, isExample: true },
+];
 
 function BrowsePage() {
   const navigate = useNavigate();
@@ -67,16 +80,17 @@ function BrowsePage() {
         return;
       }
       const { data: profiles } = await (supabase as any).rpc("list_approved_mentor_profiles");
-      setMentors((profiles ?? []).map((m: MentorProfile) => ({
+      const real: Mentor[] = (profiles ?? []).map((m: MentorProfile) => ({
         id: m.id,
         name: m.full_name,
         university: m.university,
         country: m.countries?.[0] ?? "Other",
         course: m.course,
         year: m.year,
-        topics: [m.course, m.year],
+        topics: [m.course, m.year] as [string, string],
         price: m.price_inr,
-      })));
+      }));
+      setMentors([...real, ...PLACEHOLDER_MENTORS]);
       setReady(true);
     };
     void init();
@@ -155,7 +169,13 @@ function BrowsePage() {
             </div>
             <p className="mb-4 text-[13px] text-[#1A1A1A]/60">{filtered.length} mentor{filtered.length === 1 ? "" : "s"}</p>
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((m) => <MentorCard key={m.id} mentor={m} onBook={() => setBooking(m)} />)}
+              {filtered.map((m) => (
+                <MentorCard
+                  key={m.id}
+                  mentor={m}
+                  onBook={() => { if (!m.isExample) setBooking(m); }}
+                />
+              ))}
             </div>
             {filtered.length === 0 && (
               <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
@@ -307,7 +327,12 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
           </span>
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="font-display text-[18px] font-bold leading-tight text-[#1A1A1A]">{mentor.name}</h3>
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-display text-[18px] font-bold leading-tight text-[#1A1A1A]">{mentor.name}</h3>
+            {mentor.isExample && (
+              <span className="shrink-0 rounded-full border border-[#1A1A1A]/20 bg-[#FFFCFB] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#1A1A1A]/70">Example</span>
+            )}
+          </div>
           <p className="mt-0.5 text-[14px] text-[#C4907F]">{mentor.university}</p>
           <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">{mentor.course} · {mentor.year}</p>
         </div>
@@ -327,8 +352,12 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         <span>₹{mentor.price.toLocaleString("en-IN")}</span>
       </div>
 
-      <button onClick={onBook} className="mt-5 w-full rounded-full bg-[#C4907F] py-2.5 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90">
-        Book Now
+      <button
+        onClick={onBook}
+        disabled={mentor.isExample}
+        className="mt-5 w-full rounded-full bg-[#C4907F] py-2.5 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        {mentor.isExample ? "Example Profile" : "Book Now"}
       </button>
     </article>
   );
