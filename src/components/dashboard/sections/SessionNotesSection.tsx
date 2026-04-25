@@ -11,6 +11,8 @@ type Note = {
   summary: string;
   action_points: string[];
   completions: Record<number, boolean>;
+  created_at: string;
+  updated_at: string;
 };
 
 export function SessionNotesSection({ studentId }: { studentId: string }) {
@@ -25,9 +27,9 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
   const load = async () => {
     const { data: rows } = await supabase
       .from("session_notes")
-      .select("id, mentor_id, booking_id, summary, action_points, created_at")
+      .select("id, mentor_id, booking_id, summary, action_points, created_at, updated_at")
       .eq("student_id", studentId)
-      .order("created_at", { ascending: false });
+      .order("updated_at", { ascending: false });
     const list = rows ?? [];
     if (list.length === 0) {
       setNotes([]);
@@ -79,6 +81,8 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
         summary: n.summary ?? "",
         action_points: Array.isArray(n.action_points) ? (n.action_points as string[]) : [],
         completions: compMap.get(n.id) ?? {},
+        created_at: n.created_at,
+        updated_at: n.updated_at,
       })),
     );
     setLoaded(true);
@@ -173,6 +177,16 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
                   </ul>
                 </div>
               )}
+              <div className="mt-4 flex items-center gap-2 border-t border-[#EDE0DB] pt-3">
+                <p className="text-[11px] text-[#1A1A1A]/50">
+                  Last updated {new Date(n.updated_at).toLocaleString()}
+                </p>
+                {new Date(n.updated_at).getTime() - new Date(n.created_at).getTime() > 2000 && (
+                  <span className="rounded-full bg-[#C4907F]/15 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-[#C4907F]">
+                    Updated
+                  </span>
+                )}
+              </div>
             </article>
           ))
         )}
