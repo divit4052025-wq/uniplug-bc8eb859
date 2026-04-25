@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      mentor_availability: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          id: string
+          mentor_id: string
+          start_hour: number
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          id?: string
+          mentor_id: string
+          start_hour: number
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          id?: string
+          mentor_id?: string
+          start_hour?: number
+        }
+        Relationships: []
+      }
+      mentor_payouts: {
+        Row: {
+          amount_inr: number
+          created_at: string
+          id: string
+          mentor_id: string
+          payout_date: string
+          status: string
+        }
+        Insert: {
+          amount_inr: number
+          created_at?: string
+          id?: string
+          mentor_id: string
+          payout_date: string
+          status?: string
+        }
+        Update: {
+          amount_inr?: number
+          created_at?: string
+          id?: string
+          mentor_id?: string
+          payout_date?: string
+          status?: string
+        }
+        Relationships: []
+      }
       mentors: {
         Row: {
           countries: string[]
@@ -47,6 +98,110 @@ export type Database = {
           status?: Database["public"]["Enums"]["mentor_status"]
           university?: string
           year?: string
+        }
+        Relationships: []
+      }
+      session_action_points: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          mentor_id: string
+          note_id: string
+          position: number
+          student_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          mentor_id: string
+          note_id: string
+          position?: number
+          student_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          mentor_id?: string
+          note_id?: string
+          position?: number
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_action_points_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "session_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      session_notes: {
+        Row: {
+          created_at: string
+          id: string
+          mentor_id: string
+          session_id: string
+          student_id: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mentor_id: string
+          session_id: string
+          student_id: string
+          summary?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mentor_id?: string
+          session_id?: string
+          student_id?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sessions: {
+        Row: {
+          amount_inr: number
+          call_url: string | null
+          created_at: string
+          duration_minutes: number
+          id: string
+          mentor_id: string
+          scheduled_at: string
+          status: Database["public"]["Enums"]["session_status"]
+          student_id: string
+        }
+        Insert: {
+          amount_inr?: number
+          call_url?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          mentor_id: string
+          scheduled_at: string
+          status?: Database["public"]["Enums"]["session_status"]
+          student_id: string
+        }
+        Update: {
+          amount_inr?: number
+          call_url?: string | null
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          mentor_id?: string
+          scheduled_at?: string
+          status?: Database["public"]["Enums"]["session_status"]
+          student_id?: string
         }
         Relationships: []
       }
@@ -143,6 +298,7 @@ export type Database = {
     }
     Enums: {
       mentor_status: "pending" | "approved" | "rejected"
+      session_status: "upcoming" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -271,6 +427,7 @@ export const Constants = {
   public: {
     Enums: {
       mentor_status: ["pending", "approved", "rejected"],
+      session_status: ["upcoming", "completed", "cancelled"],
     },
   },
 } as const
