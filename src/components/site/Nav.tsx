@@ -23,6 +23,12 @@ export function Nav() {
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
           <Link
+            to="/login"
+            className="inline-flex h-10 items-center rounded-full px-4 text-[13px] font-medium text-[#1A1A1A] transition hover:text-[#C4907F]"
+          >
+            Log in
+          </Link>
+          <Link
             to="/student-signup"
             className="inline-flex h-10 items-center rounded-full bg-[#C4907F] px-5 text-[13px] font-medium text-white transition hover:opacity-90"
           >
