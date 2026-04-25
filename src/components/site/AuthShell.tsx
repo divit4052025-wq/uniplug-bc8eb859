@@ -1,5 +1,6 @@
 import { Nav } from "./Nav";
 import { Footer } from "./Footer";
+import logo from "@/assets/uniplug-logo.png";
 
 export function AuthShell({
   eyebrow,
@@ -15,7 +16,7 @@ export function AuthShell({
   return (
     <div className="min-h-screen bg-background">
       <Nav />
-      <main className="relative">
+      <main>
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 sm:py-24 md:grid-cols-[1fr_1.1fr] md:gap-14">
           <div className="animate-fade-in md:sticky md:top-28 md:self-start">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
@@ -58,21 +59,19 @@ export function Field({
 export const inputClass =
   "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-light text-foreground placeholder:text-muted-foreground/60 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15";
 
-export function Confirmation({ message }: { message: string }) {
+export function Confirmation({ heading, body }: { heading: string; body: string }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Nav />
       <main className="flex flex-1 items-center justify-center px-5 py-24 sm:px-8">
         <div className="animate-fade-up max-w-xl rounded-3xl bg-card p-10 text-center shadow-lift sm:p-14">
-          <div className="mx-auto inline-flex items-center rounded-2xl bg-background p-3 shadow-card">
-            <img src="/uniplug-logo.png" alt="UniPlug" className="h-12 w-auto" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} />
+          <div className="mx-auto inline-flex items-center justify-center rounded-2xl bg-background p-3 shadow-card">
+            <img src={logo} alt="UniPlug" className="h-12 w-auto" />
           </div>
           <h2 className="mt-6 font-display text-3xl text-foreground sm:text-4xl">
-            {message.split(" — ")[0]}
+            {heading}
           </h2>
-          <p className="mt-3 text-base font-light text-muted-foreground">
-            {message.includes(" — ") ? message.split(" — ").slice(1).join(" — ") : ""}
-          </p>
+          <p className="mt-3 text-base font-light text-muted-foreground">{body}</p>
         </div>
       </main>
       <Footer />
