@@ -153,10 +153,10 @@ function Home() {
               Mentorship. Unfiltered
             </span>
             <h1
-              className="mt-6 font-display leading-[0.95] text-background"
-              style={{ fontSize: "clamp(48px, 9vw, 96px)" }}
+              className="mt-6 font-sans font-black uppercase leading-[0.95] tracking-tight text-background"
+              style={{ fontSize: "clamp(48px, 9vw, 96px)", fontFamily: '"Space Grotesk", "Inter", sans-serif', fontWeight: 900 }}
             >
-              Your College <span className="text-secondary italic">Plug</span>
+              Your College <span className="text-secondary">Plug</span>
               <br /> On Demand
             </h1>
             <p className="mt-6 max-w-[85%] text-base font-light text-secondary sm:max-w-2xl sm:text-xl">
