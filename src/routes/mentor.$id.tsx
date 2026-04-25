@@ -4,6 +4,7 @@ import { BadgeCheck, Calendar, Check, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
+import { sendBookingEmails } from "@/lib/email/booking.functions";
 
 export const Route = createFileRoute("/mentor/$id")({
   head: () => ({
@@ -299,7 +300,7 @@ function BookingWidget({ mentor }: { mentor: MentorProfile }) {
       const { data: sess } = await supabase.auth.getSession();
       const studentId = sess.session?.user.id;
       if (!studentId) throw new Error("You must be logged in to book.");
-      const { error: insErr } = await (supabase as any).from("bookings").insert({
+      const { data: inserted, error: insErr } = await (supabase as any).from("bookings").insert({
         mentor_id: mentor.id,
         student_id: studentId,
         date,
@@ -307,8 +308,14 @@ function BookingWidget({ mentor }: { mentor: MentorProfile }) {
         duration: DURATION,
         price: mentor.price_inr,
         status: "confirmed",
-      });
+      }).select("id").single();
       if (insErr) throw insErr;
+      // Fire-and-forget: never block the booking on email failure.
+      if (inserted?.id) {
+        void sendBookingEmails({ data: { bookingId: inserted.id } }).catch((e) =>
+          console.error("[booking-emails] dispatch failed", e),
+        );
+      }
       setSuccess(true);
       setTimeout(() => navigate({ to: "/dashboard" }), 1500);
     } catch (err) {

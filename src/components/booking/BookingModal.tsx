@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { BadgeCheck, Calendar, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { sendBookingEmails } from "@/lib/email/booking.functions";
 
 export type BookingMentor = {
   id: string;
@@ -98,7 +99,7 @@ export function BookingModal({
       const studentId = sess.session?.user.id;
       if (!studentId) throw new Error("You must be logged in to book.");
 
-      const { error: insErr } = await (supabase as any).from("bookings").insert({
+      const { data: inserted, error: insErr } = await (supabase as any).from("bookings").insert({
         mentor_id: mentor.id,
         student_id: studentId,
         date,
@@ -106,8 +107,13 @@ export function BookingModal({
         duration: DURATION,
         price: mentor.price,
         status: "confirmed",
-      });
+      }).select("id").single();
       if (insErr) throw insErr;
+      if (inserted?.id) {
+        void sendBookingEmails({ data: { bookingId: inserted.id } }).catch((e) =>
+          console.error("[booking-emails] dispatch failed", e),
+        );
+      }
       setSuccess(true);
       setTimeout(() => {
         onBooked();
