@@ -17,19 +17,19 @@ export function AuthShell({
     <div className="min-h-screen bg-background">
       <Nav />
       <main>
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-16 sm:px-8 sm:py-24 md:grid-cols-[1fr_1.1fr] md:gap-14">
+        <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:px-8 sm:py-20 md:grid-cols-[1fr_1.1fr] md:gap-14">
           <div className="animate-fade-in md:sticky md:top-28 md:self-start">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               {eyebrow}
             </p>
-            <h1 className="mt-3 font-display text-5xl text-foreground sm:text-6xl">
+            <h1 className="mt-3 font-display text-4xl text-foreground sm:text-6xl">
               {title}
             </h1>
-            <p className="mt-5 max-w-md text-base font-light text-muted-foreground">
+            <p className="mt-4 max-w-[85%] text-sm font-light text-muted-foreground sm:max-w-md sm:text-base">
               {subtitle}
             </p>
           </div>
-          <div className="animate-fade-up rounded-3xl bg-card p-7 shadow-card sm:p-10">
+          <div className="animate-fade-up rounded-2xl bg-card p-6 shadow-card sm:p-10">
             {children}
           </div>
         </div>
