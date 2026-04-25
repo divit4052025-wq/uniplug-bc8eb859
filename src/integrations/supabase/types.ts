@@ -140,6 +140,33 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          created_at: string
+          id: string
+          mentor_id: string
+          rating: number
+          review: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mentor_id: string
+          rating: number
+          review?: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mentor_id?: string
+          rating?: number
+          review?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
       session_action_points: {
         Row: {
           content: string
@@ -339,6 +366,25 @@ export type Database = {
           full_name: string
           id: string
           university: string
+        }[]
+      }
+      get_mentor_public_profile: {
+        Args: { _mentor_id: string }
+        Returns: {
+          countries: string[]
+          course: string
+          full_name: string
+          id: string
+          price_inr: number
+          university: string
+          year: string
+        }[]
+      }
+      get_review_student_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          full_name: string
+          id: string
         }[]
       }
       get_student_booking_names: {
