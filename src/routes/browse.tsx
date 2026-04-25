@@ -36,17 +36,15 @@ type Mentor = {
   price: number;
 };
 
-const MENTORS: Mentor[] = [
-  { id: "418ac2b1-84d0-411d-bdd5-47da4defb473", name: "Aarav Mehta", university: "IIT Bombay", country: "India", course: "Engineering", year: "Final Year", topics: ["JEE Strategy", "Essays"], rating: 4.9, sessions: 142, price: 1800 },
-  { id: "6a5d1202-c80b-4313-bd75-95af88283321", name: "Priya Sharma", university: "Oxford", country: "UK", course: "Law", year: "3rd Year", topics: ["LNAT", "Personal Statement"], rating: 4.8, sessions: 96, price: 3200 },
-  { id: "bbc4bd24-eee9-47e8-aa09-8939d86fc703", name: "Rohan Kapoor", university: "Warwick", country: "UK", course: "Business", year: "2nd Year", topics: ["UCAS", "Interview Prep"], rating: 4.7, sessions: 64, price: 2400 },
-  { id: "89a30cea-4b09-42e2-92eb-e655e2bb624f", name: "Ishita Rao", university: "NUS", country: "Singapore", course: "Science", year: "Final Year", topics: ["SAT Prep", "STEM Apps"], rating: 4.9, sessions: 121, price: 2800 },
-  { id: "87a607af-98a0-40d2-9fde-bd8064496b29", name: "Daniel Chen", university: "UCL", country: "UK", course: "Engineering", year: "3rd Year", topics: ["Maths Olympiad", "Essays"], rating: 4.6, sessions: 58, price: 2200 },
-  { id: "02994b8d-8cdb-45b1-96d1-b081cde0da8c", name: "Ananya Iyer", university: "LSE", country: "UK", course: "Social Sciences", year: "Final Year", topics: ["Economics", "Personal Statement"], rating: 5.0, sessions: 187, price: 3400 },
-  { id: "c1e825a4-5663-4988-8269-182dbf96a3e6", name: "Vikram Nair", university: "Cambridge", country: "UK", course: "Medicine", year: "2nd Year", topics: ["BMAT", "Interview Prep"], rating: 4.8, sessions: 73, price: 3600 },
-  { id: "5a068438-0a49-4a91-a394-5739946d3ef7", name: "Sophia Patel", university: "Imperial", country: "UK", course: "Engineering", year: "1st Year", topics: ["MAT Prep", "UCAS"], rating: 4.7, sessions: 41, price: 2000 },
-  { id: "aa0133fe-cffb-4eb6-aaef-a276a8a6bb98", name: "Kabir Singh", university: "IIT Bombay", country: "India", course: "Engineering", year: "Final Year", topics: ["JEE Advanced", "Mentorship"], rating: 4.9, sessions: 134, price: 1600 },
-];
+type MentorProfile = {
+  id: string;
+  full_name: string;
+  university: string;
+  countries: string[];
+  course: string;
+  year: string;
+  price_inr: number;
+};
 
 function BrowsePage() {
   const navigate = useNavigate();
