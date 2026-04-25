@@ -123,21 +123,15 @@ function HomePage() {
 
           {/* Headline anchored bottom-left */}
           <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
-            <p
-              className="mb-5 text-[12px] font-medium uppercase text-[#C4907F]"
-              style={{ letterSpacing: "4px" }}
-            >
-              UniPlug
-            </p>
             <h1
               className="font-display font-bold text-white"
               style={{
-                fontSize: "clamp(56px, 9vw, 112px)",
-                lineHeight: 1,
-                letterSpacing: "-2px",
+                fontSize: "clamp(96px, 16vw, 220px)",
+                lineHeight: 0.95,
+                letterSpacing: "-4px",
               }}
             >
-              Your College Plug
+              UniPlug<span className="text-[#C4907F]">.</span>
             </h1>
             <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
