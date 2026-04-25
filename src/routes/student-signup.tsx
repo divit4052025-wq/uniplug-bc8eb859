@@ -1,8 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { AuthShell, Confirmation, Field, inputClass } from "@/components/site/AuthShell";
+import { AuthShell, Field, inputClass } from "@/components/site/AuthShell";
 import { MultiSelect } from "@/components/site/MultiSelect";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/student-signup")({
   head: () => ({
@@ -38,21 +39,15 @@ const schema = z.object({
 });
 
 function StudentSignup() {
-  const [done, setDone] = useState(false);
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [picked, setPicked] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  if (done) {
-    return (
-      <Confirmation
-        heading="You are on the list"
-        body="We will be in touch soon."
-      />
-    );
-  }
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setServerError(null);
     const fd = new FormData(e.currentTarget);
     const data = {
       fullName: String(fd.get("fullName") || ""),
@@ -71,7 +66,36 @@ function StudentSignup() {
       return;
     }
     setErrors({});
-    setDone(true);
+    setSubmitting(true);
+    try {
+      const { data: signUp, error: signUpError } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: { role: "student", full_name: data.fullName },
+        },
+      });
+      if (signUpError) throw signUpError;
+      const userId = signUp.user?.id;
+      if (!userId) throw new Error("Sign up failed");
+
+      const { error: insertError } = await supabase.from("students").insert({
+        id: userId,
+        full_name: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        school: data.school,
+        grade: data.grade,
+        countries: data.countries,
+      });
+      if (insertError) throw insertError;
+
+      navigate({ to: "/dashboard" });
+    } catch (err) {
+      setServerError(err instanceof Error ? err.message : "Something went wrong");
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -118,10 +142,14 @@ function StudentSignup() {
         </Field>
         <button
           type="submit"
-          className="mt-2 w-full rounded-full bg-primary py-4 text-sm font-semibold text-primary-foreground shadow-card transition hover:-translate-y-0.5 hover:opacity-95"
+          disabled={submitting}
+          className="mt-2 w-full rounded-full bg-primary py-4 text-sm font-semibold text-primary-foreground shadow-card transition hover:-translate-y-0.5 hover:opacity-95 disabled:opacity-60"
         >
-          Get Started
+          {submitting ? "Creating account…" : "Get Started"}
         </button>
+        {serverError && (
+          <p className="text-center text-xs text-destructive">{serverError}</p>
+        )}
       </form>
     </AuthShell>
   );
