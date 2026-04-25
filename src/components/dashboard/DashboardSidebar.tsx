@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Home, Search, CalendarClock, FileText, TrendingUp, Settings, LogOut } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,6 +20,7 @@ const items: { key: SectionKey; label: string; icon: typeof Home }[] = [
 ];
 
 export function DashboardSidebar({ active, onSelect }: Props) {
+  const navigate = useNavigate();
   const signOut = async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
@@ -38,7 +39,13 @@ export function DashboardSidebar({ active, onSelect }: Props) {
           return (
             <button
               key={it.key}
-              onClick={() => onSelect(it.key)}
+              onClick={() => {
+                if (it.key === "browse") {
+                  navigate({ to: "/browse" });
+                  return;
+                }
+                onSelect(it.key);
+              }}
               className={`relative flex items-center gap-3 px-6 py-3 text-left text-[14px] font-medium transition ${
                 isActive
                   ? "text-white"
