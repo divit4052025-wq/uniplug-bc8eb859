@@ -46,7 +46,6 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
     const { data } = await supabase
       .from("sessions")
       .select("scheduled_at, students:student_id(full_name)")
-      // @ts-expect-error join shorthand
       .eq("mentor_id", mentorId)
       .gte("scheduled_at", weekStart.toISOString())
       .lt("scheduled_at", weekEnd.toISOString());
