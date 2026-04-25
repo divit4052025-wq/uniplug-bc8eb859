@@ -29,14 +29,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "UniPlug — Your College Plug On Demand" },
+      { name: "description", content: "Paid 1:1 mentorship from verified university students for Indian high school applicants." },
+      { name: "author", content: "UniPlug" },
+      { property: "og:title", content: "UniPlug — Your College Plug On Demand" },
+      { property: "og:description", content: "Real advice, real stories, real results — from students already living your dream." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:site", content: "@UniPlug" },
     ],
     links: [
       {
