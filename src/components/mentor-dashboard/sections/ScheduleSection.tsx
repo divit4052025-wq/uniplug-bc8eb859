@@ -45,13 +45,23 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
     weekEnd.setDate(weekEnd.getDate() + 7);
     const { data } = await supabase
       .from("sessions")
-      .select("scheduled_at, students:student_id(full_name)")
+      .select("scheduled_at, student_id")
       .eq("mentor_id", mentorId)
       .gte("scheduled_at", weekStart.toISOString())
       .lt("scheduled_at", weekEnd.toISOString());
-    const list: Booking[] = (data ?? []).map((r: any) => ({
+    const rows = data ?? [];
+    const ids = Array.from(new Set(rows.map((r) => r.student_id)));
+    let nameMap = new Map<string, string>();
+    if (ids.length) {
+      const { data: studs } = await supabase
+        .from("students")
+        .select("id, full_name")
+        .in("id", ids);
+      (studs ?? []).forEach((s) => nameMap.set(s.id, s.full_name));
+    }
+    const list: Booking[] = rows.map((r) => ({
       scheduled_at: r.scheduled_at,
-      student_name: r.students?.full_name ?? "Student",
+      student_name: nameMap.get(r.student_id) ?? "Student",
     }));
     setBookings(list);
   };
