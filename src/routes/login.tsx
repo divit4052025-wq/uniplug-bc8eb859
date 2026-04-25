@@ -37,6 +37,12 @@ function LoginPage() {
       const userId = data.user?.id;
       if (!userId) throw new Error("Login failed.");
 
+      // Admin shortcut
+      if ((data.user?.email ?? "").toLowerCase() === "divitfatehpuria7@gmail.com") {
+        navigate({ to: "/admin" });
+        return;
+      }
+
       // Determine role: check mentors first, then students.
       const { data: mentorRow } = await supabase
         .from("mentors").select("id").eq("id", userId).maybeSingle();
