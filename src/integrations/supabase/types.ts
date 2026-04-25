@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_point_completions: {
+        Row: {
+          action_point_index: number
+          completed: boolean
+          id: string
+          session_note_id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          action_point_index: number
+          completed?: boolean
+          id?: string
+          session_note_id: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          action_point_index?: number
+          completed?: boolean
+          id?: string
+          session_note_id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_point_completions_session_note_id_fkey"
+            columns: ["session_note_id"]
+            isOneToOne: false
+            referencedRelation: "session_notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           created_at: string
@@ -207,28 +242,34 @@ export type Database = {
       }
       session_notes: {
         Row: {
+          action_points: Json
+          booking_id: string | null
           created_at: string
           id: string
           mentor_id: string
-          session_id: string
+          session_id: string | null
           student_id: string
           summary: string
           updated_at: string
         }
         Insert: {
+          action_points?: Json
+          booking_id?: string | null
           created_at?: string
           id?: string
           mentor_id: string
-          session_id: string
+          session_id?: string | null
           student_id: string
           summary?: string
           updated_at?: string
         }
         Update: {
+          action_points?: Json
+          booking_id?: string | null
           created_at?: string
           id?: string
           mentor_id?: string
-          session_id?: string
+          session_id?: string | null
           student_id?: string
           summary?: string
           updated_at?: string
