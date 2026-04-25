@@ -32,6 +32,10 @@ export function MobileBottomNav({
                 navigate({ to: "/browse" });
                 return;
               }
+              if (it.key === "progress") {
+                navigate({ to: "/progress" });
+                return;
+              }
               onSelect(it.key);
             }}
             aria-label={it.label}
