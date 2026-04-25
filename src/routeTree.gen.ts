@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
 import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as MentorDashboardRouteImport } from './routes/mentor-dashboard'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ const MentorSignupRoute = MentorSignupRouteImport.update({
 const MentorDashboardRoute = MentorDashboardRouteImport.update({
   id: '/mentor-dashboard',
   path: '/mentor-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/browse'
     | '/dashboard'
+    | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
     | '/student-signup'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/browse'
     | '/dashboard'
+    | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
     | '/student-signup'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/browse'
     | '/dashboard'
+    | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
     | '/student-signup'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BrowseRoute: typeof BrowseRoute
   DashboardRoute: typeof DashboardRoute
+  LoginRoute: typeof LoginRoute
   MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
   StudentSignupRoute: typeof StudentSignupRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/mentor-dashboard'
       fullPath: '/mentor-dashboard'
       preLoaderRoute: typeof MentorDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BrowseRoute: BrowseRoute,
   DashboardRoute: DashboardRoute,
+  LoginRoute: LoginRoute,
   MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
   StudentSignupRoute: StudentSignupRoute,
