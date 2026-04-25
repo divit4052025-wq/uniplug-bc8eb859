@@ -182,7 +182,13 @@ export function BookingModal({
                   Available time slots
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {SLOTS.map((s) => {
+                  {loadingSlots && (
+                    <p className="text-[13px] text-[#1A1A1A]/60">Loading slots…</p>
+                  )}
+                  {!loadingSlots && availableSlots.length === 0 && (
+                    <p className="text-[13px] text-[#1A1A1A]/60">No available slots for this date.</p>
+                  )}
+                  {!loadingSlots && availableSlots.map((s) => {
                     const selected = slot === s;
                     return (
                       <button
