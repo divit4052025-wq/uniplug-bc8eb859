@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { BadgeCheck, Calendar, Check, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,8 +28,11 @@ export function BookingModal({
   onClose: () => void;
   onBooked: () => void;
 }) {
+  const navigate = useNavigate();
   const [date, setDate] = useState<string>(todayISO());
   const [slot, setSlot] = useState<string | null>(null);
+  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -44,6 +48,47 @@ export function BookingModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
+  useEffect(() => {
+    let cancelled = false;
+    const loadSlots = async () => {
+      setLoadingSlots(true);
+      setError(null);
+      const day = new Date(`${date}T00:00:00`).getDay();
+      const [{ data: availability, error: availabilityError }, { data: bookings, error: bookingsError }] = await Promise.all([
+        supabase
+          .from("mentor_availability")
+          .select("start_hour")
+          .eq("mentor_id", mentor.id)
+          .eq("day_of_week", day),
+        (supabase as any)
+          .from("bookings")
+          .select("time_slot")
+          .eq("mentor_id", mentor.id)
+          .eq("date", date)
+          .eq("status", "confirmed"),
+      ]);
+      if (cancelled) return;
+      if (availabilityError || bookingsError) {
+        setError("Could not load available slots.");
+        setAvailableSlots([]);
+        setLoadingSlots(false);
+        return;
+      }
+      const booked = new Set((bookings ?? []).map((b: { time_slot: string }) => b.time_slot));
+      const slots = (availability ?? [])
+        .map((a) => `${String(a.start_hour).padStart(2, "0")}:00`)
+        .filter((s) => !booked.has(s))
+        .sort();
+      setAvailableSlots(slots);
+      if (slot && !slots.includes(slot)) setSlot(null);
+      setLoadingSlots(false);
+    };
+    void loadSlots();
+    return () => {
+      cancelled = true;
+    };
+  }, [date, mentor.id, slot]);
+
   const confirm = async () => {
     if (!slot) { setError("Pick a time slot."); return; }
     setError(null);
@@ -53,18 +98,21 @@ export function BookingModal({
       const studentId = sess.session?.user.id;
       if (!studentId) throw new Error("You must be logged in to book.");
 
-      const scheduledAt = new Date(`${date}T${slot}:00`).toISOString();
-      const { error: insErr } = await supabase.from("sessions").insert({
+      const { error: insErr } = await (supabase as any).from("bookings").insert({
         mentor_id: mentor.id,
         student_id: studentId,
-        scheduled_at: scheduledAt,
-        duration_minutes: DURATION,
-        amount_inr: mentor.price,
-        status: "upcoming",
+        date,
+        time_slot: slot,
+        duration: DURATION,
+        price: mentor.price,
+        status: "confirmed",
       });
       if (insErr) throw insErr;
       setSuccess(true);
-      setTimeout(() => onBooked(), 1800);
+      setTimeout(() => {
+        onBooked();
+        navigate({ to: "/dashboard" });
+      }, 1800);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not book session.");
     } finally {
