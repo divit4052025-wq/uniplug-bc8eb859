@@ -10,11 +10,17 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
+import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as IndexRouteImport } from './routes/index'
 
 const StudentSignupRoute = StudentSignupRouteImport.update({
   id: '/student-signup',
   path: '/student-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MentorSignupRoute = MentorSignupRouteImport.update({
+  id: '/mentor-signup',
+  path: '/mentor-signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,27 +31,31 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/student-signup'
+  fullPaths: '/' | '/mentor-signup' | '/student-signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/student-signup'
-  id: '__root__' | '/' | '/student-signup'
+  to: '/' | '/mentor-signup' | '/student-signup'
+  id: '__root__' | '/' | '/mentor-signup' | '/student-signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MentorSignupRoute: typeof MentorSignupRoute
   StudentSignupRoute: typeof StudentSignupRoute
 }
 
@@ -56,6 +66,13 @@ declare module '@tanstack/react-router' {
       path: '/student-signup'
       fullPath: '/student-signup'
       preLoaderRoute: typeof StudentSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mentor-signup': {
+      id: '/mentor-signup'
+      path: '/mentor-signup'
+      fullPath: '/mentor-signup'
+      preLoaderRoute: typeof MentorSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,6 +87,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MentorSignupRoute: MentorSignupRoute,
   StudentSignupRoute: StudentSignupRoute,
 }
 export const routeTree = rootRouteImport
