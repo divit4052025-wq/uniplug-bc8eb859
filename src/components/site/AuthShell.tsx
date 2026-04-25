@@ -1,6 +1,6 @@
 import { Nav } from "./Nav";
 import { Footer } from "./Footer";
-import logo from "@/assets/uniplug-logo.png";
+import { Logo } from "./Logo";
 
 export function AuthShell({
   eyebrow,
@@ -19,6 +19,7 @@ export function AuthShell({
       <main>
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:px-8 sm:py-20 md:grid-cols-[1fr_1.1fr] md:gap-14">
           <div className="animate-fade-in md:sticky md:top-28 md:self-start">
+            <Logo variant="wordmark-offwhite" className="mb-6 h-12 w-auto" />
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               {eyebrow}
             </p>
@@ -65,8 +66,8 @@ export function Confirmation({ heading, body }: { heading: string; body: string 
       <Nav />
       <main className="flex flex-1 items-center justify-center px-5 py-24 sm:px-8">
         <div className="animate-fade-up max-w-xl rounded-3xl bg-card p-10 text-center shadow-lift sm:p-14">
-          <div className="mx-auto inline-flex items-center justify-center rounded-2xl bg-background p-3 shadow-card">
-            <img src={logo} alt="UniPlug" className="h-12 w-auto" />
+          <div className="mx-auto inline-flex items-center justify-center">
+            <Logo variant="wordmark-sand" className="h-10 w-auto" />
           </div>
           <h2 className="mt-6 font-display text-3xl text-foreground sm:text-4xl">
             {heading}

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
+import { Logo } from "@/components/site/Logo";
 import { Star } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -123,16 +124,8 @@ function HomePage() {
 
           {/* Headline anchored bottom-left */}
           <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
-            <h1
-              className="font-display font-bold text-white"
-              style={{
-                fontSize: "clamp(96px, 16vw, 220px)",
-                lineHeight: 0.95,
-                letterSpacing: "-4px",
-              }}
-            >
-              UniPlug<span className="text-[#C4907F]">.</span>
-            </h1>
+            <h1 className="sr-only">UniPlug</h1>
+            <Logo variant="wordmark-dark" className="h-12 w-auto" />
             <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
             </p>
