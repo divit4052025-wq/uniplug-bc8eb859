@@ -20,6 +20,7 @@ export function MySchoolsSection({ userId }: { userId: string }) {
     supabase
       .from("student_schools")
       .select("id, name, category")
+      .eq("student_id", userId)
       .order("created_at", { ascending: true })
       .then(({ data }) => {
         if (cancelled) return;
@@ -29,7 +30,7 @@ export function MySchoolsSection({ userId }: { userId: string }) {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [userId]);
 
   const add = async (category: Category, name: string) => {
     const trimmed = name.trim();
