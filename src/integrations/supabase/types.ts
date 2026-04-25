@@ -50,6 +50,57 @@ export type Database = {
         }
         Relationships: []
       }
+      student_documents: {
+        Row: {
+          created_at: string
+          file_name: string
+          id: string
+          size_bytes: number | null
+          storage_path: string
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          id?: string
+          size_bytes?: number | null
+          storage_path: string
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          id?: string
+          size_bytes?: number | null
+          storage_path?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
+      student_schools: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          name: string
+          student_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          name: string
+          student_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          name?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
       students: {
         Row: {
           countries: string[]
