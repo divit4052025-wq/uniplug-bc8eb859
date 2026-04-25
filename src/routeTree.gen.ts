@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
+import { Route as SessionNotesRouteImport } from './routes/session-notes'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as MentorDashboardRouteImport } from './routes/mentor-dashboard'
@@ -24,6 +25,11 @@ import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/pu
 const StudentSignupRoute = StudentSignupRouteImport.update({
   id: '/student-signup',
   path: '/student-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SessionNotesRoute = SessionNotesRouteImport.update({
+  id: '/session-notes',
+  path: '/session-notes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProgressRoute = ProgressRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/progress': typeof ProgressRoute
+  '/session-notes': typeof SessionNotesRoute
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/progress': typeof ProgressRoute
+  '/session-notes': typeof SessionNotesRoute
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/progress': typeof ProgressRoute
+  '/session-notes': typeof SessionNotesRoute
   '/student-signup': typeof StudentSignupRoute
   '/mentor/$id': typeof MentorIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/mentor-dashboard'
     | '/mentor-signup'
     | '/progress'
+    | '/session-notes'
     | '/student-signup'
     | '/mentor/$id'
     | '/api/public/hooks/send-reminders'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/mentor-dashboard'
     | '/mentor-signup'
     | '/progress'
+    | '/session-notes'
     | '/student-signup'
     | '/mentor/$id'
     | '/api/public/hooks/send-reminders'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/mentor-dashboard'
     | '/mentor-signup'
     | '/progress'
+    | '/session-notes'
     | '/student-signup'
     | '/mentor/$id'
     | '/api/public/hooks/send-reminders'
@@ -169,6 +181,7 @@ export interface RootRouteChildren {
   MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
   ProgressRoute: typeof ProgressRoute
+  SessionNotesRoute: typeof SessionNotesRoute
   StudentSignupRoute: typeof StudentSignupRoute
   MentorIdRoute: typeof MentorIdRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
@@ -181,6 +194,13 @@ declare module '@tanstack/react-router' {
       path: '/student-signup'
       fullPath: '/student-signup'
       preLoaderRoute: typeof StudentSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/session-notes': {
+      id: '/session-notes'
+      path: '/session-notes'
+      fullPath: '/session-notes'
+      preLoaderRoute: typeof SessionNotesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/progress': {
@@ -265,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
   ProgressRoute: ProgressRoute,
+  SessionNotesRoute: SessionNotesRoute,
   StudentSignupRoute: StudentSignupRoute,
   MentorIdRoute: MentorIdRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
