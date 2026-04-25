@@ -108,15 +108,16 @@ function MentorNoteView() {
   if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
   if (forbidden || !note) {
+    const backTo = dashboardPathForRole(role);
     return (
       <div className="min-h-screen bg-[#FFFCFB]">
         <div className="mx-auto max-w-[800px] px-5 pb-20 pt-12 sm:px-8">
-          <Link
-            to="/mentor-dashboard"
+          <button
+            onClick={() => navigate({ to: backTo })}
             className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
           >
             <ArrowLeft className="h-4 w-4" /> Back to dashboard
-          </Link>
+          </button>
           <p className="mt-8 text-[14px] text-[#1A1A1A]/70">
             This note is unavailable.
           </p>
@@ -127,17 +128,20 @@ function MentorNoteView() {
 
   const wasEdited =
     new Date(note.updated_at).getTime() - new Date(note.created_at).getTime() > 2000;
+  const backTo = dashboardPathForRole(role);
+  const canEdit = role === "mentor" && note.mentor_id === note.mentor_id; // mentor authored
 
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
       <div className="mx-auto max-w-[800px] px-5 pb-20 pt-8 sm:px-8 md:pt-12">
         <div className="flex items-center justify-between gap-3">
-          <Link
-            to="/mentor-dashboard"
+          <button
+            onClick={() => navigate({ to: backTo })}
             className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
           >
             <ArrowLeft className="h-4 w-4" /> Back to dashboard
-          </Link>
+          </button>
+          {canEdit && (
           <Link
             to="/mentor-dashboard"
             search={{ edit: note.id }}
@@ -145,6 +149,7 @@ function MentorNoteView() {
           >
             <Pencil className="h-3.5 w-3.5" /> Edit note
           </Link>
+          )}
         </div>
 
         <div className="mt-8 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-6 sm:p-8">
