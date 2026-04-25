@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeCheck, Filter, Search, Star, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -307,26 +307,13 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
   const initials = mentor.name.split(" ").map((p) => p[0]).slice(0, 2).join("");
   return (
     <article className="group flex flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(26,26,26,0.25)]">
-      <div className="flex items-start gap-3">
-        <div className="relative">
-          <div className="grid h-16 w-16 place-content-center rounded-full bg-[#FFFCFB] font-display text-[20px] font-semibold text-[#1A1A1A]">
-            {initials}
-          </div>
-          <span className="absolute -bottom-0.5 -right-0.5 grid h-6 w-6 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#EDE0DB]">
-            <BadgeCheck className="h-3.5 w-3.5 text-[#FFFCFB]" />
-          </span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <h3 className="font-display text-[18px] font-bold leading-tight text-[#1A1A1A]">{mentor.name}</h3>
-            {mentor.isExample && (
-              <span className="shrink-0 rounded-full border border-[#1A1A1A]/20 bg-[#FFFCFB] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#1A1A1A]/70">Example</span>
-            )}
-          </div>
-          <p className="mt-0.5 text-[14px] text-[#C4907F]">{mentor.university}</p>
-          <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">{mentor.course} · {mentor.year}</p>
-        </div>
-      </div>
+      {mentor.isExample ? (
+        <CardHeader mentor={mentor} initials={initials} />
+      ) : (
+        <Link to="/mentor/$id" params={{ id: mentor.id }} className="block">
+          <CardHeader mentor={mentor} initials={initials} />
+        </Link>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-1.5">
         {mentor.topics.map((t) => (
@@ -350,5 +337,30 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
         {mentor.isExample ? "Example Profile" : "Book Now"}
       </button>
     </article>
+  );
+}
+
+function CardHeader({ mentor, initials }: { mentor: Mentor; initials: string }) {
+  return (
+    <div className="flex items-start gap-3">
+        <div className="relative">
+          <div className="grid h-16 w-16 place-content-center rounded-full bg-[#FFFCFB] font-display text-[20px] font-semibold text-[#1A1A1A]">
+            {initials}
+          </div>
+          <span className="absolute -bottom-0.5 -right-0.5 grid h-6 w-6 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#EDE0DB]">
+            <BadgeCheck className="h-3.5 w-3.5 text-[#FFFCFB]" />
+          </span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <h3 className="font-display text-[18px] font-bold leading-tight text-[#1A1A1A]">{mentor.name}</h3>
+            {mentor.isExample && (
+              <span className="shrink-0 rounded-full border border-[#1A1A1A]/20 bg-[#FFFCFB] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#1A1A1A]/70">Example</span>
+            )}
+          </div>
+          <p className="mt-0.5 text-[14px] text-[#C4907F]">{mentor.university}</p>
+          <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">{mentor.course} · {mentor.year}</p>
+        </div>
+      </div>
   );
 }
