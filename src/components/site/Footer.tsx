@@ -1,37 +1,39 @@
 import { Link } from "@tanstack/react-router";
-import logo from "@/assets/uniplug-logo.png";
+import { Logo } from "./Logo";
+
+const links = [
+  { label: "About", to: "/" },
+  { label: "How It Works", to: "/" },
+  { label: "For Students", to: "/student-signup" },
+  { label: "For Mentors", to: "/mentor-signup" },
+  { label: "Terms", to: "/" },
+  { label: "Privacy", to: "/" },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-foreground text-background">
-      <div className="mx-auto grid max-w-7xl gap-10 px-5 py-14 sm:px-8 md:grid-cols-3">
+    <footer className="bg-[#1A1A1A]">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-14 md:flex-row md:items-start md:justify-between md:px-10">
         <div>
-          <div className="inline-flex items-center rounded-xl bg-background p-2">
-            <img src={logo} alt="UniPlug" className="h-8 w-auto" />
+          <div className="inline-flex items-center rounded-lg bg-[#FFFCFB] p-2">
+            <Logo className="h-7 w-auto" />
           </div>
-          <p className="mt-4 font-display text-xl text-secondary">Find Your Plug</p>
+          <p className="mt-3 text-[14px] font-light text-[#E8C4B8]">Find Your Plug</p>
         </div>
-        <div className="grid grid-cols-2 gap-3 text-sm md:col-span-2 md:grid-cols-3">
-          {[
-            { label: "About", to: "/" },
-            { label: "How It Works", to: "/" },
-            { label: "For Students", to: "/student-signup" },
-            { label: "For Mentors", to: "/mentor-signup" },
-            { label: "Terms", to: "/" },
-            { label: "Privacy", to: "/" },
-          ].map((l) => (
+        <nav className="flex flex-wrap gap-x-8 gap-y-3 text-[13px]">
+          {links.map((l) => (
             <Link
               key={l.label}
               to={l.to}
-              className="text-background/70 transition hover:text-secondary"
+              className="text-[#EDE0DB]/60 transition hover:text-[#EDE0DB]"
             >
               {l.label}
             </Link>
           ))}
-        </div>
+        </nav>
       </div>
-      <div className="border-t border-background/10 px-5 py-5 text-center text-xs text-background/50 sm:px-8">
-        © {new Date().getFullYear()} UniPlug. Built with warmth.
+      <div className="border-t border-white/5 px-6 py-5 text-center text-[12px] text-[#EDE0DB]/40 md:px-10">
+        © {new Date().getFullYear()} UniPlug. All rights reserved.
       </div>
     </footer>
   );
