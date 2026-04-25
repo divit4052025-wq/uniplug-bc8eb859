@@ -310,11 +310,13 @@ function BookingWidget({ mentor }: { mentor: MentorProfile }) {
         status: "confirmed",
       }).select("id").single();
       if (insErr) throw insErr;
-      // Fire-and-forget: never block the booking on email failure.
       if (inserted?.id) {
-        void sendBookingEmails({ data: { bookingId: inserted.id } }).catch((e) =>
-          console.error("[booking-emails] dispatch failed", e),
-        );
+        try {
+          const r = await sendBookingEmails({ data: { bookingId: inserted.id } });
+          console.log("[booking-emails] dispatch result", r);
+        } catch (e) {
+          console.error("[booking-emails] dispatch failed", e);
+        }
       }
       setSuccess(true);
       setTimeout(() => navigate({ to: "/dashboard" }), 1500);
