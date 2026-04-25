@@ -15,7 +15,8 @@ export function UpcomingSessionsSection({ studentId }: { studentId: string }) {
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      const today = new Date().toISOString().slice(0, 10);
+      const now = new Date();
+      const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       const { data } = await (supabase as any)
         .from("bookings")
         .select("id, mentor_id, date, time_slot")
