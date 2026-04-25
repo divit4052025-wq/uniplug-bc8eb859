@@ -9,6 +9,7 @@ import { MentorUpcomingSessions } from "@/components/mentor-dashboard/sections/M
 import { MyStudentsSection } from "@/components/mentor-dashboard/sections/MyStudentsSection";
 import { PostSessionNotesSection } from "@/components/mentor-dashboard/sections/PostSessionNotesSection";
 import { EarningsSection } from "@/components/mentor-dashboard/sections/EarningsSection";
+import { resolveUserRole } from "@/lib/auth/role";
 
 export const Route = createFileRoute("/mentor-dashboard")({
   head: () => ({
@@ -47,6 +48,17 @@ function MentorDashboard() {
       const session = data.session;
       if (!session) {
         navigate({ to: "/mentor-signup" });
+        return;
+      }
+      // Block students / admin from the mentor dashboard
+      if ((session.user.email ?? "").toLowerCase() === "divitfatehpuria7@gmail.com") {
+        navigate({ to: "/admin" });
+        return;
+      }
+      const role = await resolveUserRole(session.user.id, session.user.email);
+      if (cancelled) return;
+      if (role === "student") {
+        navigate({ to: "/dashboard" });
         return;
       }
       setMentorId(session.user.id);
