@@ -54,6 +54,7 @@ function Dashboard() {
         return;
       }
       setUserId(session.user.id);
+      console.log("[dashboard] auth.uid():", session.user.id, "email:", session.user.email);
       const { data: row } = await supabase
         .from("students")
         .select("full_name")
