@@ -330,7 +330,34 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_mentor_booking_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          full_name: string
+          id: string
+          university: string
+        }[]
+      }
+      get_student_booking_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          full_name: string
+          grade: string
+          id: string
+          school: string
+        }[]
+      }
+      list_approved_mentor_profiles: {
+        Args: never
+        Returns: {
+          countries: string[]
+          course: string
+          full_name: string
+          id: string
+          university: string
+          year: string
+        }[]
+      }
     }
     Enums: {
       mentor_status: "pending" | "approved" | "rejected"
