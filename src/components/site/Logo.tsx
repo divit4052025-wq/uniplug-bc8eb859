@@ -25,16 +25,18 @@ export type LogoVariant = keyof typeof SOURCES;
 export function Logo({
   variant = "umark-offwhite",
   className = "h-9 w-auto",
+  style,
 }: {
   variant?: LogoVariant;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
     <img
       src={SOURCES[variant]}
       alt="UniPlug"
       className={className}
-      style={{ objectFit: "contain" }}
+      style={{ objectFit: "contain", ...style }}
     />
   );
 }
