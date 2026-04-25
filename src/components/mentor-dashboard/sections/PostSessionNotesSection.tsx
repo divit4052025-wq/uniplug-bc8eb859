@@ -2,15 +2,16 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
-type SessionOption = {
+type BookingOption = {
   id: string;
-  scheduled_at: string;
+  date: string;
+  time_slot: string;
   student_id: string;
   student_name: string;
 };
 
 export function PostSessionNotesSection({ mentorId }: { mentorId: string }) {
-  const [sessions, setSessions] = useState<SessionOption[]>([]);
+  const [bookings, setBookings] = useState<BookingOption[]>([]);
   const [selected, setSelected] = useState<string>("");
   const [summary, setSummary] = useState("");
   const [points, setPoints] = useState<string[]>([""]);
@@ -22,74 +23,89 @@ export function PostSessionNotesSection({ mentorId }: { mentorId: string }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mentorId]);
 
+  // Load existing note when a booking is selected
+  useEffect(() => {
+    if (!selected) {
+      setSummary("");
+      setPoints([""]);
+      return;
+    }
+    void loadNote(selected);
+  }, [selected]);
+
   const load = async () => {
+    // Real completed sessions = bookings whose date+time is in the past, status confirmed/completed
     const { data } = await supabase
-      .from("sessions")
-      .select("id, scheduled_at, student_id")
+      .from("bookings")
+      .select("id, date, time_slot, student_id, status")
       .eq("mentor_id", mentorId)
-      .eq("status", "completed")
-      .order("scheduled_at", { ascending: false })
-      .limit(20);
-    const list = data ?? [];
-    const ids = Array.from(new Set(list.map((r) => r.student_id)));
+      .in("status", ["confirmed", "completed"])
+      .order("date", { ascending: false })
+      .limit(50);
+    const now = new Date();
+    const past = (data ?? []).filter((b) => {
+      const dt = new Date(`${b.date}T${(b.time_slot ?? "00:00").slice(0, 5)}:00`);
+      return dt.getTime() <= now.getTime();
+    });
+    const ids = Array.from(new Set(past.map((r) => r.student_id)));
     const nameMap = new Map<string, string>();
     if (ids.length) {
-      const { data: studs } = await supabase
-        .from("students")
-        .select("id, full_name")
-        .in("id", ids);
-      (studs ?? []).forEach((s) => nameMap.set(s.id, s.full_name));
+      const { data: studs } = await supabase.rpc("get_student_booking_names", { _ids: ids });
+      (studs ?? []).forEach((s: { id: string; full_name: string }) =>
+        nameMap.set(s.id, s.full_name),
+      );
     }
-    setSessions(
-      list.map((s) => ({
-        id: s.id,
-        scheduled_at: s.scheduled_at,
-        student_id: s.student_id,
-        student_name: nameMap.get(s.student_id) ?? "Student",
-      }))
+    setBookings(
+      past.map((b) => ({
+        id: b.id,
+        date: b.date,
+        time_slot: b.time_slot,
+        student_id: b.student_id,
+        student_name: nameMap.get(b.student_id) ?? "Student",
+      })),
     );
+  };
+
+  const loadNote = async (bookingId: string) => {
+    const { data } = await supabase
+      .from("session_notes")
+      .select("summary, action_points")
+      .eq("booking_id", bookingId)
+      .maybeSingle();
+    if (data) {
+      setSummary(data.summary ?? "");
+      const ap = Array.isArray(data.action_points) ? (data.action_points as string[]) : [];
+      setPoints(ap.length ? ap : [""]);
+    } else {
+      setSummary("");
+      setPoints([""]);
+    }
   };
 
   const save = async () => {
     if (!selected) return;
-    const session = sessions.find((s) => s.id === selected);
-    if (!session) return;
+    const booking = bookings.find((b) => b.id === selected);
+    if (!booking) return;
     setSaving(true);
+    const cleaned = points.map((p) => p.trim()).filter(Boolean);
     const { data: existing } = await supabase
       .from("session_notes")
       .select("id")
-      .eq("session_id", selected)
+      .eq("booking_id", selected)
       .maybeSingle();
-    let noteId = existing?.id;
-    if (noteId) {
-      await supabase.from("session_notes").update({ summary }).eq("id", noteId);
-      await supabase.from("session_action_points").delete().eq("note_id", noteId);
-    } else {
-      const { data: created } = await supabase
+    if (existing?.id) {
+      await supabase
         .from("session_notes")
-        .insert({
-          session_id: selected,
-          mentor_id: mentorId,
-          student_id: session.student_id,
-          summary,
-        })
-        .select("id")
-        .single();
-      noteId = created?.id;
-    }
-    if (noteId) {
-      const cleaned = points.map((p) => p.trim()).filter(Boolean);
-      if (cleaned.length) {
-        await supabase.from("session_action_points").insert(
-          cleaned.map((content, i) => ({
-            note_id: noteId!,
-            mentor_id: mentorId,
-            student_id: session.student_id,
-            content,
-            position: i,
-          }))
-        );
-      }
+        .update({ summary, action_points: cleaned })
+        .eq("id", existing.id);
+    } else {
+      await supabase.from("session_notes").insert({
+        booking_id: selected,
+        mentor_id: mentorId,
+        student_id: booking.student_id,
+        summary,
+        action_points: cleaned,
+      });
     }
     setSaving(false);
     setSavedAt(Date.now());
@@ -108,13 +124,18 @@ export function PostSessionNotesSection({ mentorId }: { mentorId: string }) {
           onChange={(e) => setSelected(e.target.value)}
           className="mt-1.5 h-10 w-full rounded-lg border border-[#EDE0DB] bg-white px-3 text-[14px] text-[#1A1A1A] outline-none focus:border-[#C4907F]"
         >
-          <option value="">— pick a recent completed session —</option>
-          {sessions.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.student_name} · {new Date(s.scheduled_at).toLocaleDateString()}
+          <option value="">— pick a completed session —</option>
+          {bookings.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.student_name} · {new Date(b.date).toLocaleDateString()} · {b.time_slot}
             </option>
           ))}
         </select>
+        {bookings.length === 0 && (
+          <p className="mt-2 text-[12px] text-[#1A1A1A]/50">
+            No completed sessions yet. Past bookings will appear here.
+          </p>
+        )}
 
         <label className="mt-5 block text-[12px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
           Session summary
