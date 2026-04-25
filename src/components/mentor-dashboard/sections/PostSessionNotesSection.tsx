@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 type BookingOption = {
@@ -24,7 +25,16 @@ type PreviousNote = {
   created_at: string;
 };
 
-export function PostSessionNotesSection({ mentorId }: { mentorId: string }) {
+export function PostSessionNotesSection({
+  mentorId,
+  editNoteId,
+  onEditConsumed,
+}: {
+  mentorId: string;
+  editNoteId?: string | null;
+  onEditConsumed?: () => void;
+}) {
+  const navigate = useNavigate();
   const [bookings, setBookings] = useState<BookingOption[]>([]);
   const [selected, setSelected] = useState<string>("");
   const [summary, setSummary] = useState("");
@@ -32,13 +42,23 @@ export function PostSessionNotesSection({ mentorId }: { mentorId: string }) {
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [previous, setPrevious] = useState<PreviousNote[]>([]);
-  const [viewing, setViewing] = useState<PreviousNote | null>(null);
 
   useEffect(() => {
     void load();
     void loadPrevious();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mentorId]);
+
+  // When mentor arrives via "Edit" link from a note view page, preload that note
+  useEffect(() => {
+    if (!editNoteId || previous.length === 0) return;
+    const target = previous.find((p) => p.id === editNoteId);
+    if (target) {
+      editPrevious(target);
+      onEditConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editNoteId, previous]);
 
   // Load existing note when a booking is selected
   useEffect(() => {
@@ -348,7 +368,9 @@ export function PostSessionNotesSection({ mentorId }: { mentorId: string }) {
                         <Pencil className="h-3.5 w-3.5" /> Edit
                       </button>
                       <button
-                        onClick={() => setViewing(n)}
+                        onClick={() =>
+                          navigate({ to: "/session-notes/$noteId", params: { noteId: n.id } })
+                        }
                         className="inline-flex h-8 items-center gap-1 rounded-full bg-[#1A1A1A] px-3 text-[12px] font-medium text-white hover:opacity-90"
                       >
                         <Eye className="h-3.5 w-3.5" /> View
@@ -361,50 +383,6 @@ export function PostSessionNotesSection({ mentorId }: { mentorId: string }) {
           )}
         </div>
       </div>
-
-      {viewing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-[#1A1A1A]/40" onClick={() => setViewing(null)} />
-          <div className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-[#FFFCFB] p-6 shadow-2xl">
-            <button
-              onClick={() => setViewing(null)}
-              aria-label="Close"
-              className="absolute right-4 top-4 rounded-full p-1.5 text-[#1A1A1A]/60 hover:bg-[#EDE0DB]"
-            >
-              <Trash2 className="hidden" />
-              <span aria-hidden className="text-[18px] leading-none">×</span>
-            </button>
-            <p className="text-[11px] uppercase tracking-wide text-[#1A1A1A]/50">
-              {viewing.date ? new Date(viewing.date).toLocaleDateString() : "Session"}
-              {viewing.time_slot ? ` · ${viewing.time_slot}` : ""}
-            </p>
-            <h3 className="mt-1 font-display text-[20px] font-semibold text-[#1A1A1A]">
-              {viewing.student_name}
-            </h3>
-            <p className="mt-4 whitespace-pre-wrap text-[14px] leading-relaxed text-[#1A1A1A]">
-              {viewing.summary || "—"}
-            </p>
-            {viewing.action_points.length > 0 && (
-              <div className="mt-5">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
-                  Action points
-                </p>
-                <ul className="mt-2 space-y-1.5">
-                  {viewing.action_points.map((ap, i) => (
-                    <li key={i} className="flex items-start gap-2 text-[13px] text-[#1A1A1A]">
-                      <span className="mt-1 text-[#C4907F]">•</span>
-                      <span>{ap}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <p className="mt-5 text-[11px] text-[#1A1A1A]/50">
-              Last updated {new Date(viewing.updated_at).toLocaleString()}
-            </p>
-          </div>
-        </div>
-      )}
     </section>
   );
 }
