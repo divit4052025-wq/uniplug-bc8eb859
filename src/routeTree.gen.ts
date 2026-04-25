@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
 import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
+import { Route as MentorDashboardRouteImport } from './routes/mentor-dashboard'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 
 const StudentSignupRoute = StudentSignupRouteImport.update({
@@ -23,6 +25,16 @@ const MentorSignupRoute = MentorSignupRouteImport.update({
   path: '/mentor-signup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MentorDashboardRoute = MentorDashboardRouteImport.update({
+  id: '/mentor-dashboard',
+  path: '/mentor-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,30 +43,54 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/student-signup': typeof StudentSignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/mentor-signup' | '/student-signup'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/mentor-dashboard'
+    | '/mentor-signup'
+    | '/student-signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/mentor-signup' | '/student-signup'
-  id: '__root__' | '/' | '/mentor-signup' | '/student-signup'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/mentor-dashboard'
+    | '/mentor-signup'
+    | '/student-signup'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/mentor-dashboard'
+    | '/mentor-signup'
+    | '/student-signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
+  MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
   StudentSignupRoute: typeof StudentSignupRoute
 }
@@ -75,6 +111,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentorSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentor-dashboard': {
+      id: '/mentor-dashboard'
+      path: '/mentor-dashboard'
+      fullPath: '/mentor-dashboard'
+      preLoaderRoute: typeof MentorDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -87,18 +137,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
+  MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
   StudentSignupRoute: StudentSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
