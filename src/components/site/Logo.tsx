@@ -34,7 +34,7 @@ export function Logo({
       src={SOURCES[variant]}
       alt="UniPlug"
       className={className}
-      style={{ objectFit: "contain" }}
+      style={{ objectFit: "contain", display: "block" }}
     />
   );
 }
