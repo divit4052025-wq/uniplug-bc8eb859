@@ -116,7 +116,7 @@ function HomePage() {
             <Logo
               variant="wordmark-dark"
               className="w-auto"
-              style={{ height: "80px", objectFit: "contain", display: "block" }}
+              style={{ height: "clamp(120px, 22vw, 280px)" }}
             />
             <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.

@@ -31,8 +31,10 @@ export function MentorSidebar({ active, onSelect }: Props) {
   };
   return (
     <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col bg-[#1A1A1A] md:flex">
-      <Link to="/" className="flex items-center px-6 pb-6 pt-7" aria-label="UniPlug home">
-        <Logo variant="umark-offwhite" className="h-9 w-auto" />
+      <Link to="/" className="flex items-center gap-2 px-6 pb-6 pt-7" aria-label="UniPlug home">
+        <span className="inline-flex items-center rounded-lg bg-[#FFFCFB] p-1.5">
+          <Logo className="h-7 w-auto" />
+        </span>
       </Link>
       <nav className="mt-2 flex flex-1 flex-col">
         {items.map((it) => {

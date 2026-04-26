@@ -79,8 +79,10 @@ function AdminPage() {
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
       <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col bg-[#1A1A1A] md:flex">
-        <Link to="/" className="flex items-center px-6 pb-6 pt-7" aria-label="UniPlug home">
-          <Logo variant="umark-offwhite" className="h-9 w-auto" />
+        <Link to="/" className="flex items-center gap-2 px-6 pb-6 pt-7" aria-label="UniPlug home">
+          <span className="inline-flex items-center rounded-lg bg-[#FFFCFB] p-1.5">
+            <Logo className="h-7 w-auto" />
+          </span>
         </Link>
         <div className="px-6 pb-4 text-[11px] uppercase tracking-wider text-white/40">Admin</div>
         <nav className="mt-1 flex flex-1 flex-col">

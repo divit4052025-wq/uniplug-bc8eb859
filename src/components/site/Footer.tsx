@@ -15,7 +15,7 @@ export function Footer() {
     <footer className="bg-[#1A1A1A]">
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-14 md:flex-row md:items-start md:justify-between md:px-10">
         <div>
-          <Logo variant="wordmark-dark" className="h-12 w-auto" />
+          <Logo variant="wordmark-dark" className="h-14 w-auto" />
           <p className="mt-3 text-[14px] font-light text-[#E8C4B8]">Find Your Plug</p>
         </div>
         <nav className="flex flex-wrap gap-x-8 gap-y-3 text-[13px]">
