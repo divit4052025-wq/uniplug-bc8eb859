@@ -138,7 +138,7 @@ function HomePage() {
                 }}
               />
             </div>
-            <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
+            <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8] -translate-x-12">
               Connect with students already living your dream.
             </p>
           </div>
