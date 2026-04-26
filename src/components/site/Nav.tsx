@@ -19,7 +19,7 @@ export function Nav() {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 md:px-10">
         <Link to="/" aria-label="UniPlug home" className="flex items-center">
-          <Logo variant="umark-offwhite" className="h-10 w-auto" />
+          <Logo variant="umark-offwhite" className="h-[60px] w-auto" />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-3">
           <Link
