@@ -19,7 +19,7 @@ export function AuthShell({
       <main>
         <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:px-8 sm:py-20 md:grid-cols-[1fr_1.1fr] md:gap-14">
           <div className="animate-fade-in md:sticky md:top-28 md:self-start">
-            <Logo variant="wordmark-offwhite" className="mb-6 h-12 w-auto" />
+            <Logo variant="wordmark-offwhite" className="mb-6 h-20 w-auto sm:h-24" />
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               {eyebrow}
             </p>
