@@ -114,10 +114,10 @@ function HomePage() {
           <div className="flex flex-col items-center text-center animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
             <Logo variant="wordmark-dark" className="h-[1000px] w-auto max-w-full" />
-            <p className="-mt-8 max-w-xl text-[18px] font-light text-[#E8C4B8]">
+            <p className="-mt-24 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
+            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:gap-4">
               <Link
                 to="/student-signup"
                 className="inline-flex h-12 items-center justify-center rounded-full bg-[#C4907F] px-8 text-[14px] font-medium text-white transition hover:opacity-90"
