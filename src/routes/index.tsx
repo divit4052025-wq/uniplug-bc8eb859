@@ -125,7 +125,7 @@ function HomePage() {
           {/* Headline anchored bottom-left */}
           <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
-            <Logo variant="wordmark-dark" className="h-20 w-auto" />
+            <Logo variant="wordmark-dark" className="h-[200px] w-auto" />
             <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
             </p>
