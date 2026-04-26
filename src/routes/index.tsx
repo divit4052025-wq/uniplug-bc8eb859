@@ -117,20 +117,6 @@ function HomePage() {
             <p className="-mt-24 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
             </p>
-            <div className="mt-10 flex flex-col gap-3 sm:flex-row sm:gap-4">
-              <Link
-                to="/student-signup"
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[#C4907F] px-8 text-[14px] font-medium text-white transition hover:opacity-90"
-              >
-                Find Your Plug
-              </Link>
-              <Link
-                to="/mentor-signup"
-                className="inline-flex h-12 items-center justify-center rounded-full border border-white px-8 text-[14px] font-medium text-white transition hover:bg-white hover:text-[#1A1A1A]"
-              >
-                Become a Plug
-              </Link>
-            </div>
           </div>
         </div>
       </section>
