@@ -110,14 +110,22 @@ function HomePage() {
       {/* SECTION 1 — HERO */}
       <section className="relative bg-[#1A1A1A] text-white" style={{ minHeight: "calc(100vh - 73px)" }}>
         <div className="mx-auto flex h-full max-w-7xl flex-col px-6 md:px-10" style={{ minHeight: "calc(100vh - 73px)" }}>
+          {/* Stat pills */}
+          <div className="flex flex-row flex-wrap gap-2 pt-8 md:absolute md:right-10 md:top-12 md:flex-col md:items-end md:gap-3 md:pt-0">
+            {stats.map((s) => (
+              <span
+                key={s}
+                className="inline-flex items-center rounded-full bg-[#EDE0DB] px-4 py-2 text-[14px] font-medium text-[#1A1A1A]"
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+
           {/* Headline anchored bottom-left */}
           <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
-            <Logo
-              variant="wordmark-dark"
-              className="w-auto"
-              style={{ height: "clamp(120px, 22vw, 280px)" }}
-            />
+            <Logo variant="wordmark-dark" className="h-12 w-auto" />
             <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
             </p>
