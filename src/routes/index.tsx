@@ -122,8 +122,8 @@ function HomePage() {
               Tagline below uses normal mt-6 (24px) — no negative margin needed.
             */}
             <div
-              className="relative overflow-hidden"
-              style={{ height: "240px", width: "min(90vw, 1200px)" }}
+              className="relative"
+              style={{ height: "240px", width: "min(90vw, 1200px)", overflow: "hidden" }}
               aria-hidden
             >
               <Logo
@@ -134,7 +134,7 @@ function HomePage() {
                   maxWidth: "none",
                   width: "auto",
                   top: "50%",
-                  transform: "translate(-50%, calc(-50% - 4.5%))",
+                  transform: "translate(-50%, calc(-50% + 4.475%))",
                 }}
               />
             </div>
