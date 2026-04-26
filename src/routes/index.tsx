@@ -114,7 +114,7 @@ function HomePage() {
           <div className="mt-auto pb-16 md:pb-24 animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
             <Logo
-              variant="wordmark-offwhite"
+              variant="wordmark-dark"
               className="w-auto"
               style={{ height: "clamp(120px, 22vw, 280px)" }}
             />
