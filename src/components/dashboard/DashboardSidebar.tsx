@@ -28,7 +28,7 @@ export function DashboardSidebar({ active, onSelect }: Props) {
   return (
     <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col bg-[#1A1A1A] md:flex">
       <Link to="/" className="flex items-center px-6 pb-6 pt-7" aria-label="UniPlug home">
-        <Logo variant="umark-dark" className="h-9 w-auto" />
+        <Logo variant="umark-offwhite" className="h-9 w-auto" />
       </Link>
       <nav className="mt-2 flex flex-1 flex-col">
         {items.map((it) => {
