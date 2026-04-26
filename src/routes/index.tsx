@@ -113,8 +113,8 @@ function HomePage() {
           {/* Centered hero content */}
           <div className="flex flex-col items-center text-center animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
-            <Logo variant="wordmark-dark" className="h-[1000px] w-auto max-w-full" />
-            <p className="-mt-[260px] max-w-xl text-[18px] font-light text-[#E8C4B8]">
+            <Logo variant="wordmark-dark" className="h-[420px] w-auto max-w-full" />
+            <p className="-mt-[110px] max-w-xl text-[18px] font-light text-[#E8C4B8]">
               Connect with students already living your dream.
             </p>
           </div>
