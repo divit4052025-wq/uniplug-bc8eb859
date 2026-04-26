@@ -113,31 +113,7 @@ function HomePage() {
           {/* Centered hero content */}
           <div className="flex flex-col items-center text-center animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
-            {/*
-              Wordmark wrapper — crops the PNG's huge transparent padding.
-              The glyphs occupy only ~15.85% of the source image's height (317/2000),
-              centered around 45.5% from the top. To resize, change BOTH:
-                wrapper height = desired visible wordmark height (e.g. 240px)
-                inner img height = wrapper height / 0.1585  (e.g. 240 → 1514px)
-              Tagline below uses normal mt-6 (24px) — no negative margin needed.
-            */}
-            <div
-              className="relative"
-              style={{ height: "240px", width: "min(90vw, 1200px)", overflow: "hidden" }}
-              aria-hidden
-            >
-              <Logo
-                variant="wordmark-dark"
-                className="absolute left-1/2"
-                style={{
-                  height: "1514px",
-                  maxWidth: "none",
-                  width: "auto",
-                  top: "50%",
-                  transform: "translate(-50%, calc(-50% + 4.475%))",
-                }}
-              />
-            </div>
+            <Logo variant="wordmark-dark" size={240} />
             <p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8] -translate-x-12">
               Connect with students already living your dream.
             </p>

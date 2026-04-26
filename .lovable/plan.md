@@ -1,77 +1,74 @@
+## Smart `<Logo>` component that auto-crops the PNG whitespace
 
-# Make the hero wordmark scale freely with tagline always flush below
+### The problem (measured, not guessed)
+Every logo PNG is 2000×2000 with the actual glyphs taking up only a small portion of the canvas:
 
-## Problem (diagnosed by inspecting the asset)
-The `wordmark-dark.png` is a 2000×2000 image, but the actual "UniPlug." glyphs occupy only **y=752 → y=1069** — about **15.85% of the image's height in the middle**, with ~38% empty padding above and ~47% below.
+| Asset | Glyph height % | Glyph width % | Vertical center |
+|---|---|---|---|
+| umark-offwhite | 34.0% | 42.4% | ~50% |
+| umark-dark | 34.4% | 43.0% | ~50% |
+| umark-sand | 34.4% | 42.9% | ~50% |
+| umark-rose | 34.1% | 42.5% | ~50% |
+| umark-blush | 58.1% | 58.1% | 50% |
+| wordmark-dark | 15.85% | 60.45% | 45.52% |
+| wordmark-offwhite | 15.75% | 59.90% | 50.08% |
+| wordmark-sand | 16.00% | 60.75% | 46.10% |
+| wordmark-blush | 15.75% | 60.00% | 42.98% |
 
-That's why:
-- Every time we resize the logo, the tagline floats off into space.
-- The current hardcoded `-mt-[110px]` only works at exactly `h-[420px]`.
-- Pushing the logo to e.g. 1000px tall makes the visible glyphs ~158px and leaves ~470px of invisible padding below them — which the negative margin can't reliably bridge across sizes.
+So when the nav uses `h-[60px]`, the **visible** "U" is only ~20px and the nav bar is bloated by ~40px of invisible padding on top + bottom. Same root cause as the hero wordmark issue.
 
-## Goal
-You can set the hero wordmark to any visual size (240px, 500px, 1000px+) and the tagline always sits ~24px below the actual letters automatically — no hand-tuned magic numbers.
+### The fix
+Encode each asset's glyph ratio + center offset directly in `src/components/site/Logo.tsx`, and have the component render an `overflow-hidden` wrapper sized to the visible glyph, with the actual `<img>` scaled and translated so the glyph lands inside it. Callers go back to writing simple sizes — no magic numbers anywhere else.
 
-## Approach: clip the whitespace with a sized wrapper
-Wrap `<Logo />` in a `div` whose height equals the desired *visible* wordmark height. Make the inner image ~6.31× taller (since glyphs = 15.85% of the PNG) and center it so the glyphs land in the wrapper. `overflow: hidden` clips the transparent padding on all sides.
+### New `<Logo>` API
 
-### Implementation in `src/routes/index.tsx`
-Replace the current hero block (~lines 114-119):
 ```tsx
-<Logo variant="wordmark-dark" className="h-[420px] w-auto max-w-full" />
-<p className="-mt-[110px] max-w-xl text-[18px] font-light text-[#E8C4B8]">
-  Connect with students already living your dream.
-</p>
+<Logo variant="umark-offwhite" size={40} />     // 40px visible glyph height
+<Logo variant="wordmark-dark" size={240} />     // 240px visible glyph height
+<Logo variant="umark-dark" size={36} />         // sidebar
 ```
 
-With a cropped wrapper:
-```tsx
-{/* Visible wordmark height — change ONE number to resize */}
-<div
-  className="relative overflow-hidden"
-  style={{ height: "240px", width: "min(90vw, 1200px)" }}
-  aria-hidden
->
-  <Logo
-    variant="wordmark-dark"
-    className="absolute left-1/2"
-    style={{
-      // PNG glyphs are 15.85% of image height (317/2000).
-      // Image height = visible height / 0.1585  →  240 / 0.1585 ≈ 1514px
-      height: "1514px",
-      maxWidth: "none",
-      width: "auto",
-      top: "50%",
-      // Glyph vertical center sits at 45.5% of the PNG (not 50%), so nudge up ~4.5%.
-      transform: "translate(-50%, calc(-50% - 4.5%))",
-    }}
-  />
-</div>
+- `size` = visible glyph **height** in pixels (matches brand rules: nav 40, sidebar 36, hero/footer 48 — except the hero where you're using a larger custom value).
+- Width auto-derives from glyph aspect ratio so the wrapper doesn't include side padding either.
+- Internally: `imageHeight = size / glyphHeightRatio`, then `transform: translate(-50%, calc(-50% + offset))` to center the glyph inside the wrapper.
+- `className` still works for things like extra margins.
 
-<p className="mt-6 max-w-xl text-[18px] font-light text-[#E8C4B8]">
-  Connect with students already living your dream.
-</p>
-```
+### Files to change
 
-`height: "240px"` becomes the only knob. Want it at 500px? Set `height: "500px"` and `height: "3155px"` for the inner image (500 / 0.1585). I'll also drop in a small comment explaining the formula so future resizes are obvious.
+**1. `src/components/site/Logo.tsx`** — replace the current implementation:
+- Add a `GLYPH_METRICS` table with the measured `{ hRatio, wRatio, centerYPct }` for each variant.
+- Render `<div style={{ height: size, width: size * (wRatio/hRatio), overflow:'hidden', position:'relative' }}>` wrapping an absolutely-positioned `<img>`.
+- Keep the `variant` and `className` props. Add `size?: number` (default 40). Drop the raw `style` escape hatch we added last round (no longer needed).
 
-I'll default it to **240px** (a comfortable, premium hero size for desktop). If you'd rather start much bigger (e.g., 500px or 800px), tell me before I implement and I'll set it directly.
+**2. `src/components/site/Nav.tsx`** — change `<Logo variant="umark-offwhite" className="h-[60px] w-auto" />` to `<Logo variant="umark-offwhite" size={60} />`. Nav bar will shrink back to a sensible height because the surrounding padding now wraps real pixels, not whitespace.
 
-## Why this is better than negative margins
-- Tagline gap is real CSS spacing (`mt-6` = 24px), measured from the letters — not from invisible pixels.
-- Resizing requires changing one value, not re-tuning a negative margin.
-- Same pattern is reusable later for the footer or auth-page wordmark if you want.
+**3. `src/routes/index.tsx`** — replace the manual cropping wrapper around the hero wordmark with the new clean call: `<Logo variant="wordmark-dark" size={240} />`. Same visual result, ~10 lines of CSS hackery deleted. Tagline keeps its `mt-6 -translate-x-12`.
 
-## Verification after implementation
-At the current 1376×924 viewport I'll confirm:
-- Glyphs render sharp and fully visible (not clipped horizontally).
-- Tagline sits ~24px below the visible baseline.
-- Hero remains vertically centered.
+### Other call sites I'll audit and update in the same pass
+I'll grep for every `<Logo` usage and migrate them so nothing renders with the old `className="h-X"` API:
+- `src/components/dashboard/DashboardSidebar.tsx`
+- `src/components/dashboard/DashboardTopbar.tsx`
+- `src/components/dashboard/MobileBottomNav.tsx`
+- `src/components/mentor-dashboard/MentorSidebar.tsx`
+- `src/components/mentor-dashboard/MentorMobileNav.tsx`
+- `src/components/site/AuthShell.tsx`
+- `src/components/site/Footer.tsx`
 
-## Files touched
-- `src/routes/index.tsx` — only the wordmark + tagline JSX in the hero section.
+For each, I'll pick the `size` that matches the brand-rule guidance (nav/topbar 40, sidebar 36, footer wordmark 48, auth wordmark 48, mobile nav 28).
 
-## Out of scope
-- Not editing the PNG asset (a pre-cropped asset would be a cleaner long-term fix; possible follow-up).
-- Not touching nav, footer, or other sections.
-- Not changing brand colors, typography, or button styles.
+### What this gets you
+- Nav bar height returns to normal — chrome is sized to the *real* logo, not a 2000px transparent square.
+- One number controls each logo's visible size, anywhere in the app.
+- Hero wordmark code becomes 1 line instead of a 10-line wrapper.
+- Future asset swaps only require updating one row in `GLYPH_METRICS`.
+
+### Out of scope
+- Not editing the PNG assets themselves.
+- Not changing brand colors, copy, or layout beyond what's needed to swap the API.
+- Not touching the favicon or any non-`<Logo>` image.
+
+### Verification after implementation
+At 1376×924 I'll visually confirm:
+- Nav bar height looks right (no extra padding from invisible whitespace).
+- Hero wordmark + tagline still positioned exactly as they are now.
+- Sidebar, footer, and auth pages still render their logos crisp and at the brand sizes.
