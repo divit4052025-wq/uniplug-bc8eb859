@@ -17,7 +17,7 @@ export const Route = createFileRoute("/browse")({
   component: BrowsePage,
 });
 
-const COUNTRIES = ["India", "UK", "USA", "Canada", "Australia", "Singapore", "Europe"];
+const COUNTRIES = ["United Kingdom", "United States", "India", "Canada", "Australia", "Singapore", "Germany", "Netherlands", "Hong Kong"];
 const COURSES = ["Engineering", "Business", "Law", "Medicine", "Arts", "Science", "Social Sciences", "Other"];
 const YEARS = ["1st Year", "2nd Year", "3rd Year", "Final Year"];
 const SORTS = ["Relevance", "Rating", "Price Low to High", "Price High to Low"];
@@ -26,7 +26,7 @@ type Mentor = {
   id: string;
   name: string;
   university: string;
-  country: string;
+  countries: string[];
   course: string;
   year: string;
   topics: [string, string];
@@ -45,15 +45,15 @@ type MentorProfile = {
 };
 
 const PLACEHOLDER_MENTORS: Mentor[] = [
-  { id: "ex-1", name: "Aarav Mehta", university: "IIT Bombay", country: "India", course: "Engineering", year: "3rd Year", topics: ["Engineering", "JEE Prep"], price: 1800, isExample: true },
-  { id: "ex-2", name: "Priya Sharma", university: "Oxford", country: "UK", course: "Law", year: "2nd Year", topics: ["Law", "PPE Essays"], price: 2400, isExample: true },
-  { id: "ex-3", name: "Rohan Kapoor", university: "Warwick", country: "UK", course: "Business", year: "Final Year", topics: ["Business", "UCAS"], price: 2200, isExample: true },
-  { id: "ex-4", name: "Mei Lin Tan", university: "NUS", country: "Singapore", course: "Science", year: "2nd Year", topics: ["Science", "Scholarships"], price: 2000, isExample: true },
-  { id: "ex-5", name: "Ishaan Patel", university: "UCL", country: "UK", course: "Medicine", year: "1st Year", topics: ["Medicine", "BMAT"], price: 2600, isExample: true },
-  { id: "ex-6", name: "Sophie Williams", university: "LSE", country: "UK", course: "Social Sciences", year: "3rd Year", topics: ["Social Sciences", "Personal Statement"], price: 2300, isExample: true },
-  { id: "ex-7", name: "Ananya Iyer", university: "Cambridge", country: "UK", course: "Arts", year: "2nd Year", topics: ["Arts", "Interviews"], price: 2700, isExample: true },
-  { id: "ex-8", name: "Daniel Chen", university: "Imperial", country: "UK", course: "Engineering", year: "Final Year", topics: ["Engineering", "Portfolio"], price: 2500, isExample: true },
-  { id: "ex-9", name: "Kavya Nair", university: "IIT Bombay", country: "India", course: "Science", year: "1st Year", topics: ["Science", "Olympiad"], price: 1700, isExample: true },
+  { id: "ex-1", name: "Aarav Mehta", university: "IIT Bombay", countries: ["India"], course: "Engineering", year: "3rd Year", topics: ["Engineering", "JEE Prep"], price: 1800, isExample: true },
+  { id: "ex-2", name: "Priya Sharma", university: "Oxford", countries: ["United Kingdom"], course: "Law", year: "2nd Year", topics: ["Law", "PPE Essays"], price: 2400, isExample: true },
+  { id: "ex-3", name: "Rohan Kapoor", university: "Warwick", countries: ["United Kingdom"], course: "Business", year: "Final Year", topics: ["Business", "UCAS"], price: 2200, isExample: true },
+  { id: "ex-4", name: "Mei Lin Tan", university: "NUS", countries: ["Singapore"], course: "Science", year: "2nd Year", topics: ["Science", "Scholarships"], price: 2000, isExample: true },
+  { id: "ex-5", name: "Ishaan Patel", university: "UCL", countries: ["United Kingdom"], course: "Medicine", year: "1st Year", topics: ["Medicine", "BMAT"], price: 2600, isExample: true },
+  { id: "ex-6", name: "Sophie Williams", university: "LSE", countries: ["United Kingdom"], course: "Social Sciences", year: "3rd Year", topics: ["Social Sciences", "Personal Statement"], price: 2300, isExample: true },
+  { id: "ex-7", name: "Ananya Iyer", university: "Cambridge", countries: ["United Kingdom"], course: "Arts", year: "2nd Year", topics: ["Arts", "Interviews"], price: 2700, isExample: true },
+  { id: "ex-8", name: "Daniel Chen", university: "Imperial", countries: ["United Kingdom"], course: "Engineering", year: "Final Year", topics: ["Engineering", "Portfolio"], price: 2500, isExample: true },
+  { id: "ex-9", name: "Kavya Nair", university: "IIT Bombay", countries: ["India"], course: "Science", year: "1st Year", topics: ["Science", "Olympiad"], price: 1700, isExample: true },
 ];
 
 function BrowsePage() {
@@ -82,7 +82,7 @@ function BrowsePage() {
         id: m.id,
         name: m.full_name,
         university: m.university,
-        country: m.countries?.[0] ?? "Other",
+        countries: m.countries ?? [],
         course: m.course,
         year: m.year,
         topics: [m.course, m.year] as [string, string],
@@ -111,7 +111,7 @@ function BrowsePage() {
   const filtered = useMemo(() => {
     let list = mentors.filter((m) => {
       if (search && !`${m.name} ${m.university}`.toLowerCase().includes(search.toLowerCase())) return false;
-      if (countries.length && !countries.includes(m.country)) return false;
+      if (countries.length && !m.countries.some((c) => countries.includes(c))) return false;
       if (universityQuery && !m.university.toLowerCase().includes(universityQuery.toLowerCase())) return false;
       if (courses.length && !courses.includes(m.course)) return false;
       if (years.length && !years.includes(m.year)) return false;

@@ -32,6 +32,7 @@ function MentorNoteView() {
   const [ready, setReady] = useState(false);
   const [forbidden, setForbidden] = useState(false);
   const [role, setRole] = useState<UserRole>("unknown");
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,6 +44,7 @@ function MentorNoteView() {
         navigate({ to: "/login" });
         return;
       }
+      setCurrentUserId(session.user.id);
       const r = await resolveUserRole(session.user.id, session.user.email);
       if (cancelled) return;
       setRole(r);
@@ -129,7 +131,7 @@ function MentorNoteView() {
   const wasEdited =
     new Date(note.updated_at).getTime() - new Date(note.created_at).getTime() > 2000;
   const backTo = dashboardPathForRole(role);
-  const canEdit = role === "mentor" && note.mentor_id === note.mentor_id; // mentor authored
+  const canEdit = role === "mentor" && currentUserId === note.mentor_id;
 
   return (
     <div className="min-h-screen bg-[#FFFCFB]">

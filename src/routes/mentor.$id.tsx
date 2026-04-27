@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { BadgeCheck, Calendar, Check, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
@@ -26,6 +26,9 @@ type MentorProfile = {
   course: string;
   year: string;
   price_inr: number;
+  bio: string | null;
+  topics: string[] | null;
+  photo_url: string | null;
 };
 
 type Review = {
@@ -37,13 +40,6 @@ type Review = {
   studentName?: string;
 };
 
-const PLACEHOLDER_BIOS: Record<string, { bio: string; topics: string[]; admits: string[] }> = {
-  default: {
-    bio: "I help high-school students navigate competitive university applications with clarity and strategy. From shortlisting to essays to interview prep, I share what actually worked for me.",
-    topics: ["Personal Statement", "Interview Prep", "Course Selection", "Shortlisting", "Application Strategy"],
-    admits: [],
-  },
-};
 
 function todayISO() {
   const d = new Date();
@@ -118,9 +114,6 @@ function MentorProfilePage() {
   }
 
   const initials = mentor.full_name.split(" ").map((p) => p[0]).slice(0, 2).join("");
-  const bioData = PLACEHOLDER_BIOS.default;
-  const topics = bioData.topics;
-  const admits = bioData.admits.length ? bioData.admits : [mentor.university];
   const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : "New";
 
   const scrollToBooking = () => {
@@ -137,9 +130,17 @@ function MentorProfilePage() {
           <div className="mx-auto flex max-w-5xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
               <div className="relative">
-                <div className="grid h-[120px] w-[120px] place-content-center rounded-full bg-[#EDE0DB] font-display text-[36px] font-semibold text-[#1A1A1A]">
-                  {initials}
-                </div>
+                {mentor.photo_url ? (
+                  <img
+                    src={mentor.photo_url}
+                    alt={mentor.full_name}
+                    className="h-[120px] w-[120px] rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="grid h-[120px] w-[120px] place-content-center rounded-full bg-[#EDE0DB] font-display text-[36px] font-semibold text-[#1A1A1A]">
+                    {initials}
+                  </div>
+                )}
                 <span className="absolute -bottom-1 -right-1 grid h-9 w-9 place-content-center rounded-full bg-[#C4907F] ring-4 ring-[#1A1A1A]">
                   <BadgeCheck className="h-5 w-5 text-[#FFFCFB]" />
                 </span>
@@ -176,24 +177,26 @@ function MentorProfilePage() {
             <div className="space-y-8">
               <div>
                 <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">About Me</h2>
-                <p className="mt-3 text-[16px] leading-relaxed text-[#1A1A1A]/80">{bioData.bio}</p>
+                <p className="mt-3 text-[16px] leading-relaxed text-[#1A1A1A]/80">
+                  {mentor.bio ?? "This mentor hasn't added a bio yet."}
+                </p>
               </div>
 
-              <div>
-                <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">I Can Help You With</h2>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {topics.map((t) => (
-                    <span key={t} className="rounded-full bg-[#1A1A1A] px-3.5 py-1.5 text-[12px] font-medium text-[#FFFCFB]">{t}</span>
-                  ))}
+              {mentor.topics && mentor.topics.length > 0 && (
+                <div>
+                  <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">I Can Help You With</h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {mentor.topics.map((t) => (
+                      <span key={t} className="rounded-full bg-[#1A1A1A] px-3.5 py-1.5 text-[12px] font-medium text-[#FFFCFB]">{t}</span>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <div>
                 <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">Universities I Got Into</h2>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {admits.map((u) => (
-                    <span key={u} className="rounded-full bg-[#EDE0DB] px-3.5 py-1.5 text-[12px] font-medium text-[#1A1A1A]">{u}</span>
-                  ))}
+                  <span className="rounded-full bg-[#EDE0DB] px-3.5 py-1.5 text-[12px] font-medium text-[#1A1A1A]">{mentor.university}</span>
                 </div>
               </div>
             </div>

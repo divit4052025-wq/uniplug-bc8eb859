@@ -9,6 +9,7 @@ import { MentorUpcomingSessions } from "@/components/mentor-dashboard/sections/M
 import { MyStudentsSection } from "@/components/mentor-dashboard/sections/MyStudentsSection";
 import { PostSessionNotesSection } from "@/components/mentor-dashboard/sections/PostSessionNotesSection";
 import { EarningsSection } from "@/components/mentor-dashboard/sections/EarningsSection";
+import { SettingsSection } from "@/components/mentor-dashboard/sections/SettingsSection";
 import { resolveUserRole } from "@/lib/auth/role";
 
 export const Route = createFileRoute("/mentor-dashboard")({
@@ -38,7 +39,6 @@ function MentorDashboard() {
   const [firstName, setFirstName] = useState("");
   const [status, setStatus] = useState<"pending" | "approved" | "rejected" | null>(null);
   const [active, setActive] = useState<MentorSectionKey>("home");
-  const [comingSoon, setComingSoon] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -80,12 +80,7 @@ function MentorDashboard() {
 
   const select = (key: MentorSectionKey) => {
     setActive(key);
-    if (key === "settings") {
-      setComingSoon("Settings");
-      setTimeout(() => setComingSoon(null), 2200);
-      return;
-    }
-    setComingSoon(null);
+    if (key === "settings") return; // rendered as its own view below
     const anchor = SECTION_TO_ANCHOR[key];
     if (anchor) {
       const el = document.getElementById(anchor);
@@ -125,27 +120,27 @@ function MentorDashboard() {
       <main className="md:ml-[240px]">
         <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
           <DashboardTopbar firstName={firstName} />
-          <div className="mt-8 space-y-12 animate-hero-rise">
-            <ScheduleSection mentorId={mentorId} />
-            <MentorUpcomingSessions mentorId={mentorId} />
-            <MyStudentsSection mentorId={mentorId} />
-            <PostSessionNotesSection
-              mentorId={mentorId}
-              editNoteId={edit ?? null}
-              onEditConsumed={() => navigate({ to: "/mentor-dashboard", search: {} })}
-            />
-            <EarningsSection mentorId={mentorId} />
-          </div>
+          {active === "settings" ? (
+            <div className="mt-8 animate-hero-rise">
+              <SettingsSection mentorId={mentorId} />
+            </div>
+          ) : (
+            <div className="mt-8 space-y-12 animate-hero-rise">
+              <ScheduleSection mentorId={mentorId} />
+              <MentorUpcomingSessions mentorId={mentorId} />
+              <MyStudentsSection mentorId={mentorId} />
+              <PostSessionNotesSection
+                mentorId={mentorId}
+                editNoteId={edit ?? null}
+                onEditConsumed={() => navigate({ to: "/mentor-dashboard", search: {} })}
+              />
+              <EarningsSection mentorId={mentorId} />
+            </div>
+          )}
         </div>
       </main>
 
       <MentorMobileNav active={active} onSelect={select} />
-
-      {comingSoon && (
-        <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#1A1A1A] px-5 py-2.5 text-[13px] font-medium text-white shadow-lg md:bottom-8">
-          {comingSoon} — coming soon
-        </div>
-      )}
     </div>
   );
 }

@@ -138,38 +138,47 @@ export type Database = {
       }
       mentors: {
         Row: {
+          bio: string | null
           countries: string[]
           course: string
           created_at: string
           email: string
           full_name: string
           id: string
+          photo_url: string | null
           price_inr: number
           status: Database["public"]["Enums"]["mentor_status"]
+          topics: string[]
           university: string
           year: string
         }
         Insert: {
+          bio?: string | null
           countries?: string[]
           course: string
           created_at?: string
           email: string
           full_name: string
           id: string
+          photo_url?: string | null
           price_inr?: number
           status?: Database["public"]["Enums"]["mentor_status"]
+          topics?: string[]
           university: string
           year: string
         }
         Update: {
+          bio?: string | null
           countries?: string[]
           course?: string
           created_at?: string
           email?: string
           full_name?: string
           id?: string
+          photo_url?: string | null
           price_inr?: number
           status?: Database["public"]["Enums"]["mentor_status"]
+          topics?: string[]
           university?: string
           year?: string
         }
