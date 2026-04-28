@@ -31,7 +31,6 @@ type Mentor = {
   year: string;
   topics: [string, string];
   price: number;
-  isExample?: boolean;
 };
 
 type MentorProfile = {
@@ -44,17 +43,6 @@ type MentorProfile = {
   price_inr: number;
 };
 
-const PLACEHOLDER_MENTORS: Mentor[] = [
-  { id: "ex-1", name: "Aarav Mehta", university: "IIT Bombay", countries: ["India"], course: "Engineering", year: "3rd Year", topics: ["Engineering", "JEE Prep"], price: 1800, isExample: true },
-  { id: "ex-2", name: "Priya Sharma", university: "Oxford", countries: ["United Kingdom"], course: "Law", year: "2nd Year", topics: ["Law", "PPE Essays"], price: 2400, isExample: true },
-  { id: "ex-3", name: "Rohan Kapoor", university: "Warwick", countries: ["United Kingdom"], course: "Business", year: "Final Year", topics: ["Business", "UCAS"], price: 2200, isExample: true },
-  { id: "ex-4", name: "Mei Lin Tan", university: "NUS", countries: ["Singapore"], course: "Science", year: "2nd Year", topics: ["Science", "Scholarships"], price: 2000, isExample: true },
-  { id: "ex-5", name: "Ishaan Patel", university: "UCL", countries: ["United Kingdom"], course: "Medicine", year: "1st Year", topics: ["Medicine", "BMAT"], price: 2600, isExample: true },
-  { id: "ex-6", name: "Sophie Williams", university: "LSE", countries: ["United Kingdom"], course: "Social Sciences", year: "3rd Year", topics: ["Social Sciences", "Personal Statement"], price: 2300, isExample: true },
-  { id: "ex-7", name: "Ananya Iyer", university: "Cambridge", countries: ["United Kingdom"], course: "Arts", year: "2nd Year", topics: ["Arts", "Interviews"], price: 2700, isExample: true },
-  { id: "ex-8", name: "Daniel Chen", university: "Imperial", countries: ["United Kingdom"], course: "Engineering", year: "Final Year", topics: ["Engineering", "Portfolio"], price: 2500, isExample: true },
-  { id: "ex-9", name: "Kavya Nair", university: "IIT Bombay", countries: ["India"], course: "Science", year: "1st Year", topics: ["Science", "Olympiad"], price: 1700, isExample: true },
-];
 
 function BrowsePage() {
   const navigate = useNavigate();
@@ -88,7 +76,7 @@ function BrowsePage() {
         topics: [m.course, m.year] as [string, string],
         price: m.price_inr,
       }));
-      setMentors([...real, ...PLACEHOLDER_MENTORS]);
+      setMentors(real);
       setReady(true);
     };
     void init();
@@ -171,7 +159,7 @@ function BrowsePage() {
                 <MentorCard
                   key={m.id}
                   mentor={m}
-                  onBook={() => { if (!m.isExample) navigate({ to: "/mentor/$id", params: { id: m.id } }); }}
+                  onBook={() => navigate({ to: "/mentor/$id", params: { id: m.id } })}
                 />
               ))}
             </div>
@@ -307,13 +295,9 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
   const initials = mentor.name.split(" ").map((p) => p[0]).slice(0, 2).join("");
   return (
     <article className="group flex flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(26,26,26,0.25)]">
-      {mentor.isExample ? (
+      <Link to="/mentor/$id" params={{ id: mentor.id }} className="block">
         <CardHeader mentor={mentor} initials={initials} />
-      ) : (
-        <Link to="/mentor/$id" params={{ id: mentor.id }} className="block">
-          <CardHeader mentor={mentor} initials={initials} />
-        </Link>
-      )}
+      </Link>
 
       <div className="mt-4 flex flex-wrap gap-1.5">
         {mentor.topics.map((t) => (
@@ -331,10 +315,9 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
 
       <button
         onClick={onBook}
-        disabled={mentor.isExample}
-        className="mt-5 w-full rounded-full bg-[#C4907F] py-2.5 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-5 w-full rounded-full bg-[#C4907F] py-2.5 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90"
       >
-        {mentor.isExample ? "Example Profile" : "Book Now"}
+        Book Now
       </button>
     </article>
   );
@@ -354,9 +337,6 @@ function CardHeader({ mentor, initials }: { mentor: Mentor; initials: string }) 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <h3 className="font-display text-[18px] font-bold leading-tight text-[#1A1A1A]">{mentor.name}</h3>
-            {mentor.isExample && (
-              <span className="shrink-0 rounded-full border border-[#1A1A1A]/20 bg-[#FFFCFB] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[#1A1A1A]/70">Example</span>
-            )}
           </div>
           <p className="mt-0.5 text-[14px] text-[#C4907F]">{mentor.university}</p>
           <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">{mentor.course} · {mentor.year}</p>

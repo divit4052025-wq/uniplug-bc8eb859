@@ -9,20 +9,29 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
 import { Route as SessionNotesRouteImport } from './routes/session-notes'
 import { Route as ProgressRouteImport } from './routes/progress'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as MentorDashboardRouteImport } from './routes/mentor-dashboard'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StudentSignupRoute = StudentSignupRouteImport.update({
   id: '/student-signup',
   path: '/student-signup',
@@ -36,6 +45,11 @@ const SessionNotesRoute = SessionNotesRouteImport.update({
 const ProgressRoute = ProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentorSignupRoute = MentorSignupRouteImport.update({
@@ -53,6 +67,11 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -66,6 +85,11 @@ const BrowseRoute = BrowseRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -92,30 +116,38 @@ const ApiPublicHooksSendRemindersRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
+  '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
+  '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -123,15 +155,19 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/dashboard': typeof DashboardRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
+  '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -140,45 +176,57 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/admin'
     | '/browse'
     | '/dashboard'
+    | '/how-it-works'
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/privacy'
     | '/progress'
     | '/session-notes'
     | '/student-signup'
+    | '/terms'
     | '/mentor/$id'
     | '/session-notes/$noteId'
     | '/api/public/hooks/send-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/admin'
     | '/browse'
     | '/dashboard'
+    | '/how-it-works'
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/privacy'
     | '/progress'
     | '/session-notes'
     | '/student-signup'
+    | '/terms'
     | '/mentor/$id'
     | '/session-notes/$noteId'
     | '/api/public/hooks/send-reminders'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/admin'
     | '/browse'
     | '/dashboard'
+    | '/how-it-works'
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/privacy'
     | '/progress'
     | '/session-notes'
     | '/student-signup'
+    | '/terms'
     | '/mentor/$id'
     | '/session-notes/$noteId'
     | '/api/public/hooks/send-reminders'
@@ -186,21 +234,32 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRoute
   BrowseRoute: typeof BrowseRoute
   DashboardRoute: typeof DashboardRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
   MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
+  PrivacyRoute: typeof PrivacyRoute
   ProgressRoute: typeof ProgressRoute
   SessionNotesRoute: typeof SessionNotesRouteWithChildren
   StudentSignupRoute: typeof StudentSignupRoute
+  TermsRoute: typeof TermsRoute
   MentorIdRoute: typeof MentorIdRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/student-signup': {
       id: '/student-signup'
       path: '/student-signup'
@@ -220,6 +279,13 @@ declare module '@tanstack/react-router' {
       path: '/progress'
       fullPath: '/progress'
       preLoaderRoute: typeof ProgressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentor-signup': {
@@ -243,6 +309,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -262,6 +335,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -309,15 +389,19 @@ const SessionNotesRouteWithChildren = SessionNotesRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AdminRoute: AdminRoute,
   BrowseRoute: BrowseRoute,
   DashboardRoute: DashboardRoute,
+  HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
   MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
+  PrivacyRoute: PrivacyRoute,
   ProgressRoute: ProgressRoute,
   SessionNotesRoute: SessionNotesRouteWithChildren,
   StudentSignupRoute: StudentSignupRoute,
+  TermsRoute: TermsRoute,
   MentorIdRoute: MentorIdRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
 }

@@ -8,7 +8,8 @@ const HOURS = Array.from({ length: 15 }, (_, i) => 8 + i); // 8..22
 
 type Slot = { day_of_week: number; start_hour: number };
 type Booking = {
-  scheduled_at: string;
+  date: string;
+  time_slot: string;
   student_name: string;
 };
 
@@ -43,24 +44,26 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
     const weekStart = startOfWeekMonday(new Date());
     const weekEnd = new Date(weekStart);
     weekEnd.setDate(weekEnd.getDate() + 7);
-    const { data } = await supabase
-      .from("sessions")
-      .select("scheduled_at, student_id")
+    const weekStartStr = weekStart.toISOString().slice(0, 10);
+    const weekEndStr = weekEnd.toISOString().slice(0, 10);
+    const { data } = await (supabase as any)
+      .from("bookings")
+      .select("date, time_slot, student_id")
       .eq("mentor_id", mentorId)
-      .gte("scheduled_at", weekStart.toISOString())
-      .lt("scheduled_at", weekEnd.toISOString());
+      .in("status", ["confirmed", "pending"])
+      .gte("date", weekStartStr)
+      .lt("date", weekEndStr);
     const rows = data ?? [];
-    const ids = Array.from(new Set(rows.map((r) => r.student_id)));
+    const ids = Array.from(new Set(rows.map((r: { student_id: string }) => r.student_id)));
     let nameMap = new Map<string, string>();
     if (ids.length) {
-      const { data: studs } = await supabase
-        .from("students")
-        .select("id, full_name")
-        .in("id", ids);
-      (studs ?? []).forEach((s) => nameMap.set(s.id, s.full_name));
+      const { data: studs } = await (supabase as any)
+        .rpc("get_student_booking_names", { _ids: ids });
+      (studs ?? []).forEach((s: { id: string; full_name: string }) => nameMap.set(s.id, s.full_name));
     }
-    const list: Booking[] = rows.map((r) => ({
-      scheduled_at: r.scheduled_at,
+    const list: Booking[] = rows.map((r: { date: string; time_slot: string; student_id: string }) => ({
+      date: r.date,
+      time_slot: r.time_slot,
       student_name: nameMap.get(r.student_id) ?? "Student",
     }));
     setBookings(list);
@@ -75,9 +78,9 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
     const map = new Map<string, string>();
     const weekStart = startOfWeekMonday(new Date());
     bookings.forEach((b) => {
-      const dt = new Date(b.scheduled_at);
+      const dt = new Date(`${b.date}T00:00:00`);
       const day = Math.floor((dt.getTime() - weekStart.getTime()) / 86400000);
-      const hour = dt.getHours();
+      const hour = parseInt(b.time_slot.split(":")[0], 10);
       if (day >= 0 && day < 7) map.set(`${day}-${hour}`, b.student_name);
     });
     return map;

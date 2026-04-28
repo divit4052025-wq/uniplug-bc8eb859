@@ -55,6 +55,7 @@ function MentorProfilePage() {
   const [mentor, setMentor] = useState<MentorProfile | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [sessionCount, setSessionCount] = useState(0);
 
   useEffect(() => {
     const init = async () => {
@@ -84,6 +85,12 @@ function MentorProfilePage() {
         nameMap = new Map((names ?? []).map((n: { id: string; full_name: string }) => [n.id, n.full_name]));
       }
       setReviews(reviewRows.map((r) => ({ ...r, studentName: nameMap.get(r.student_id) ?? "Student" })));
+      const { count, error: scErr } = await (supabase as any)
+        .from("bookings")
+        .select("id", { count: "exact", head: true })
+        .eq("mentor_id", id)
+        .eq("status", "completed");
+      if (!scErr && count != null) setSessionCount(count);
       setReady(true);
     };
     void init();
@@ -158,7 +165,7 @@ function MentorProfilePage() {
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
                 <StatPill icon={<Star className="h-3.5 w-3.5 fill-[#C4907F] text-[#C4907F]" />} label={String(avgRating)} sub="Rating" />
-                <StatPill label={String(reviews.length)} sub="Sessions" />
+                <StatPill label={String(sessionCount)} sub="Sessions" />
                 <StatPill label={String(mentor.countries?.length || 1)} sub="Countries" />
               </div>
               <button

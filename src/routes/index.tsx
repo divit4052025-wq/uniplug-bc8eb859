@@ -1,8 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Nav } from "@/components/site/Nav";
 import { Footer } from "@/components/site/Footer";
 import { Logo } from "@/components/site/Logo";
 import { Star } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -30,48 +32,14 @@ const stats = [
   "4.9 Average Rating",
 ];
 
-const mentors = [
-  {
-    name: "Aanya Mehta",
-    university: "University of Oxford",
-    course: "PPE · Year 2",
-    tags: ["Oxbridge", "Personal Statement"],
-    rating: "4.9",
-    initials: "AM",
-  },
-  {
-    name: "Rohan Iyer",
-    university: "IIT Bombay",
-    course: "Computer Science · Year 3",
-    tags: ["JEE Strategy", "CS Apps"],
-    rating: "5.0",
-    initials: "RI",
-  },
-  {
-    name: "Priya Shah",
-    university: "Warwick Business School",
-    course: "Economics · Year 2",
-    tags: ["UK Apps", "Interviews"],
-    rating: "4.8",
-    initials: "PS",
-  },
-  {
-    name: "Kabir Anand",
-    university: "NUS Singapore",
-    course: "Engineering · Year 4",
-    tags: ["Singapore", "Scholarships"],
-    rating: "4.9",
-    initials: "KA",
-  },
-  {
-    name: "Maya Reddy",
-    university: "UCL London",
-    course: "Architecture · Year 3",
-    tags: ["Portfolio", "Creative Apps"],
-    rating: "5.0",
-    initials: "MR",
-  },
-];
+type HomeMentor = {
+  id: string;
+  name: string;
+  university: string;
+  course: string;
+  tags: string[];
+  initials: string;
+};
 
 const steps = [
   {
@@ -103,6 +71,27 @@ const universities = [
 ];
 
 function HomePage() {
+  const navigate = useNavigate();
+  const [mentors, setMentors] = useState<HomeMentor[]>([]);
+  const [mentorsReady, setMentorsReady] = useState(false);
+
+  useEffect(() => {
+    supabase.rpc("list_approved_mentor_profiles" as any).then(({ data, error }) => {
+      if (!error && data && data.length > 0) {
+        const mapped: HomeMentor[] = (data as any[]).slice(0, 4).map((m) => ({
+          id: m.id,
+          name: m.full_name,
+          university: m.university,
+          course: `${m.course} · ${m.year}`,
+          tags: [m.course, ...(m.countries ?? []).slice(0, 1)].filter(Boolean),
+          initials: m.full_name.split(" ").map((p: string) => p[0]).slice(0, 2).join(""),
+        }));
+        setMentors(mapped);
+      }
+      setMentorsReady(true);
+    });
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
       <Nav />
@@ -122,56 +111,63 @@ function HomePage() {
       </section>
 
       {/* SECTION 2 — MENTORS */}
-      <section className="bg-[#FFFCFB] py-20 md:py-28">
-        <div className="mx-auto max-w-7xl px-6 md:px-10">
-          <p className="text-[12px] font-medium uppercase text-[#C4907F]" style={{ letterSpacing: "4px" }}>
-            Meet Your Plugs
-          </p>
-        </div>
-        <div className="relative mt-8">
-          <div className="hide-scrollbar flex gap-5 overflow-x-auto px-6 pb-4 md:px-10">
-            {mentors.map((m) => (
-              <article
-                key={m.name}
-                className="flex shrink-0 flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-6"
-                style={{ width: "280px" }}
-              >
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1A1A1A] text-[16px] font-medium text-[#FFFCFB]">
-                  {m.initials}
-                </div>
-                <h3 className="mt-4 font-display text-[20px] font-bold text-[#1A1A1A]" style={{ letterSpacing: "-0.01em" }}>
-                  {m.name}
-                </h3>
-                <p className="mt-1 text-[14px] font-medium text-[#C4907F]">{m.university}</p>
-                <p className="mt-1 text-[13px] text-[#1A1A1A]/60">{m.course}</p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {m.tags.map((t) => (
-                    <span
-                      key={t}
-                      className="inline-flex items-center rounded-full bg-[#1A1A1A] px-2.5 py-1 text-[11px] font-medium text-[#FFFCFB]"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-3 flex items-center gap-1 text-[#C4907F]">
-                  <Star className="h-4 w-4 fill-current" />
-                  <span className="text-[13px] font-medium">{m.rating}</span>
-                </div>
-                <button className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-[#C4907F] text-[13px] font-medium text-white transition hover:opacity-90">
-                  Book Now
-                </button>
-              </article>
-            ))}
-            <div className="shrink-0" style={{ width: "1px" }} />
+      {mentorsReady && mentors.length > 0 && (
+        <section className="bg-[#FFFCFB] py-20 md:py-28">
+          <div className="mx-auto max-w-7xl px-6 md:px-10">
+            <p className="text-[12px] font-medium uppercase text-[#C4907F]" style={{ letterSpacing: "4px" }}>
+              Meet Your Plugs
+            </p>
           </div>
-          {/* Right edge fade */}
-          <div
-            className="pointer-events-none absolute right-0 top-0 h-full w-24"
-            style={{ background: "linear-gradient(to left, #FFFCFB, transparent)" }}
-          />
-        </div>
-      </section>
+          <div className="relative mt-8">
+            <div className="hide-scrollbar flex gap-5 overflow-x-auto px-6 pb-4 md:px-10">
+              {mentors.map((m) => (
+                <article
+                  key={m.id}
+                  className="flex shrink-0 flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-6"
+                  style={{ width: "280px" }}
+                >
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1A1A1A] text-[16px] font-medium text-[#FFFCFB]">
+                    {m.initials}
+                  </div>
+                  <h3 className="mt-4 font-display text-[20px] font-bold text-[#1A1A1A]" style={{ letterSpacing: "-0.01em" }}>
+                    {m.name}
+                  </h3>
+                  <p className="mt-1 text-[14px] font-medium text-[#C4907F]">{m.university}</p>
+                  <p className="mt-1 text-[13px] text-[#1A1A1A]/60">{m.course}</p>
+                  {m.tags.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {m.tags.map((t) => (
+                        <span
+                          key={t}
+                          className="inline-flex items-center rounded-full bg-[#1A1A1A] px-2.5 py-1 text-[11px] font-medium text-[#FFFCFB]"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center gap-1 text-[#C4907F]">
+                    <Star className="h-4 w-4 fill-current" />
+                    <span className="text-[13px] font-medium">Verified</span>
+                  </div>
+                  <button
+                    onClick={() => navigate({ to: "/browse" })}
+                    className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-[#C4907F] text-[13px] font-medium text-white transition hover:opacity-90"
+                  >
+                    Book Now
+                  </button>
+                </article>
+              ))}
+              <div className="shrink-0" style={{ width: "1px" }} />
+            </div>
+            {/* Right edge fade */}
+            <div
+              className="pointer-events-none absolute right-0 top-0 h-full w-24"
+              style={{ background: "linear-gradient(to left, #FFFCFB, transparent)" }}
+            />
+          </div>
+        </section>
+      )}
 
       {/* SECTION 3 — HOW IT WORKS */}
       <section className="bg-[#1A1A1A] py-20 text-white md:py-28">
