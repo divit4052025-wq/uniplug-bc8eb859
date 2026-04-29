@@ -3,8 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 type SessionRow = {
   id: string;
-  scheduled_at: string;
-  amount_inr: number;
+  date: string;
+  price: number;
   student_name: string;
 };
 
@@ -21,11 +21,11 @@ export function EarningsSection({ mentorId }: { mentorId: string }) {
 
   const load = async () => {
     const { data: sessions } = await supabase
-      .from("sessions")
-      .select("id, scheduled_at, amount_inr, student_id")
+      .from("bookings")
+      .select("id, date, price, student_id")
       .eq("mentor_id", mentorId)
       .eq("status", "completed")
-      .order("scheduled_at", { ascending: false });
+      .order("date", { ascending: false });
     const list = sessions ?? [];
 
     const now = new Date();
@@ -33,8 +33,8 @@ export function EarningsSection({ mentorId }: { mentorId: string }) {
     let mo = 0;
     let total = 0;
     list.forEach((s) => {
-      total += s.amount_inr;
-      if (new Date(s.scheduled_at) >= monthStart) mo += s.amount_inr;
+      total += s.price;
+      if (new Date(s.date + "T00:00:00") >= monthStart) mo += s.price;
     });
     setThisMonth(mo);
     setAllTime(total);
@@ -51,8 +51,8 @@ export function EarningsSection({ mentorId }: { mentorId: string }) {
     setRows(
       list.slice(0, 10).map((s) => ({
         id: s.id,
-        scheduled_at: s.scheduled_at,
-        amount_inr: s.amount_inr,
+        date: s.date,
+        price: s.price,
         student_name: nameMap.get(s.student_id) ?? "Student",
       }))
     );
@@ -102,9 +102,9 @@ export function EarningsSection({ mentorId }: { mentorId: string }) {
               <tr key={r.id}>
                 <td className="px-4 py-3">{r.student_name}</td>
                 <td className="px-4 py-3 text-[#1A1A1A]/70">
-                  {new Date(r.scheduled_at).toLocaleDateString()}
+                  {new Date(r.date + "T00:00:00").toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3 text-right font-medium">{fmt(r.amount_inr)}</td>
+                <td className="px-4 py-3 text-right font-medium">{fmt(r.price)}</td>
               </tr>
             ))}
           </tbody>

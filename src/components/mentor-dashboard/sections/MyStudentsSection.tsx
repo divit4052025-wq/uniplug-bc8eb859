@@ -35,15 +35,16 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
 
   const load = async () => {
     const { data: sessions } = await supabase
-      .from("sessions")
-      .select("student_id, scheduled_at")
+      .from("bookings")
+      .select("student_id, date")
       .eq("mentor_id", mentorId)
-      .order("scheduled_at", { ascending: false });
+      .in("status", ["confirmed", "completed"])
+      .order("date", { ascending: false });
     const list = sessions ?? [];
     const agg = new Map<string, { total: number; last: string }>();
     list.forEach((s) => {
       const cur = agg.get(s.student_id);
-      if (!cur) agg.set(s.student_id, { total: 1, last: s.scheduled_at });
+      if (!cur) agg.set(s.student_id, { total: 1, last: s.date });
       else cur.total += 1;
     });
     const ids = Array.from(agg.keys());
@@ -128,7 +129,7 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
                   </p>
                   <p className="mt-1 text-[12px] text-[#1A1A1A]/60">
                     {r.total} session{r.total === 1 ? "" : "s"}
-                    {r.last ? ` · last ${new Date(r.last).toLocaleDateString()}` : ""}
+                    {r.last ? ` · last ${new Date(r.last + "T00:00:00").toLocaleDateString()}` : ""}
                   </p>
                 </div>
                 <button
