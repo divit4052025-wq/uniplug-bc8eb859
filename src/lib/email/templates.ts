@@ -81,7 +81,7 @@ export function studentBookingConfirmationEmail(p: {
           ["Mentor", p.mentorName],
           ["Date", formatDate(p.date)],
           ["Time", p.timeSlot],
-          ["Duration", "30 minutes"],
+          ["Duration", "60 minutes"],
         ])}
         <p style="margin:0;">Your video call link will be sent to you 30 minutes before your session. You can also find it in your dashboard.</p>
       `,

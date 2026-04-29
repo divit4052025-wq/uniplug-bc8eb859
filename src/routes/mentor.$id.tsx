@@ -16,7 +16,7 @@ export const Route = createFileRoute("/mentor/$id")({
   component: MentorProfilePage,
 });
 
-const DURATION = 30;
+const DURATION = 60;
 
 type MentorProfile = {
   id: string;
@@ -277,9 +277,11 @@ function BookingWidget({ mentor }: { mentor: MentorProfile }) {
     const loadSlots = async () => {
       setLoadingSlots(true);
       setError(null);
-      const day = new Date(`${date}T00:00:00`).getDay();
+      const jsDay = new Date(`${date}T00:00:00`).getDay();
+      // Convert JS getDay() (0=Sun..6=Sat) to ISO 8601 (1=Mon..7=Sun) to match mentor_availability.day_of_week.
+      const isoDay = jsDay === 0 ? 7 : jsDay;
       const [{ data: availability, error: aErr }, { data: bookings, error: bErr }] = await Promise.all([
-        supabase.from("mentor_availability").select("start_hour").eq("mentor_id", mentor.id).eq("day_of_week", day),
+        supabase.from("mentor_availability").select("start_hour").eq("mentor_id", mentor.id).eq("day_of_week", isoDay),
         (supabase as any).from("bookings").select("time_slot").eq("mentor_id", mentor.id).eq("date", date).eq("status", "confirmed"),
       ]);
       if (cancelled) return;

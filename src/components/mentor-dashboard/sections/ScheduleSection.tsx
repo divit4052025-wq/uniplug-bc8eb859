@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
+// mentor_availability.day_of_week stores ISO 8601 weekdays: 1=Mon..7=Sun.
+// DAYS is in Monday-first order so the label for an ISO day is DAYS[day_of_week - 1].
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-// day_of_week: 0=Mon..6=Sun (we use ISO-like ordering)
 const HOURS = Array.from({ length: 15 }, (_, i) => 8 + i); // 8..22
 
 type Slot = { day_of_week: number; start_hour: number };
@@ -50,7 +51,7 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
       .from("bookings")
       .select("date, time_slot, student_id")
       .eq("mentor_id", mentorId)
-      .in("status", ["confirmed", "pending"])
+      .in("status", ["confirmed"])
       .gte("date", weekStartStr)
       .lt("date", weekEndStr);
     const rows = data ?? [];
@@ -69,8 +70,10 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
     setBookings(list);
   };
 
+  // slotSet keys use the 0-based DAYS index so the render-side `${di}-${h}`
+  // lookup keeps working unchanged. ISO day_of_week 1..7 → DAYS index 0..6.
   const slotSet = useMemo(
-    () => new Set(slots.map((s) => `${s.day_of_week}-${s.start_hour}`)),
+    () => new Set(slots.map((s) => `${s.day_of_week - 1}-${s.start_hour}`)),
     [slots]
   );
 
@@ -87,20 +90,22 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
   }, [bookings]);
 
   const toggleSlot = async (day: number, hour: number) => {
+    // `day` is the 0-based DAYS index (Mon=0). DB stores ISO 1..7.
+    const isoDay = day + 1;
     const key = `${day}-${hour}`;
     if (slotSet.has(key)) {
       await supabase
         .from("mentor_availability")
         .delete()
         .eq("mentor_id", mentorId)
-        .eq("day_of_week", day)
+        .eq("day_of_week", isoDay)
         .eq("start_hour", hour);
-      setSlots((prev) => prev.filter((s) => !(s.day_of_week === day && s.start_hour === hour)));
+      setSlots((prev) => prev.filter((s) => !(s.day_of_week === isoDay && s.start_hour === hour)));
     } else {
       await supabase
         .from("mentor_availability")
-        .insert({ mentor_id: mentorId, day_of_week: day, start_hour: hour });
-      setSlots((prev) => [...prev, { day_of_week: day, start_hour: hour }]);
+        .insert({ mentor_id: mentorId, day_of_week: isoDay, start_hour: hour });
+      setSlots((prev) => [...prev, { day_of_week: isoDay, start_hour: hour }]);
     }
   };
 
