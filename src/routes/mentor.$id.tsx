@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Calendar, Check, Star } from "lucide-react";
+import { BadgeCheck, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
-import { sendBookingEmails } from "@/lib/email/booking.functions";
+import MentorCalendar from "@/components/calendar/MentorCalendar";
 
 export const Route = createFileRoute("/mentor/$id")({
   head: () => ({
@@ -15,8 +15,6 @@ export const Route = createFileRoute("/mentor/$id")({
   }),
   component: MentorProfilePage,
 });
-
-const DURATION = 60;
 
 type MentorProfile = {
   id: string;
@@ -40,12 +38,6 @@ type Review = {
   studentName?: string;
 };
 
-
-function todayISO() {
-  const d = new Date();
-  d.setHours(0, 0, 0, 0);
-  return d.toISOString().slice(0, 10);
-}
 
 function MentorProfilePage() {
   const { id } = Route.useParams();
@@ -209,7 +201,11 @@ function MentorProfilePage() {
             </div>
 
             <div id="booking-widget">
-              <BookingWidget mentor={mentor} />
+              <MentorCalendar
+                mentorId={mentor.id}
+                mentorName={mentor.full_name ?? "this mentor"}
+                pricePerSessionInr={mentor.price_inr}
+              />
             </div>
           </div>
         </section>
@@ -258,160 +254,6 @@ function StatPill({ icon, label, sub }: { icon?: React.ReactNode; label: string;
       {icon}
       <span className="text-[13px] font-semibold text-[#FFFCFB]">{label}</span>
       <span className="text-[11px] uppercase tracking-wider text-[#EDE0DB]/70">{sub}</span>
-    </div>
-  );
-}
-
-function BookingWidget({ mentor }: { mentor: MentorProfile }) {
-  const navigate = useNavigate();
-  const [date, setDate] = useState<string>(todayISO());
-  const [slot, setSlot] = useState<string | null>(null);
-  const [availableSlots, setAvailableSlots] = useState<string[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    const loadSlots = async () => {
-      setLoadingSlots(true);
-      setError(null);
-      const jsDay = new Date(`${date}T00:00:00`).getDay();
-      // Convert JS getDay() (0=Sun..6=Sat) to ISO 8601 (1=Mon..7=Sun) to match mentor_availability.day_of_week.
-      const isoDay = jsDay === 0 ? 7 : jsDay;
-      const [{ data: availability, error: aErr }, { data: bookings, error: bErr }] = await Promise.all([
-        supabase.from("mentor_availability").select("start_hour").eq("mentor_id", mentor.id).eq("day_of_week", isoDay),
-        (supabase as any).from("bookings").select("time_slot").eq("mentor_id", mentor.id).eq("date", date).eq("status", "confirmed"),
-      ]);
-      if (cancelled) return;
-      if (aErr || bErr) {
-        setError("Could not load slots.");
-        setAvailableSlots([]);
-        setLoadingSlots(false);
-        return;
-      }
-      const booked = new Set((bookings ?? []).map((b: { time_slot: string }) => b.time_slot));
-      const slots = (availability ?? [])
-        .map((a) => `${String(a.start_hour).padStart(2, "0")}:00`)
-        .filter((s) => !booked.has(s))
-        .sort();
-      setAvailableSlots(slots);
-      if (slot && !slots.includes(slot)) setSlot(null);
-      setLoadingSlots(false);
-    };
-    void loadSlots();
-    return () => { cancelled = true; };
-  }, [date, mentor.id, slot]);
-
-  const confirm = async () => {
-    if (!slot) { setError("Pick a time slot."); return; }
-    setError(null);
-    setSubmitting(true);
-    try {
-      const { data: sess } = await supabase.auth.getSession();
-      const studentId = sess.session?.user.id;
-      if (!studentId) throw new Error("You must be logged in to book.");
-      const { data: inserted, error: insErr } = await (supabase as any).from("bookings").insert({
-        mentor_id: mentor.id,
-        student_id: studentId,
-        date,
-        time_slot: slot,
-        duration: DURATION,
-        price: mentor.price_inr,
-        status: "confirmed",
-      }).select("id").single();
-      if (insErr) throw insErr;
-      if (inserted?.id) {
-        try {
-          const r = await sendBookingEmails({ data: { bookingId: inserted.id } });
-          console.log("[booking-emails] dispatch result", r);
-        } catch (e) {
-          console.error("[booking-emails] dispatch failed", e);
-        }
-      }
-      setSuccess(true);
-      setTimeout(() => navigate({ to: "/dashboard" }), 1500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not book session.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  if (success) {
-    return (
-      <div className="rounded-3xl border border-[#EDE0DB] bg-[#FFFCFB] p-6 text-center shadow-[0_20px_40px_-20px_rgba(26,26,26,0.15)]">
-        <div className="mx-auto grid h-12 w-12 place-content-center rounded-full bg-[#C4907F]">
-          <Check className="h-6 w-6 text-[#FFFCFB]" />
-        </div>
-        <h3 className="mt-4 font-display text-[20px] font-semibold text-[#1A1A1A]">Your session is booked</h3>
-        <p className="mt-1 text-[13px] text-[#1A1A1A]/70">Check your email for the video call link.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="sticky top-6 rounded-3xl border border-[#EDE0DB] bg-[#FFFCFB] p-6 shadow-[0_20px_40px_-20px_rgba(26,26,26,0.15)]">
-      <h3 className="font-display text-[20px] font-semibold text-[#1A1A1A]">Book a session</h3>
-      <div className="mt-5 space-y-5">
-        <div>
-          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-[#1A1A1A]/70">Select a date</label>
-          <div className="relative">
-            <Calendar className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#1A1A1A]/40" />
-            <input
-              type="date"
-              min={todayISO()}
-              value={date}
-              onChange={(e) => { setDate(e.target.value); setSlot(null); }}
-              className="w-full rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] py-2.5 pl-9 pr-3 text-[13px] text-[#1A1A1A] focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="mb-2 block text-[11px] font-semibold uppercase tracking-wider text-[#1A1A1A]/70">Available time slots</label>
-          <div className="flex flex-wrap gap-2">
-            {loadingSlots && <p className="text-[13px] text-[#1A1A1A]/60">Loading…</p>}
-            {!loadingSlots && availableSlots.length === 0 && <p className="text-[13px] text-[#1A1A1A]/60">No slots for this date.</p>}
-            {!loadingSlots && availableSlots.map((s) => {
-              const selected = slot === s;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSlot(s)}
-                  className={`rounded-full px-3.5 py-1.5 text-[12px] font-medium transition ${selected ? "bg-[#C4907F] text-[#FFFCFB]" : "bg-[#EDE0DB] text-[#1A1A1A] hover:bg-[#E8C4B8]"}`}
-                >
-                  {s}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between rounded-2xl bg-[#EDE0DB] px-4 py-3">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1A1A1A]/60">Duration</p>
-            <p className="mt-0.5 text-[13px] font-medium text-[#1A1A1A]">{DURATION} minutes</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[10px] font-semibold uppercase tracking-wider text-[#1A1A1A]/60">Price</p>
-            <p className="mt-0.5 font-display text-[18px] font-semibold text-[#1A1A1A]">₹{mentor.price_inr.toLocaleString("en-IN")}</p>
-          </div>
-        </div>
-
-        {error && <p className="text-[13px] text-destructive">{error}</p>}
-
-        <button
-          type="button"
-          onClick={confirm}
-          disabled={submitting || !slot}
-          className="w-full rounded-full bg-[#C4907F] py-3 text-[13px] font-medium text-[#FFFCFB] transition hover:opacity-90 disabled:opacity-60"
-        >
-          {submitting ? "Booking…" : "Confirm Booking"}
-        </button>
-      </div>
     </div>
   );
 }
