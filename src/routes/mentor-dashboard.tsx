@@ -131,7 +131,7 @@ function MentorDashboard() {
 
       <main className="md:ml-[240px]">
         <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
-          <DashboardTopbar firstName={firstName} />
+          <DashboardTopbar firstName={firstName} role="mentor" />
           {active !== "settings" && availabilityCount === 0 && (
             <div className="mt-6 flex flex-col gap-4 rounded-r-2xl border-l-4 border-[#C4907F] bg-[#EDE0DB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
               <div>

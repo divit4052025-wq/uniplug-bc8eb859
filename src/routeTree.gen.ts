@@ -14,6 +14,7 @@ import { Route as StudentSignupRouteImport } from './routes/student-signup'
 import { Route as SessionNotesRouteImport } from './routes/session-notes'
 import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MentorSignupRouteImport } from './routes/mentor-signup'
 import { Route as MentorDashboardRouteImport } from './routes/mentor-dashboard'
 import { Route as LoginRouteImport } from './routes/login'
@@ -50,6 +51,11 @@ const ProgressRoute = ProgressRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentorSignupRoute = MentorSignupRouteImport.update({
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
+  '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/notifications'
     | '/privacy'
     | '/progress'
     | '/session-notes'
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/notifications'
     | '/privacy'
     | '/progress'
     | '/session-notes'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/mentor-dashboard'
     | '/mentor-signup'
+    | '/notifications'
     | '/privacy'
     | '/progress'
     | '/session-notes'
@@ -242,6 +254,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
+  NotificationsRoute: typeof NotificationsRoute
   PrivacyRoute: typeof PrivacyRoute
   ProgressRoute: typeof ProgressRoute
   SessionNotesRoute: typeof SessionNotesRouteWithChildren
@@ -286,6 +299,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentor-signup': {
@@ -397,6 +417,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
+  NotificationsRoute: NotificationsRoute,
   PrivacyRoute: PrivacyRoute,
   ProgressRoute: ProgressRoute,
   SessionNotesRoute: SessionNotesRouteWithChildren,
