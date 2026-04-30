@@ -52,12 +52,9 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
       setRows([]);
       return;
     }
-    const { data: studs } = await supabase
-      .from("students")
-      .select("id, full_name, grade, school")
-      .in("id", ids);
+    const { data: studs } = await (supabase as any).rpc("get_student_booking_names", { _ids: ids });
     setRows(
-      (studs ?? []).map((s) => ({
+      (studs ?? []).map((s: { id: string; full_name: string; grade: string; school: string }) => ({
         id: s.id,
         full_name: s.full_name,
         grade: s.grade,
