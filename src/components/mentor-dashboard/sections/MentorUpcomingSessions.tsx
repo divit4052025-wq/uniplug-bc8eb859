@@ -17,6 +17,15 @@ type Row = {
 type Document = { id: string; file_name: string };
 type School = { id: string; name: string; category: string };
 
+function todayInIst(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [profile, setProfile] = useState<{
@@ -38,6 +47,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
       .select("id, date, time_slot, student_id")
       .eq("mentor_id", mentorId)
       .eq("status", "confirmed")
+      .gte("date", todayInIst())
       .order("date", { ascending: true })
       .order("time_slot", { ascending: true });
     const bookings = data ?? [];
