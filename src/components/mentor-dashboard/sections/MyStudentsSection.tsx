@@ -69,9 +69,8 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
   };
 
   const view = async (studentId: string, name: string) => {
-    const [{ data: docs }, { data: schools }, { data: notes }] = await Promise.all([
-      supabase.from("student_documents").select("id, file_name").eq("student_id", studentId),
-      supabase.from("student_schools").select("id, name, category").eq("student_id", studentId),
+    const [{ data: overview }, { data: notes }] = await Promise.all([
+      (supabase as any).rpc("get_student_overview_for_mentor", { _student_id: studentId }),
       supabase
         .from("session_notes")
         .select("id, summary, created_at, action_points")
@@ -79,6 +78,9 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
         .eq("mentor_id", mentorId)
         .order("created_at", { ascending: false }),
     ]);
+    const overviewRow = (overview as any[])?.[0];
+    const docs: { id: string; file_name: string }[] = overviewRow?.documents ?? [];
+    const schools: { id: string; name: string; category: string }[] = overviewRow?.schools ?? [];
     const noteRows = notes ?? [];
     const noteIds = noteRows.map((n) => n.id);
     const compMap = new Map<string, Record<number, boolean>>();

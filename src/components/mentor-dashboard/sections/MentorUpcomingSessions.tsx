@@ -59,16 +59,16 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
   };
 
   const openProfile = async (studentId: string, name: string, grade: string, school: string) => {
-    const [{ data: docs }, { data: schools }] = await Promise.all([
-      supabase.from("student_documents").select("id, file_name").eq("student_id", studentId),
-      supabase.from("student_schools").select("id, name, category").eq("student_id", studentId),
-    ]);
+    const { data } = await (supabase as any).rpc("get_student_overview_for_mentor", {
+      _student_id: studentId,
+    });
+    const result = (data as any[])?.[0];
     setProfile({
       name,
       grade,
       school,
-      docs: docs ?? [],
-      schools: schools ?? [],
+      docs: result?.documents ?? [],
+      schools: result?.schools ?? [],
     });
   };
 
