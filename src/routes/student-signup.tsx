@@ -68,32 +68,31 @@ function StudentSignup() {
     setErrors({});
     setSubmitting(true);
     try {
-      const { data: signUp, error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: { role: "student", full_name: data.fullName },
+          data: {
+            role: "student",
+            full_name: data.fullName,
+            phone: data.phone,
+            school: data.school,
+            grade: data.grade,
+            countries: data.countries,
+          },
         },
       });
       if (signUpError) throw signUpError;
-      const userId = signUp.user?.id;
-      if (!userId) throw new Error("Sign up failed");
-
-      const { error: insertError } = await supabase.from("students").insert({
-        id: userId,
-        full_name: data.fullName,
-        email: data.email,
-        phone: data.phone,
-        school: data.school,
-        grade: data.grade,
-        countries: data.countries,
-      });
-      if (insertError) throw insertError;
 
       navigate({ to: "/dashboard" });
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Something went wrong");
+      const raw = err instanceof Error ? err.message : "Something went wrong";
+      // Supabase wraps trigger-raised exceptions; show a friendly fallback in that case.
+      const friendly = /database error saving new user/i.test(raw)
+        ? "We couldn't create your account. Please check your details and try again."
+        : raw;
+      setServerError(friendly);
       setSubmitting(false);
     }
   };

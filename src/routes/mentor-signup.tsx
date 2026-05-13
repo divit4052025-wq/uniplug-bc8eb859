@@ -68,33 +68,31 @@ function MentorSignup() {
     setErrors({});
     setSubmitting(true);
     try {
-      const { data: signUp, error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
           emailRedirectTo: `${window.location.origin}/mentor-dashboard`,
-          data: { role: "mentor", full_name: data.fullName },
+          data: {
+            role: "mentor",
+            full_name: data.fullName,
+            university: data.university,
+            course: data.course,
+            year: data.year,
+            countries: data.countries,
+          },
         },
       });
       if (signUpError) throw signUpError;
-      const userId = signUp.user?.id;
-      if (!userId) throw new Error("Sign up failed");
-
-      const { error: insertError } = await supabase.from("mentors").insert({
-        id: userId,
-        full_name: data.fullName,
-        email: data.email,
-        university: data.university,
-        course: data.course,
-        year: data.year,
-        countries: data.countries,
-        status: "pending",
-      });
-      if (insertError) throw insertError;
 
       navigate({ to: "/mentor-dashboard" });
     } catch (err) {
-      setServerError(err instanceof Error ? err.message : "Something went wrong");
+      const raw = err instanceof Error ? err.message : "Something went wrong";
+      // Supabase wraps trigger-raised exceptions; show a friendly fallback in that case.
+      const friendly = /database error saving new user/i.test(raw)
+        ? "We couldn't create your account. Please check your details and try again."
+        : raw;
+      setServerError(friendly);
       setSubmitting(false);
     }
   };
