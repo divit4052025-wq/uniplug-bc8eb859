@@ -111,10 +111,44 @@ function NotificationsPage() {
     },
   });
 
+  // Bug 6.8: bulk mark-all-as-read. Client-side enumeration of unread ids
+  // (current RLS UPDATE policy permits this; no new RPC required). On
+  // failure, restore previous state and surface the error banner.
+  const markAllReadMutation = useMutation({
+    mutationFn: async ({ ids, readAt }: { ids: string[]; readAt: string }) => {
+      if (ids.length === 0) return;
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read_at: readAt })
+        .in("id", ids);
+      if (error) throw error;
+    },
+    onMutate: async ({ readAt }) => {
+      await qc.cancelQueries({ queryKey: notificationsKey });
+      const prev = qc.getQueryData<NotificationRow[]>(notificationsKey) ?? [];
+      qc.setQueryData<NotificationRow[]>(
+        notificationsKey,
+        prev.map((r) => (r.read_at ? r : { ...r, read_at: readAt })),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(notificationsKey, ctx.prev);
+      setMutationError("Could not mark all as read.");
+    },
+  });
+
   const markAsRead = (id: string) => {
     const row = rows.find((r) => r.id === id);
     if (!row || row.read_at) return;
     markAsReadMutation.mutate({ id, readAt: new Date().toISOString() });
+  };
+
+  const unreadCount = rows.filter((r) => !r.read_at).length;
+  const markAllRead = () => {
+    if (unreadCount === 0) return;
+    const ids = rows.filter((r) => !r.read_at).map((r) => r.id);
+    markAllReadMutation.mutate({ ids, readAt: new Date().toISOString() });
   };
 
   if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
@@ -128,12 +162,26 @@ function NotificationsPage() {
         >
           <ArrowLeft className="h-4 w-4" /> Back to dashboard
         </Link>
-        <h1 className="mt-5 font-display text-[32px] font-semibold text-[#1A1A1A] md:text-[40px]">
-          Notifications
-        </h1>
-        <p className="mt-1 text-[14px] font-light text-[#1A1A1A]/60">
-          Updates on your sessions and students.
-        </p>
+        <div className="mt-5 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="font-display text-[32px] font-semibold text-[#1A1A1A] md:text-[40px]">
+              Notifications
+            </h1>
+            <p className="mt-1 text-[14px] font-light text-[#1A1A1A]/60">
+              Updates on your sessions and students.
+            </p>
+          </div>
+          {unreadCount > 0 && (
+            <button
+              type="button"
+              onClick={markAllRead}
+              disabled={markAllReadMutation.isPending}
+              className="shrink-0 self-end text-[12px] font-semibold text-[#C4907F] underline underline-offset-2 hover:opacity-80 disabled:opacity-50"
+            >
+              {markAllReadMutation.isPending ? "Marking…" : "Mark all as read"}
+            </button>
+          )}
+        </div>
 
         {isError && (
           <div className="mt-6">
