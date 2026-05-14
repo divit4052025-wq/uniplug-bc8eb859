@@ -1,47 +1,68 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, X, Loader2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 const BIO_MAX = 500;
 const ACCEPTED_IMAGE = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 MB
 
+type MentorProfile = {
+  bio: string;
+  topics: string[];
+  photo_url: string | null;
+};
+
 export function SettingsSection({ mentorId }: { mentorId: string }) {
+  const qc = useQueryClient();
+  const profileKey = ["mentor-profile", mentorId] as const;
+
   const [bio, setBio] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [topicInput, setTopicInput] = useState("");
-
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-  // ── Load current values ──────────────────────────────────────────────────
-  useEffect(() => {
-    let cancelled = false;
-    supabase
-      .from("mentors")
-      .select("bio, topics, photo_url")
-      .eq("id", mentorId)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (cancelled) return;
-        setBio(data?.bio ?? "");
-        setTopics(Array.isArray(data?.topics) ? (data.topics as string[]) : []);
-        setPhotoUrl(data?.photo_url ?? null);
-        setLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [mentorId]);
+  const { data: profile, isLoading, isError, refetch } = useQuery<MentorProfile>({
+    queryKey: profileKey,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("mentors")
+        .select("bio, topics, photo_url")
+        .eq("id", mentorId)
+        .maybeSingle();
+      if (error) throw error;
+      return {
+        bio: data?.bio ?? "",
+        topics: Array.isArray(data?.topics) ? (data.topics as string[]) : [],
+        photo_url: data?.photo_url ?? null,
+      };
+    },
+  });
 
-  // ── Topics helpers ───────────────────────────────────────────────────────
+  // Sync local form state from query data on first load.
+  useEffect(() => {
+    if (!initialized && profile) {
+      setBio(profile.bio);
+      setTopics(profile.topics);
+      setPhotoUrl(profile.photo_url);
+      setInitialized(true);
+    }
+  }, [profile, initialized]);
+
   const addTopic = () => {
     const trimmed = topicInput.trim();
     if (!trimmed) return;
-    if (topics.includes(trimmed)) { setTopicInput(""); return; }
+    if (topics.includes(trimmed)) {
+      setTopicInput("");
+      return;
+    }
     setTopics((prev) => [...prev, trimmed]);
     setTopicInput("");
   };
@@ -49,10 +70,12 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
   const removeTopic = (t: string) => setTopics((prev) => prev.filter((x) => x !== t));
 
   const onTopicKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") { e.preventDefault(); addTopic(); }
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addTopic();
+    }
   };
 
-  // ── Photo upload ─────────────────────────────────────────────────────────
   const handlePhoto = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     const file = files[0];
@@ -85,30 +108,38 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
     }
   };
 
-  // ── Save ─────────────────────────────────────────────────────────────────
-  const save = async () => {
-    setSaving(true);
-    const { error } = await supabase
-      .from("mentors")
-      .update({ bio: bio.trim() || null, topics, photo_url: photoUrl })
-      .eq("id", mentorId);
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
-    } else {
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase
+        .from("mentors")
+        .update({ bio: bio.trim() || null, topics, photo_url: photoUrl })
+        .eq("id", mentorId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
       toast.success("Profile saved.");
-    }
-  };
+      void qc.invalidateQueries({ queryKey: profileKey });
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Couldn't save profile.");
+    },
+  });
 
-  if (loading) {
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-[680px] space-y-10 pb-20 pt-2">
+        <ErrorBanner message="Couldn't load your profile." onRetry={() => void refetch()} />
+      </div>
+    );
+  }
+
+  if (isLoading || !initialized) {
     return (
       <div className="flex min-h-[40vh] items-center justify-center">
         <Loader2 className="h-6 w-6 animate-spin text-[#C4907F]" />
       </div>
     );
   }
-
-  const initials = ""; // photo fallback handled below
 
   return (
     <div className="mx-auto max-w-[680px] space-y-10 pb-20 pt-2">
@@ -119,12 +150,10 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
         </p>
       </div>
 
-      {/* ── Photo ── */}
       <section className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-6">
         <h3 className="text-[14px] font-semibold text-[#1A1A1A]">Profile Photo</h3>
         <p className="mt-0.5 text-[12px] text-[#1A1A1A]/60">JPEG, PNG or WebP · max 5 MB</p>
         <div className="mt-4 flex items-center gap-5">
-          {/* Preview */}
           <div className="relative h-20 w-20 shrink-0">
             {photoUrl ? (
               <img
@@ -143,7 +172,6 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
               </div>
             )}
           </div>
-          {/* Upload button */}
           <label className="cursor-pointer">
             <input
               ref={photoInputRef}
@@ -170,7 +198,6 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
         </div>
       </section>
 
-      {/* ── Bio ── */}
       <section className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-6">
         <h3 className="text-[14px] font-semibold text-[#1A1A1A]">About Me</h3>
         <p className="mt-0.5 text-[12px] text-[#1A1A1A]/60">
@@ -183,19 +210,21 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
           rows={5}
           className="mt-3 w-full resize-none rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-4 py-3 text-[14px] leading-relaxed text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
         />
-        <p className={`mt-1 text-right text-[11px] ${bio.length >= BIO_MAX ? "text-destructive" : "text-[#1A1A1A]/40"}`}>
+        <p
+          className={`mt-1 text-right text-[11px] ${
+            bio.length >= BIO_MAX ? "text-destructive" : "text-[#1A1A1A]/40"
+          }`}
+        >
           {bio.length}/{BIO_MAX}
         </p>
       </section>
 
-      {/* ── Topics ── */}
       <section className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-6">
         <h3 className="text-[14px] font-semibold text-[#1A1A1A]">I Can Help With</h3>
         <p className="mt-0.5 text-[12px] text-[#1A1A1A]/60">
           Tags shown in the "I Can Help You With" section on your profile.
         </p>
 
-        {/* Existing tags */}
         {topics.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-2">
             {topics.map((t) => (
@@ -217,7 +246,6 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
           </div>
         )}
 
-        {/* Add topic input */}
         <div className="mt-3 flex gap-2">
           <input
             value={topicInput}
@@ -242,14 +270,13 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
         </p>
       </section>
 
-      {/* ── Save ── */}
       <button
         type="button"
-        onClick={save}
-        disabled={saving}
+        onClick={() => saveMutation.mutate()}
+        disabled={saveMutation.isPending}
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#C4907F] px-6 text-[14px] font-medium text-white transition hover:opacity-90 disabled:opacity-60 sm:w-auto sm:px-10"
       >
-        {saving ? (
+        {saveMutation.isPending ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
             Saving…

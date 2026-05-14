@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { X, FileText } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { formatBookingDate, isBookingEnded, todayInIST } from "@/lib/time";
 
 type Row = {
   id: string;
@@ -17,17 +21,7 @@ type Row = {
 type Document = { id: string; file_name: string };
 type School = { id: string; name: string; category: string };
 
-function todayInIst(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
-
 export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
-  const [rows, setRows] = useState<Row[]>([]);
   const [profile, setProfile] = useState<{
     name: string;
     grade: string;
@@ -36,43 +30,53 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
     schools: School[];
   } | null>(null);
 
-  useEffect(() => {
-    void load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mentorId]);
-
-  const load = async () => {
-    const { data } = await (supabase as any)
-      .from("bookings")
-      .select("id, date, time_slot, student_id")
-      .eq("mentor_id", mentorId)
-      .eq("status", "confirmed")
-      .gte("date", todayInIst())
-      .order("date", { ascending: true })
-      .order("time_slot", { ascending: true });
-    const bookings = data ?? [];
-    const ids = Array.from(new Set(bookings.map((s: { student_id: string }) => s.student_id)));
-    const studMap = new Map<string, { full_name: string; grade: string; school: string }>();
-    if (ids.length) {
-      const { data: studs } = await (supabase as any).rpc("get_student_booking_names", { _ids: ids });
-      (studs ?? []).forEach((s: { id: string; full_name: string; grade: string; school: string }) => studMap.set(s.id, { full_name: s.full_name, grade: s.grade, school: s.school }));
-    }
-    setRows(
-      bookings.map((s: { id: string; date: string; time_slot: string; student_id: string }) => ({
+  const { data: rows = [], isError, refetch } = useQuery<Row[]>({
+    queryKey: ["mentor-upcoming-sessions", mentorId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("id, date, time_slot, student_id")
+        .eq("mentor_id", mentorId)
+        .eq("status", "confirmed")
+        .gte("date", todayInIST())
+        .order("date", { ascending: true })
+        .order("time_slot", { ascending: true });
+      if (error) throw error;
+      const bookings = (data ?? []).filter(
+        (b): b is { id: string; date: string; time_slot: string; student_id: string } =>
+          !!b.student_id && !isBookingEnded(b.date, b.time_slot),
+      );
+      const ids = Array.from(new Set(bookings.map((s) => s.student_id)));
+      const studMap = new Map<string, { full_name: string; grade: string; school: string }>();
+      if (ids.length) {
+        const { data: studs, error: rpcErr } = await supabase.rpc(
+          "get_student_booking_names",
+          { _ids: ids },
+        );
+        if (rpcErr) throw rpcErr;
+        ((studs ?? []) as { id: string; full_name: string; grade: string; school: string }[])
+          .forEach((s) => studMap.set(s.id, { full_name: s.full_name, grade: s.grade, school: s.school }));
+      }
+      return bookings.map((s) => ({
         id: s.id,
         date: s.date,
         time_slot: s.time_slot,
         student_id: s.student_id,
         student: studMap.get(s.student_id),
-      }))
-    );
-  };
+      }));
+    },
+  });
 
-  const openProfile = async (studentId: string, name: string, grade: string, school: string) => {
-    const { data } = await (supabase as any).rpc("get_student_overview_for_mentor", {
+  const openProfile = async (
+    studentId: string,
+    name: string,
+    grade: string,
+    school: string,
+  ) => {
+    const { data } = await supabase.rpc("get_student_overview_for_mentor", {
       _student_id: studentId,
     });
-    const result = (data as any[])?.[0];
+    const result = (data as { documents?: Document[]; schools?: School[] }[] | null)?.[0];
     setProfile({
       name,
       grade,
@@ -85,16 +89,22 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
   return (
     <section id="section-upcoming" className="scroll-mt-24">
       <h2 className="font-display text-[22px] font-semibold text-[#1A1A1A]">Upcoming Sessions</h2>
-      <div className="mt-4 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-2">
-        {rows.length === 0 ? (
-          <p className="px-4 py-8 text-center text-[14px] font-light text-[#1A1A1A]/70">
-            No upcoming sessions yet.
-          </p>
-        ) : (
-          <ul className="divide-y divide-[#EDE0DB]">
-            {rows.map((r) => {
-              const dt = new Date(`${r.date}T00:00:00`);
-              return (
+      {isError ? (
+        <div className="mt-4">
+          <ErrorBanner
+            message="Couldn't load your upcoming sessions."
+            onRetry={() => void refetch()}
+          />
+        </div>
+      ) : (
+        <div className="mt-4 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-2">
+          {rows.length === 0 ? (
+            <p className="px-4 py-8 text-center text-[14px] font-light text-[#1A1A1A]/70">
+              No upcoming sessions yet.
+            </p>
+          ) : (
+            <ul className="divide-y divide-[#EDE0DB]">
+              {rows.map((r) => (
                 <li
                   key={r.id}
                   className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
@@ -107,7 +117,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                       {r.student?.grade} · {r.student?.school}
                     </p>
                     <p className="mt-1 text-[12px] text-[#1A1A1A]/60">
-                      {dt.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })} · {r.time_slot}
+                      {formatBookingDate(r.date)} · {r.time_slot}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -117,7 +127,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                           r.student_id,
                           r.student?.full_name ?? "Student",
                           r.student?.grade ?? "",
-                          r.student?.school ?? ""
+                          r.student?.school ?? "",
                         )
                       }
                       className="inline-flex h-9 items-center justify-center rounded-full border border-[#1A1A1A]/15 px-4 text-[12px] font-medium text-[#1A1A1A] hover:border-[#C4907F] hover:text-[#C4907F]"
@@ -132,11 +142,11 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                     </a>
                   </div>
                 </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
 
       {profile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4">

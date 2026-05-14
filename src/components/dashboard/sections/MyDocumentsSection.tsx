@@ -1,6 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Trash2, UploadCloud, FileText, Loader2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 type Doc = {
   id: string;
@@ -18,43 +21,65 @@ const ACCEPTED = [
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
 export function MyDocumentsSection({ userId }: { userId: string }) {
-  const [docs, setDocs] = useState<Doc[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const queryKey = ["my-documents", userId] as const;
+
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    supabase
-      .from("student_documents")
-      .select("id, file_name, storage_path, size_bytes, created_at")
-      .eq("student_id", userId)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        if (cancelled) return;
-        setDocs((data ?? []) as Doc[]);
-        setLoading(false);
+  const { data: docs = [], isLoading, isError, refetch } = useQuery<Doc[]>({
+    queryKey,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_documents")
+        .select("id, file_name, storage_path, size_bytes, created_at")
+        .eq("student_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Doc[];
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (doc: Doc) => {
+      await supabase.storage.from("student-documents").remove([doc.storage_path]);
+      const { error } = await supabase.from("student_documents").delete().eq("id", doc.id);
+      if (error) throw error;
+    },
+    onMutate: async (doc) => {
+      setBusyIds((s) => new Set(s).add(doc.id));
+      await qc.cancelQueries({ queryKey });
+      const prev = qc.getQueryData<Doc[]>(queryKey) ?? [];
+      qc.setQueryData<Doc[]>(queryKey, prev.filter((x) => x.id !== doc.id));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(queryKey, ctx.prev);
+    },
+    onSettled: (_data, _err, doc) => {
+      setBusyIds((s) => {
+        const n = new Set(s);
+        n.delete(doc.id);
+        return n;
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+    },
+  });
 
   const handleFiles = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
-    setError(null);
+    setUploadError(null);
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
         if (!ACCEPTED.includes(file.type) && !/\.(pdf|docx?)$/i.test(file.name)) {
-          setError(`${file.name}: only PDF, DOC, DOCX allowed`);
+          setUploadError(`${file.name}: only PDF, DOC, DOCX allowed`);
           continue;
         }
         if (file.size > MAX_SIZE) {
-          setError(`${file.name}: max 10 MB`);
+          setUploadError(`${file.name}: max 10 MB`);
           continue;
         }
         const path = `${userId}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
@@ -62,7 +87,7 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
           .from("student-documents")
           .upload(path, file, { contentType: file.type, upsert: false });
         if (upErr) {
-          setError(`${file.name}: ${upErr.message}`);
+          setUploadError(`${file.name}: ${upErr.message}`);
           continue;
         }
         const { data: row, error: insErr } = await supabase
@@ -77,27 +102,15 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
           .single();
         if (insErr || !row) {
           await supabase.storage.from("student-documents").remove([path]);
-          setError(`${file.name}: ${insErr?.message ?? "Failed to save"}`);
+          setUploadError(`${file.name}: ${insErr?.message ?? "Failed to save"}`);
           continue;
         }
-        setDocs((d) => [row as Doc, ...d]);
+        qc.setQueryData<Doc[]>(queryKey, (current = []) => [row as Doc, ...current]);
       }
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
     }
-  };
-
-  const remove = async (doc: Doc) => {
-    setBusyIds((s) => new Set(s).add(doc.id));
-    await supabase.storage.from("student-documents").remove([doc.storage_path]);
-    await supabase.from("student_documents").delete().eq("id", doc.id);
-    setDocs((d) => d.filter((x) => x.id !== doc.id));
-    setBusyIds((s) => {
-      const n = new Set(s);
-      n.delete(doc.id);
-      return n;
-    });
   };
 
   return (
@@ -140,12 +153,16 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
         </p>
       </label>
 
-      {error && (
-        <p className="mt-3 text-[12px] text-red-600">{error}</p>
+      {uploadError && <p className="mt-3 text-[12px] text-red-600">{uploadError}</p>}
+
+      {isError && (
+        <div className="mt-4">
+          <ErrorBanner message="Couldn't load your documents." onRetry={() => void refetch()} />
+        </div>
       )}
 
       <div className="mt-5 space-y-2">
-        {loading ? (
+        {isLoading ? (
           <p className="text-[13px] font-light text-[#1A1A1A]/40">Loading documents…</p>
         ) : docs.length === 0 ? (
           <p className="text-[13px] font-light text-[#1A1A1A]/40">No documents uploaded yet.</p>
@@ -173,7 +190,7 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
                 </div>
               </div>
               <button
-                onClick={() => remove(doc)}
+                onClick={() => removeMutation.mutate(doc)}
                 disabled={busyIds.has(doc.id)}
                 aria-label={`Delete ${doc.file_name}`}
                 className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#1A1A1A]/40 transition hover:bg-[#EDE0DB] hover:text-[#1A1A1A] disabled:opacity-50"

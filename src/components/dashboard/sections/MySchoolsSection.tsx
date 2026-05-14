@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 type Category = "dream" | "target" | "safety";
 type School = { id: string; name: string; category: Category };
@@ -12,51 +15,83 @@ const COLUMNS: { key: Category; label: string }[] = [
 ];
 
 export function MySchoolsSection({ userId }: { userId: string }) {
-  const [schools, setSchools] = useState<School[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const queryKey = ["my-schools", userId] as const;
 
-  useEffect(() => {
-    let cancelled = false;
-    supabase
-      .from("student_schools")
-      .select("id, name, category")
-      .eq("student_id", userId)
-      .order("created_at", { ascending: true })
-      .then(({ data }) => {
-        if (cancelled) return;
-        setSchools((data ?? []) as School[]);
-        setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
+  const { data: schools = [], isLoading, isError, refetch } = useQuery<School[]>({
+    queryKey,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("student_schools")
+        .select("id, name, category")
+        .eq("student_id", userId)
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as School[];
+    },
+  });
 
-  const add = async (category: Category, name: string) => {
+  const addMutation = useMutation({
+    mutationFn: async ({ category, name }: { category: Category; name: string }) => {
+      const { data, error } = await supabase
+        .from("student_schools")
+        .insert({ student_id: userId, name, category })
+        .select("id, name, category")
+        .single();
+      if (error || !data) throw error ?? new Error("Insert failed");
+      return data as School;
+    },
+    onMutate: async ({ category, name }) => {
+      await qc.cancelQueries({ queryKey });
+      const prev = qc.getQueryData<School[]>(queryKey) ?? [];
+      const tempId = `tmp-${Date.now()}`;
+      qc.setQueryData<School[]>(queryKey, [...prev, { id: tempId, name, category }]);
+      return { prev, tempId };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(queryKey, ctx.prev);
+    },
+    onSuccess: (row, _vars, ctx) => {
+      qc.setQueryData<School[]>(queryKey, (current = []) =>
+        current.map((s) => (s.id === ctx?.tempId ? row : s)),
+      );
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("student_schools").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey });
+      const prev = qc.getQueryData<School[]>(queryKey) ?? [];
+      qc.setQueryData<School[]>(queryKey, prev.filter((s) => s.id !== id));
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(queryKey, ctx.prev);
+    },
+  });
+
+  const add = (category: Category, name: string) => {
     const trimmed = name.trim();
     if (!trimmed) return;
-    const tempId = `tmp-${Date.now()}`;
-    setSchools((s) => [...s, { id: tempId, name: trimmed, category }]);
-    const { data, error } = await supabase
-      .from("student_schools")
-      .insert({ student_id: userId, name: trimmed, category })
-      .select("id, name, category")
-      .single();
-    if (error || !data) {
-      setSchools((s) => s.filter((x) => x.id !== tempId));
-      return;
-    }
-    setSchools((s) => s.map((x) => (x.id === tempId ? (data as School) : x)));
+    addMutation.mutate({ category, name: trimmed });
   };
 
-  const remove = async (id: string) => {
-    setSchools((s) => s.filter((x) => x.id !== id));
-    await supabase.from("student_schools").delete().eq("id", id);
+  const remove = (id: string) => {
+    removeMutation.mutate(id);
   };
 
   return (
     <section id="section-schools" className="scroll-mt-24">
       <h2 className="font-display text-[22px] font-semibold text-[#1A1A1A]">My Schools</h2>
+      {isError && (
+        <div className="mt-4">
+          <ErrorBanner message="Couldn't load your schools." onRetry={() => void refetch()} />
+        </div>
+      )}
       <div className="mt-4 grid gap-4 md:grid-cols-3">
         {COLUMNS.map((col) => (
           <Column
@@ -64,7 +99,7 @@ export function MySchoolsSection({ userId }: { userId: string }) {
             label={col.label}
             category={col.key}
             schools={schools.filter((s) => s.category === col.key)}
-            loading={loading}
+            loading={isLoading}
             onAdd={(name) => add(col.key, name)}
             onRemove={remove}
           />
@@ -99,7 +134,10 @@ function Column({
 
   return (
     <div className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-5">
-      <p className="text-[11px] font-medium uppercase text-[#C4907F]" style={{ letterSpacing: "3px" }}>
+      <p
+        className="text-[11px] font-medium uppercase text-[#C4907F]"
+        style={{ letterSpacing: "3px" }}
+      >
         {label}
       </p>
       <div className="mt-4 flex flex-wrap gap-2">

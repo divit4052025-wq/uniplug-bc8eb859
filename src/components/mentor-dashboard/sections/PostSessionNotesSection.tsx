@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { isBookingEnded } from "@/lib/time";
 
 type BookingOption = {
   id: string;
@@ -35,105 +39,88 @@ export function PostSessionNotesSection({
   onEditConsumed?: () => void;
 }) {
   const navigate = useNavigate();
-  const [bookings, setBookings] = useState<BookingOption[]>([]);
+  const qc = useQueryClient();
+  const bookingsKey = ["post-session-bookings", mentorId] as const;
+  const previousKey = ["post-session-previous", mentorId] as const;
+
   const [selected, setSelected] = useState<string>("");
   const [summary, setSummary] = useState("");
   const [points, setPoints] = useState<string[]>([""]);
-  const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const [previous, setPrevious] = useState<PreviousNote[]>([]);
+  const [extraBookings, setExtraBookings] = useState<BookingOption[]>([]);
 
-  useEffect(() => {
-    void load();
-    void loadPrevious();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mentorId]);
-
-  // When mentor arrives via "Edit" link from a note view page, preload that note
-  useEffect(() => {
-    if (!editNoteId || previous.length === 0) return;
-    const target = previous.find((p) => p.id === editNoteId);
-    if (target) {
-      editPrevious(target);
-      onEditConsumed?.();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editNoteId, previous]);
-
-  // Load existing note when a booking is selected
-  useEffect(() => {
-    if (!selected) {
-      setSummary("");
-      setPoints([""]);
-      return;
-    }
-    void loadNote(selected);
-  }, [selected]);
-
-  const load = async () => {
-    // Real completed sessions = bookings whose date+time is in the past, status confirmed/completed
-    const { data } = await supabase
-      .from("bookings")
-      .select("id, date, time_slot, student_id, status")
-      .eq("mentor_id", mentorId)
-      .in("status", ["confirmed", "completed"])
-      .order("date", { ascending: false })
-      .limit(50);
-    const now = new Date();
-    const past = (data ?? []).filter((b) => {
-      const dt = new Date(`${b.date}T${(b.time_slot ?? "00:00").slice(0, 5)}:00`);
-      return dt.getTime() <= now.getTime();
-    });
-    const ids = Array.from(new Set(past.map((r) => r.student_id)));
-    const nameMap = new Map<string, string>();
-    if (ids.length) {
-      const { data: studs } = await supabase.rpc("get_student_booking_names", { _ids: ids });
-      (studs ?? []).forEach((s: { id: string; full_name: string }) =>
-        nameMap.set(s.id, s.full_name),
+  const { data: bookingsBase = [], isError: bErr, refetch: refetchBookings } = useQuery<BookingOption[]>({
+    queryKey: bookingsKey,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("id, date, time_slot, student_id, status")
+        .eq("mentor_id", mentorId)
+        .in("status", ["confirmed", "completed"])
+        .order("date", { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      const past = (data ?? []).filter((b) =>
+        isBookingEnded(b.date, (b.time_slot ?? "00:00").slice(0, 5)),
       );
-    }
-    setBookings(
-      past.map((b) => ({
+      const ids = Array.from(new Set(past.map((r) => r.student_id).filter((v): v is string => !!v)));
+      const nameMap = new Map<string, string>();
+      if (ids.length) {
+        const { data: studs, error: rpcErr } = await supabase.rpc(
+          "get_student_booking_names",
+          { _ids: ids },
+        );
+        if (rpcErr) throw rpcErr;
+        ((studs ?? []) as { id: string; full_name: string }[]).forEach((s) =>
+          nameMap.set(s.id, s.full_name),
+        );
+      }
+      return past.map((b) => ({
         id: b.id,
         date: b.date,
         time_slot: b.time_slot,
-        student_id: b.student_id,
-        student_name: nameMap.get(b.student_id) ?? "Student",
-      })),
-    );
-  };
+        student_id: b.student_id ?? "",
+        student_name: b.student_id ? (nameMap.get(b.student_id) ?? "Student") : "Student",
+      }));
+    },
+  });
 
-  const loadPrevious = async () => {
-    const { data: rows } = await supabase
-      .from("session_notes")
-      .select("id, booking_id, student_id, summary, action_points, created_at, updated_at")
-      .eq("mentor_id", mentorId)
-      .order("updated_at", { ascending: false });
-    const list = rows ?? [];
-    if (list.length === 0) {
-      setPrevious([]);
-      return;
-    }
-    const studentIds = Array.from(new Set(list.map((n) => n.student_id)));
-    const bookingIds = Array.from(
-      new Set(list.map((n) => n.booking_id).filter((v): v is string => !!v)),
-    );
-    const [studsRes, bookingsRes] = await Promise.all([
-      supabase.rpc("get_student_booking_names", { _ids: studentIds }),
-      bookingIds.length
-        ? supabase.from("bookings").select("id, date, time_slot").in("id", bookingIds)
-        : Promise.resolve({ data: [] as { id: string; date: string; time_slot: string }[] }),
-    ]);
-    const nameMap = new Map<string, string>();
-    (studsRes.data ?? []).forEach((s: { id: string; full_name: string }) =>
-      nameMap.set(s.id, s.full_name),
-    );
-    const bookingMap = new Map<string, { date: string; time_slot: string }>();
-    (bookingsRes.data ?? []).forEach((b: { id: string; date: string; time_slot: string }) =>
-      bookingMap.set(b.id, { date: b.date, time_slot: b.time_slot }),
-    );
-    setPrevious(
-      list.map((n) => {
+  const bookings = [...bookingsBase, ...extraBookings];
+
+  const { data: previous = [], isError: pErr, refetch: refetchPrevious } = useQuery<PreviousNote[]>({
+    queryKey: previousKey,
+    queryFn: async () => {
+      const { data: rows, error } = await supabase
+        .from("session_notes")
+        .select("id, booking_id, student_id, summary, action_points, created_at, updated_at")
+        .eq("mentor_id", mentorId)
+        .order("updated_at", { ascending: false });
+      if (error) throw error;
+      const list = rows ?? [];
+      if (list.length === 0) return [];
+      const studentIds = Array.from(new Set(list.map((n) => n.student_id).filter((v): v is string => !!v)));
+      const bookingIds = Array.from(
+        new Set(list.map((n) => n.booking_id).filter((v): v is string => !!v)),
+      );
+      const [studsRes, bookingsRes] = await Promise.all([
+        studentIds.length
+          ? supabase.rpc("get_student_booking_names", { _ids: studentIds })
+          : Promise.resolve({ data: [] as { id: string; full_name: string }[], error: null }),
+        bookingIds.length
+          ? supabase.from("bookings").select("id, date, time_slot").in("id", bookingIds)
+          : Promise.resolve({ data: [] as { id: string; date: string; time_slot: string }[], error: null }),
+      ]);
+      if (studsRes.error) throw studsRes.error;
+      if (bookingsRes.error) throw bookingsRes.error;
+      const nameMap = new Map<string, string>();
+      ((studsRes.data ?? []) as { id: string; full_name: string }[]).forEach((s) =>
+        nameMap.set(s.id, s.full_name),
+      );
+      const bookingMap = new Map<string, { date: string; time_slot: string }>();
+      ((bookingsRes.data ?? []) as { id: string; date: string; time_slot: string }[]).forEach((b) =>
+        bookingMap.set(b.id, { date: b.date, time_slot: b.time_slot }),
+      );
+      return list.map((n) => {
         const bk = n.booking_id ? bookingMap.get(n.booking_id) : undefined;
         return {
           id: n.id,
@@ -147,9 +134,89 @@ export function PostSessionNotesSection({
           updated_at: n.updated_at,
           created_at: n.created_at,
         };
-      }),
-    );
-  };
+      });
+    },
+  });
+
+  // Load existing note when a booking is selected
+  useEffect(() => {
+    if (!selected) {
+      setSummary("");
+      setPoints([""]);
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("session_notes")
+        .select("summary, action_points")
+        .eq("booking_id", selected)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data) {
+        setSummary(data.summary ?? "");
+        const ap = Array.isArray(data.action_points) ? (data.action_points as string[]) : [];
+        setPoints(ap.length ? ap : [""]);
+      } else {
+        setSummary("");
+        setPoints([""]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selected]);
+
+  // When mentor arrives via "Edit" link, preload that note
+  useEffect(() => {
+    if (!editNoteId || previous.length === 0) return;
+    const target = previous.find((p) => p.id === editNoteId);
+    if (target) {
+      editPrevious(target);
+      onEditConsumed?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editNoteId, previous]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!selected) throw new Error("No booking selected");
+      const booking = bookings.find((b) => b.id === selected);
+      if (!booking) throw new Error("Booking not found");
+      const cleaned = points.map((p) => p.trim()).filter(Boolean);
+      const { data: existing } = await supabase
+        .from("session_notes")
+        .select("id")
+        .eq("booking_id", selected)
+        .maybeSingle();
+      if (existing?.id) {
+        const { error } = await supabase
+          .from("session_notes")
+          .update({ summary, action_points: cleaned, updated_at: new Date().toISOString() })
+          .eq("id", existing.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("session_notes").insert({
+          booking_id: selected,
+          mentor_id: mentorId,
+          student_id: booking.student_id,
+          summary,
+          action_points: cleaned,
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      toast.success("Notes saved successfully.");
+      setSavedAt(Date.now());
+      setTimeout(() => setSavedAt(null), 2200);
+      clearForm();
+      void qc.invalidateQueries({ queryKey: previousKey });
+    },
+    onError: () => {
+      toast.error("Could not save notes. Please try again.");
+    },
+  });
 
   const clearForm = () => {
     setSelected("");
@@ -157,70 +224,13 @@ export function PostSessionNotesSection({
     setPoints([""]);
   };
 
-  const loadNote = async (bookingId: string) => {
-    const { data } = await supabase
-      .from("session_notes")
-      .select("summary, action_points")
-      .eq("booking_id", bookingId)
-      .maybeSingle();
-    if (data) {
-      setSummary(data.summary ?? "");
-      const ap = Array.isArray(data.action_points) ? (data.action_points as string[]) : [];
-      setPoints(ap.length ? ap : [""]);
-    } else {
-      setSummary("");
-      setPoints([""]);
-    }
-  };
-
-  const save = async () => {
-    if (!selected) return;
-    const booking = bookings.find((b) => b.id === selected);
-    if (!booking) return;
-    setSaving(true);
-    const cleaned = points.map((p) => p.trim()).filter(Boolean);
-    const { data: existing } = await supabase
-      .from("session_notes")
-      .select("id")
-      .eq("booking_id", selected)
-      .maybeSingle();
-    let error;
-    if (existing?.id) {
-      const res = await supabase
-        .from("session_notes")
-        .update({ summary, action_points: cleaned, updated_at: new Date().toISOString() })
-        .eq("id", existing.id);
-      error = res.error;
-    } else {
-      const res = await supabase.from("session_notes").insert({
-        booking_id: selected,
-        mentor_id: mentorId,
-        student_id: booking.student_id,
-        summary,
-        action_points: cleaned,
-      });
-      error = res.error;
-    }
-    setSaving(false);
-    if (error) {
-      toast.error("Could not save notes. Please try again.");
-      return;
-    }
-    toast.success("Notes saved successfully.");
-    setSavedAt(Date.now());
-    setTimeout(() => setSavedAt(null), 2200);
-    clearForm();
-    void loadPrevious();
-  };
-
   const editPrevious = (n: PreviousNote) => {
     if (!n.booking_id) {
       toast.error("This note has no associated session.");
       return;
     }
-    // Ensure the booking is in the dropdown options (it should be — past sessions)
     if (!bookings.some((b) => b.id === n.booking_id)) {
-      setBookings((prev) => [
+      setExtraBookings((prev) => [
         ...prev,
         {
           id: n.booking_id as string,
@@ -242,6 +252,17 @@ export function PostSessionNotesSection({
   return (
     <section id="section-notes" className="scroll-mt-24">
       <h2 className="font-display text-[22px] font-semibold text-[#1A1A1A]">Post Session Notes</h2>
+      {(bErr || pErr) && (
+        <div className="mt-4">
+          <ErrorBanner
+            message="Couldn't load past sessions or notes."
+            onRetry={() => {
+              if (bErr) void refetchBookings();
+              if (pErr) void refetchPrevious();
+            }}
+          />
+        </div>
+      )}
       <div className="mt-4 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-5">
         <label className="block text-[12px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
           Select session
@@ -313,11 +334,11 @@ export function PostSessionNotesSection({
 
         <div className="mt-6 flex items-center gap-3">
           <button
-            onClick={save}
-            disabled={!selected || saving}
+            onClick={() => saveMutation.mutate()}
+            disabled={!selected || saveMutation.isPending}
             className="inline-flex h-10 items-center justify-center rounded-full bg-[#C4907F] px-6 text-[13px] font-medium text-white transition hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? "Saving…" : "Save Notes"}
+            {saveMutation.isPending ? "Saving…" : "Save Notes"}
           </button>
           {savedAt && (
             <span className="text-[12px] font-medium text-[#3F9D6E]">✓ Saved</span>

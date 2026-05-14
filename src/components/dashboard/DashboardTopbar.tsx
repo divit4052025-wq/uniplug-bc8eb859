@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { istGreeting } from "@/lib/time";
 
 export function DashboardTopbar({
   firstName,
@@ -10,35 +12,24 @@ export function DashboardTopbar({
   firstName: string;
   role: "student" | "mentor";
 }) {
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const greeting = istGreeting();
 
-  const [unreadCount, setUnreadCount] = useState(0);
-
-  useEffect(() => {
-    if (role !== "mentor") return;
-    let cancelled = false;
-    supabase.auth.getSession().then(async ({ data }) => {
-      if (cancelled) return;
-      const session = data.session;
-      if (!session) return;
-      const { count, error } = await (supabase as any)
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ["notifications", "unread-count", role],
+    enabled: role === "mentor",
+    queryFn: async () => {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const session = sessionData.session;
+      if (!session) return 0;
+      const { count, error } = await supabase
         .from("notifications")
         .select("id", { count: "exact", head: true })
         .eq("recipient_id", session.user.id)
         .is("read_at", null);
-      if (cancelled) return;
-      if (error) {
-        console.error("[topbar] unread count failed", error);
-        setUnreadCount(0);
-        return;
-      }
-      setUnreadCount(count ?? 0);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [role]);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
 
   return (
     <div className="flex items-start justify-between gap-4 pb-2">

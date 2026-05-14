@@ -1,6 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { X } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { endOfISTWeekSunday, startOfISTWeekMonday } from "@/lib/time";
 
 // mentor_availability.day_of_week stores ISO 8601 weekdays: 1=Mon..7=Sun.
 // DAYS is in Monday-first order so the label for an ISO day is DAYS[day_of_week - 1].
@@ -14,99 +18,115 @@ type Booking = {
   student_name: string;
 };
 
-function startOfWeekMonday(d: Date) {
-  const day = (d.getDay() + 6) % 7; // 0=Mon..6=Sun
-  const out = new Date(d);
-  out.setHours(0, 0, 0, 0);
-  out.setDate(out.getDate() - day);
-  return out;
-}
-
 export function ScheduleSection({ mentorId }: { mentorId: string }) {
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const qc = useQueryClient();
   const [panelOpen, setPanelOpen] = useState(false);
 
-  useEffect(() => {
-    void loadAvailability();
-    void loadBookings();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mentorId]);
+  const slotsKey = ["mentor-availability", mentorId] as const;
+  const bookingsKey = ["mentor-week-bookings", mentorId] as const;
 
-  const loadAvailability = async () => {
-    const { data } = await supabase
-      .from("mentor_availability")
-      .select("day_of_week,start_hour")
-      .eq("mentor_id", mentorId);
-    setSlots((data ?? []) as Slot[]);
-  };
+  const { data: slots = [], isError: slotsErr, refetch: refetchSlots } = useQuery<Slot[]>({
+    queryKey: slotsKey,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("mentor_availability")
+        .select("day_of_week,start_hour")
+        .eq("mentor_id", mentorId);
+      if (error) throw error;
+      return (data ?? []) as Slot[];
+    },
+  });
 
-  const loadBookings = async () => {
-    const weekStart = startOfWeekMonday(new Date());
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 7);
-    const weekStartStr = weekStart.toISOString().slice(0, 10);
-    const weekEndStr = weekEnd.toISOString().slice(0, 10);
-    const { data } = await (supabase as any)
-      .from("bookings")
-      .select("date, time_slot, student_id")
-      .eq("mentor_id", mentorId)
-      .in("status", ["confirmed"])
-      .gte("date", weekStartStr)
-      .lt("date", weekEndStr);
-    const rows = data ?? [];
-    const ids = Array.from(new Set(rows.map((r: { student_id: string }) => r.student_id)));
-    let nameMap = new Map<string, string>();
-    if (ids.length) {
-      const { data: studs } = await (supabase as any)
-        .rpc("get_student_booking_names", { _ids: ids });
-      (studs ?? []).forEach((s: { id: string; full_name: string }) => nameMap.set(s.id, s.full_name));
-    }
-    const list: Booking[] = rows.map((r: { date: string; time_slot: string; student_id: string }) => ({
-      date: r.date,
-      time_slot: r.time_slot,
-      student_name: nameMap.get(r.student_id) ?? "Student",
-    }));
-    setBookings(list);
-  };
+  const { data: bookings = [], isError: bookingsErr, refetch: refetchBookings } = useQuery<Booking[]>({
+    queryKey: bookingsKey,
+    queryFn: async () => {
+      const weekStartStr = startOfISTWeekMonday();
+      const weekEndStr = endOfISTWeekSunday();
+      const { data, error } = await supabase
+        .from("bookings")
+        .select("date, time_slot, student_id")
+        .eq("mentor_id", mentorId)
+        .in("status", ["confirmed"])
+        .gte("date", weekStartStr)
+        .lte("date", weekEndStr);
+      if (error) throw error;
+      const rows = data ?? [];
+      const ids = Array.from(new Set(rows.map((r) => r.student_id).filter((v): v is string => !!v)));
+      const nameMap = new Map<string, string>();
+      if (ids.length) {
+        const { data: studs, error: rpcErr } = await supabase.rpc(
+          "get_student_booking_names",
+          { _ids: ids },
+        );
+        if (rpcErr) throw rpcErr;
+        ((studs ?? []) as { id: string; full_name: string }[]).forEach((s) =>
+          nameMap.set(s.id, s.full_name),
+        );
+      }
+      return rows.map((r) => ({
+        date: r.date,
+        time_slot: r.time_slot,
+        student_name: r.student_id ? (nameMap.get(r.student_id) ?? "Student") : "Student",
+      }));
+    },
+  });
 
   // slotSet keys use the 0-based DAYS index so the render-side `${di}-${h}`
   // lookup keeps working unchanged. ISO day_of_week 1..7 → DAYS index 0..6.
   const slotSet = useMemo(
     () => new Set(slots.map((s) => `${s.day_of_week - 1}-${s.start_hour}`)),
-    [slots]
+    [slots],
   );
 
   const bookingMap = useMemo(() => {
     const map = new Map<string, string>();
-    const weekStart = startOfWeekMonday(new Date());
+    const weekStartStr = startOfISTWeekMonday();
+    const ws = new Date(`${weekStartStr}T00:00:00Z`).getTime();
     bookings.forEach((b) => {
-      const dt = new Date(`${b.date}T00:00:00`);
-      const day = Math.floor((dt.getTime() - weekStart.getTime()) / 86400000);
+      const dt = new Date(`${b.date}T00:00:00Z`).getTime();
+      const day = Math.round((dt - ws) / 86400000);
       const hour = parseInt(b.time_slot.split(":")[0], 10);
       if (day >= 0 && day < 7) map.set(`${day}-${hour}`, b.student_name);
     });
     return map;
   }, [bookings]);
 
-  const toggleSlot = async (day: number, hour: number) => {
-    // `day` is the 0-based DAYS index (Mon=0). DB stores ISO 1..7.
-    const isoDay = day + 1;
-    const key = `${day}-${hour}`;
-    if (slotSet.has(key)) {
-      await supabase
-        .from("mentor_availability")
-        .delete()
-        .eq("mentor_id", mentorId)
-        .eq("day_of_week", isoDay)
-        .eq("start_hour", hour);
-      setSlots((prev) => prev.filter((s) => !(s.day_of_week === isoDay && s.start_hour === hour)));
-    } else {
-      await supabase
-        .from("mentor_availability")
-        .insert({ mentor_id: mentorId, day_of_week: isoDay, start_hour: hour });
-      setSlots((prev) => [...prev, { day_of_week: isoDay, start_hour: hour }]);
-    }
+  const toggleMutation = useMutation({
+    mutationFn: async ({ day, hour, hadIt }: { day: number; hour: number; hadIt: boolean }) => {
+      const isoDay = day + 1;
+      if (hadIt) {
+        const { error } = await supabase
+          .from("mentor_availability")
+          .delete()
+          .eq("mentor_id", mentorId)
+          .eq("day_of_week", isoDay)
+          .eq("start_hour", hour);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from("mentor_availability")
+          .insert({ mentor_id: mentorId, day_of_week: isoDay, start_hour: hour });
+        if (error) throw error;
+      }
+    },
+    onMutate: async ({ day, hour, hadIt }) => {
+      await qc.cancelQueries({ queryKey: slotsKey });
+      const prev = qc.getQueryData<Slot[]>(slotsKey) ?? [];
+      const isoDay = day + 1;
+      const next = hadIt
+        ? prev.filter((s) => !(s.day_of_week === isoDay && s.start_hour === hour))
+        : [...prev, { day_of_week: isoDay, start_hour: hour }];
+      qc.setQueryData<Slot[]>(slotsKey, next);
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(slotsKey, ctx.prev);
+    },
+  });
+
+  const toggleSlot = (day: number, hour: number) => {
+    const hadIt = slotSet.has(`${day}-${hour}`);
+    toggleMutation.mutate({ day, hour, hadIt });
   };
 
   return (
@@ -120,6 +140,18 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
           Manage Availability
         </button>
       </div>
+
+      {(slotsErr || bookingsErr) && (
+        <div className="mt-4">
+          <ErrorBanner
+            message="Couldn't load your schedule."
+            onRetry={() => {
+              if (slotsErr) void refetchSlots();
+              if (bookingsErr) void refetchBookings();
+            }}
+          />
+        </div>
+      )}
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-4">
         <div className="min-w-[720px]">
