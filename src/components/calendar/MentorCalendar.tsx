@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { sendBookingEmails } from "@/lib/email/booking.functions";
+import { formatBookingDate } from "@/lib/time";
 
 // Hand-written shape of the get_mentor_calendar RPC response. Stays in sync
-// with supabase/migrations/20260429000002_bug4_get_mentor_calendar.sql.
+// with supabase/migrations/20260514100004_bug_6_5_calendar_ist_dates.sql.
 type CalendarSlot = {
   date: string;       // "YYYY-MM-DD"
   time_slot: string;  // "HH:MM" with leading zero, e.g. "14:00"
@@ -30,67 +33,36 @@ function isCalendarSlot(value: unknown): value is CalendarSlot {
   );
 }
 
-function formatFriendlyDate(iso: string): string {
-  // Render as "Mon 5 May" in the browser locale. Use a stable midnight construction
-  // so the user-facing day label matches the date string regardless of timezone.
-  const d = new Date(`${iso}T00:00:00`);
-  return d.toLocaleDateString(undefined, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
-
 export default function MentorCalendar({
   mentorId,
   mentorName,
   pricePerSessionInr,
 }: MentorCalendarProps) {
-  const [slots, setSlots] = useState<CalendarSlot[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const qc = useQueryClient();
+  const calendarKey = ["mentor-calendar", mentorId] as const;
 
   const [selected, setSelected] = useState<CalendarSlot | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [needsAuth, setNeedsAuth] = useState(false);
 
-  const loadCalendar = async () => {
-    setLoading(true);
-    setLoadError(null);
-    const { data, error } = await (supabase as any).rpc("get_mentor_calendar", {
-      _mentor_id: mentorId,
-    });
-    if (error) {
-      setSlots([]);
-      setLoadError("Calendar unavailable right now.");
-      setLoading(false);
-      return;
-    }
-    if (!Array.isArray(data)) {
-      setSlots([]);
-      setLoadError("Calendar unavailable right now.");
-      setLoading(false);
-      return;
-    }
-    const safe = data.filter(isCalendarSlot);
-    setSlots(safe);
-    setLoading(false);
-  };
+  const {
+    data: slots = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<CalendarSlot[]>({
+    queryKey: calendarKey,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_mentor_calendar", {
+        _mentor_id: mentorId,
+      });
+      if (error) throw error;
+      if (!Array.isArray(data)) return [];
+      return (data as unknown[]).filter(isCalendarSlot);
+    },
+  });
 
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      await loadCalendar();
-      if (cancelled) return;
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mentorId]);
-
-  // Group slots by date. Days the mentor doesn't advertise simply don't appear.
+  // Group slots by date.
   const days = useMemo(() => {
     const map = new Map<string, CalendarSlot[]>();
     for (const s of slots) {
@@ -98,14 +70,12 @@ export default function MentorCalendar({
       list.push(s);
       map.set(s.date, list);
     }
-    // Keep only days with at least one slot, sort dates ASC, sort slots within ASC.
-    const ordered = Array.from(map.entries())
+    return Array.from(map.entries())
       .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
       .map(([date, list]) => ({
         date,
         slots: [...list].sort((x, y) => x.time_slot.localeCompare(y.time_slot)),
       }));
-    return ordered;
   }, [slots]);
 
   const onChipClick = (slot: CalendarSlot) => {
@@ -117,50 +87,55 @@ export default function MentorCalendar({
     );
   };
 
-  const onConfirm = async () => {
-    if (!selected) return;
-    setSubmitting(true);
-    setSubmitError(null);
-    setNeedsAuth(false);
-    try {
+  const confirmMutation = useMutation({
+    mutationFn: async (slot: CalendarSlot) => {
       const { data: sessionData } = await supabase.auth.getSession();
       const studentId = sessionData.session?.user.id;
       if (!studentId) {
-        setNeedsAuth(true);
-        return;
+        return { needsAuth: true as const };
       }
-      const { data: inserted, error: insErr } = await (supabase as any)
+      const { data: inserted, error: insErr } = await supabase
         .from("bookings")
         .insert({
           mentor_id: mentorId,
           student_id: studentId,
-          date: selected.date,
-          time_slot: selected.time_slot,
+          date: slot.date,
+          time_slot: slot.time_slot,
           duration: DURATION_MINUTES,
           price: pricePerSessionInr,
           status: "confirmed",
         })
         .select("id")
         .single();
-      if (insErr) {
-        setSubmitError(insErr.message ?? "Could not book session.");
-        return;
-      }
+      if (insErr) throw insErr;
       if (inserted?.id) {
         try {
           await sendBookingEmails({ data: { bookingId: inserted.id } });
         } catch (e) {
-          // Email dispatch failure is non-fatal: the booking is already saved.
+          // Email dispatch failure is non-fatal — booking is already saved.
           console.error("[booking-emails] dispatch failed", e);
         }
       }
+      return { needsAuth: false as const };
+    },
+    onSuccess: (result) => {
+      if (result?.needsAuth) {
+        setNeedsAuth(true);
+        return;
+      }
       setSelected(null);
-      await loadCalendar();
-    } catch (err) {
+      void qc.invalidateQueries({ queryKey: calendarKey });
+    },
+    onError: (err) => {
       setSubmitError(err instanceof Error ? err.message : "Could not book session.");
-    } finally {
-      setSubmitting(false);
-    }
+    },
+  });
+
+  const onConfirm = () => {
+    if (!selected) return;
+    setSubmitError(null);
+    setNeedsAuth(false);
+    confirmMutation.mutate(selected);
   };
 
   return (
@@ -170,9 +145,8 @@ export default function MentorCalendar({
         Showing the next 30 days. Tap a time to select it.
       </p>
 
-      {/* Calendar grid */}
       <div className="mt-5 space-y-6">
-        {loading && (
+        {isLoading && (
           <div className="space-y-4" aria-label="Loading calendar">
             {[0, 1, 2].map((i) => (
               <div key={i}>
@@ -187,20 +161,29 @@ export default function MentorCalendar({
           </div>
         )}
 
-        {!loading && loadError && (
-          <p className="text-[13px] text-[#1A1A1A]/70">{loadError}</p>
+        {!isLoading && isError && (
+          <div>
+            <p className="text-[13px] text-[#1A1A1A]/70">Calendar unavailable right now.</p>
+            <button
+              type="button"
+              onClick={() => void refetch()}
+              className="mt-2 text-[12px] font-semibold text-[#C4907F] underline underline-offset-2 hover:opacity-80"
+            >
+              Try again
+            </button>
+          </div>
         )}
 
-        {!loading && !loadError && days.length === 0 && (
+        {!isLoading && !isError && days.length === 0 && (
           <p className="text-[13px] text-[#1A1A1A]/70">
             No availability in the next 30 days.
           </p>
         )}
 
-        {!loading && !loadError && days.map(({ date, slots: daySlots }) => (
+        {!isLoading && !isError && days.map(({ date, slots: daySlots }) => (
           <div key={date}>
             <h4 className="font-display text-[16px] font-semibold text-[#1A1A1A]">
-              {formatFriendlyDate(date)}
+              {formatBookingDate(date)}
             </h4>
             <div className="mt-2 flex flex-wrap gap-2">
               {daySlots.map((slot) => {
@@ -238,23 +221,22 @@ export default function MentorCalendar({
         ))}
       </div>
 
-      {/* Confirm Booking CTA */}
       {selected && (
         <div className="mt-6 border-t border-[#EDE0DB] pt-5">
           <p className="text-[14px] leading-relaxed text-[#1A1A1A]">
             Booking <span className="font-medium">{selected.time_slot}</span> on{" "}
-            <span className="font-medium">{formatFriendlyDate(selected.date)}</span> with{" "}
+            <span className="font-medium">{formatBookingDate(selected.date)}</span> with{" "}
             <span className="font-medium">{mentorName}</span> for{" "}
             <span className="font-medium">₹{pricePerSessionInr.toLocaleString("en-IN")}</span>.
           </p>
           <button
             type="button"
-            onClick={() => void onConfirm()}
-            disabled={submitting}
+            onClick={onConfirm}
+            disabled={confirmMutation.isPending}
             className="mt-4 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#1A1A1A] px-6 font-display text-[14px] font-semibold text-[#FFFCFB] transition hover:opacity-90 disabled:opacity-60 sm:w-auto sm:px-10"
           >
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-            {submitting ? "Confirming…" : "Confirm Booking"}
+            {confirmMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {confirmMutation.isPending ? "Confirming…" : "Confirm Booking"}
           </button>
 
           {submitError && (

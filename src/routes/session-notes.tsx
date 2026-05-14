@@ -1,7 +1,10 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Check, ArrowLeft } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 export const Route = createFileRoute("/session-notes")({
   head: () => ({
@@ -23,13 +26,15 @@ type Note = {
 
 function SessionNotesPage() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [studentId, setStudentId] = useState<string | null>(null);
-  const [notes, setNotes] = useState<Note[]>([]);
-  const [ready, setReady] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
+
+  const notesKey = ["session-notes-page", studentId] as const;
 
   useEffect(() => {
     let cancelled = false;
-    supabase.auth.getSession().then(async ({ data }) => {
+    supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return;
       const session = data.session;
       if (!session) {
@@ -37,58 +42,64 @@ function SessionNotesPage() {
         return;
       }
       setStudentId(session.user.id);
-      await load(session.user.id);
-      if (!cancelled) setReady(true);
+      setAuthReady(true);
     });
     return () => {
       cancelled = true;
     };
   }, [navigate]);
 
-  const load = async (sid: string) => {
-    const { data: rows } = await supabase
-      .from("session_notes")
-      .select("id, mentor_id, booking_id, summary, action_points, created_at, updated_at")
-      .eq("student_id", sid)
-      .order("created_at", { ascending: false });
-    const list = rows ?? [];
-    if (list.length === 0) {
-      setNotes([]);
-      return;
-    }
-    const mentorIds = Array.from(new Set(list.map((n) => n.mentor_id)));
-    const bookingIds = Array.from(
-      new Set(list.map((n) => n.booking_id).filter((v): v is string => !!v)),
-    );
-    const noteIds = list.map((n) => n.id);
-    const [mentorsRes, bookingsRes, completionsRes] = await Promise.all([
-      supabase.rpc("get_mentor_booking_names", { _ids: mentorIds }),
-      bookingIds.length
-        ? supabase.from("bookings").select("id, date").in("id", bookingIds)
-        : Promise.resolve({ data: [] as { id: string; date: string }[] }),
-      supabase
-        .from("action_point_completions")
-        .select("session_note_id, action_point_index, completed")
-        .in("session_note_id", noteIds),
-    ]);
-    const mentorMap = new Map<string, string>();
-    (mentorsRes.data ?? []).forEach((m: { id: string; full_name: string }) =>
-      mentorMap.set(m.id, m.full_name),
-    );
-    const bookingDate = new Map<string, string>();
-    (bookingsRes.data ?? []).forEach((b: { id: string; date: string }) =>
-      bookingDate.set(b.id, b.date),
-    );
-    const compMap = new Map<string, Record<number, boolean>>();
-    (completionsRes.data ?? []).forEach(
-      (c: { session_note_id: string; action_point_index: number; completed: boolean }) => {
+  const { data: notes = [], isError, refetch } = useQuery<Note[]>({
+    queryKey: notesKey,
+    enabled: !!studentId,
+    queryFn: async () => {
+      const { data: rows, error } = await supabase
+        .from("session_notes")
+        .select("id, mentor_id, booking_id, summary, action_points, created_at, updated_at")
+        .eq("student_id", studentId as string)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      const list = rows ?? [];
+      if (list.length === 0) return [];
+      const mentorIds = Array.from(new Set(list.map((n) => n.mentor_id).filter((v): v is string => !!v)));
+      const bookingIds = Array.from(
+        new Set(list.map((n) => n.booking_id).filter((v): v is string => !!v)),
+      );
+      const noteIds = list.map((n) => n.id);
+      const [mentorsRes, bookingsRes, completionsRes] = await Promise.all([
+        mentorIds.length
+          ? supabase.rpc("get_mentor_booking_names", { _ids: mentorIds })
+          : Promise.resolve({ data: [] as { id: string; full_name: string }[], error: null }),
+        bookingIds.length
+          ? supabase.from("bookings").select("id, date").in("id", bookingIds)
+          : Promise.resolve({ data: [] as { id: string; date: string }[], error: null }),
+        supabase
+          .from("action_point_completions")
+          .select("session_note_id, action_point_index, completed")
+          .in("session_note_id", noteIds),
+      ]);
+      if (mentorsRes.error) throw mentorsRes.error;
+      if (bookingsRes.error) throw bookingsRes.error;
+      if (completionsRes.error) throw completionsRes.error;
+      const mentorMap = new Map<string, string>();
+      ((mentorsRes.data ?? []) as { id: string; full_name: string }[]).forEach((m) =>
+        mentorMap.set(m.id, m.full_name),
+      );
+      const bookingDate = new Map<string, string>();
+      ((bookingsRes.data ?? []) as { id: string; date: string }[]).forEach((b) =>
+        bookingDate.set(b.id, b.date),
+      );
+      const compMap = new Map<string, Record<number, boolean>>();
+      ((completionsRes.data ?? []) as {
+        session_note_id: string;
+        action_point_index: number;
+        completed: boolean;
+      }[]).forEach((c) => {
         const cur = compMap.get(c.session_note_id) ?? {};
         cur[c.action_point_index] = c.completed;
         compMap.set(c.session_note_id, cur);
-      },
-    );
-    setNotes(
-      list.map((n) => ({
+      });
+      return list.map((n) => ({
         id: n.id,
         mentor_name: mentorMap.get(n.mentor_id) ?? "Mentor",
         date: n.booking_id ? (bookingDate.get(n.booking_id) ?? null) : null,
@@ -97,28 +108,47 @@ function SessionNotesPage() {
         completions: compMap.get(n.id) ?? {},
         updated_at: n.updated_at,
         created_at: n.created_at,
-      })),
-    );
-  };
+      }));
+    },
+  });
 
-  const toggle = async (note: Note, index: number) => {
-    if (!studentId) return;
-    const next = !note.completions[index];
-    setNotes((prev) =>
-      prev.map((n) =>
-        n.id === note.id ? { ...n, completions: { ...n.completions, [index]: next } } : n,
-      ),
-    );
-    await supabase.from("action_point_completions").upsert(
-      {
-        session_note_id: note.id,
-        action_point_index: index,
-        completed: next,
-        student_id: studentId,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "session_note_id,action_point_index" },
-    );
+  const toggleMutation = useMutation({
+    mutationFn: async ({ noteId, index, next }: { noteId: string; index: number; next: boolean }) => {
+      if (!studentId) return;
+      const { error } = await supabase.from("action_point_completions").upsert(
+        {
+          session_note_id: noteId,
+          action_point_index: index,
+          completed: next,
+          student_id: studentId,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "session_note_id,action_point_index" },
+      );
+      if (error) throw error;
+    },
+    onMutate: async ({ noteId, index, next }) => {
+      await qc.cancelQueries({ queryKey: notesKey });
+      const prev = qc.getQueryData<Note[]>(notesKey) ?? [];
+      qc.setQueryData<Note[]>(
+        notesKey,
+        prev.map((n) =>
+          n.id === noteId ? { ...n, completions: { ...n.completions, [index]: next } } : n,
+        ),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(notesKey, ctx.prev);
+    },
+  });
+
+  const toggle = (note: Note, index: number) => {
+    toggleMutation.mutate({
+      noteId: note.id,
+      index,
+      next: !note.completions[index],
+    });
   };
 
   const totalSessions = notes.length;
@@ -129,7 +159,7 @@ function SessionNotesPage() {
   );
   const pendingActionPoints = totalActionPoints - completedActionPoints;
 
-  if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
+  if (!authReady) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
@@ -146,6 +176,12 @@ function SessionNotesPage() {
         <p className="mt-1 text-[14px] font-light text-[#1A1A1A]/60">
           All your mentor notes and action points in one place.
         </p>
+
+        {isError && (
+          <div className="mt-6">
+            <ErrorBanner message="Couldn't load your session notes." onRetry={() => void refetch()} />
+          </div>
+        )}
 
         <div className="mt-6 grid grid-cols-3 gap-3 sm:gap-4">
           <div className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-4 sm:p-5">

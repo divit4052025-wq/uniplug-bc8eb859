@@ -1,9 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { BadgeCheck, Filter, Search, Star, X } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 export const Route = createFileRoute("/browse")({
   head: () => ({
@@ -43,13 +46,11 @@ type MentorProfile = {
   price_inr: number;
 };
 
-
 function BrowsePage() {
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [active, setActive] = useState<SectionKey>("browse");
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [mentors, setMentors] = useState<Mentor[]>([]);
 
   const [search, setSearch] = useState("");
   const [countries, setCountries] = useState<string[]>([]);
@@ -59,14 +60,27 @@ function BrowsePage() {
   const [sort, setSort] = useState("Relevance");
 
   useEffect(() => {
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
       if (!data.session) {
         navigate({ to: "/student-signup" });
         return;
       }
-      const { data: profiles } = await (supabase as any).rpc("list_approved_mentor_profiles");
-      const real: Mentor[] = (profiles ?? []).map((m: MentorProfile) => ({
+      setAuthReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  const { data: mentors = [], isError, refetch } = useQuery<Mentor[]>({
+    queryKey: ["browse", "approved-mentors"],
+    enabled: authReady,
+    queryFn: async () => {
+      const { data: profiles, error } = await supabase.rpc("list_approved_mentor_profiles");
+      if (error) throw error;
+      return ((profiles ?? []) as MentorProfile[]).map((m) => ({
         id: m.id,
         name: m.full_name,
         university: m.university,
@@ -76,11 +90,8 @@ function BrowsePage() {
         topics: [m.course, m.year] as [string, string],
         price: m.price_inr,
       }));
-      setMentors(real);
-      setReady(true);
-    };
-    void init();
-  }, [navigate]);
+    },
+  });
 
   const onSelectSection = (key: SectionKey) => {
     setActive(key);
@@ -111,7 +122,7 @@ function BrowsePage() {
     return list;
   }, [search, countries, universityQuery, courses, years, sort, mentors]);
 
-  if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
+  if (!authReady) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
   const filterPanel = (
     <FilterPanel
@@ -130,7 +141,6 @@ function BrowsePage() {
       <DashboardSidebar active={active} onSelect={onSelectSection} />
 
       <main className="md:ml-[240px]">
-        {/* Mobile filter button */}
         <div className="flex items-center justify-between border-b border-[#EDE0DB] px-5 py-4 md:hidden">
           <h1 className="font-display text-[22px] font-semibold tracking-tight text-[#1A1A1A]">Browse Plugs</h1>
           <button
@@ -142,32 +152,36 @@ function BrowsePage() {
         </div>
 
         <div className="flex">
-          {/* Desktop sidebar */}
           <aside className="sticky top-0 hidden h-screen w-[260px] shrink-0 overflow-y-auto border-r border-[#EDE0DB] bg-[#FFFCFB] md:block">
             {filterPanel}
           </aside>
 
-          {/* Grid */}
           <section className="flex-1 px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
             <div className="mb-6 hidden md:block">
               <h1 className="font-display text-[28px] font-semibold tracking-tight text-[#1A1A1A]">Browse Plugs</h1>
               <p className="mt-1 text-[14px] text-[#1A1A1A]/60">Find a mentor who's been exactly where you want to go.</p>
             </div>
-            <p className="mb-4 text-[13px] text-[#1A1A1A]/60">{filtered.length} mentor{filtered.length === 1 ? "" : "s"}</p>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {filtered.map((m) => (
-                <MentorCard
-                  key={m.id}
-                  mentor={m}
-                  onBook={() => navigate({ to: "/mentor/$id", params: { id: m.id } })}
-                />
-              ))}
-            </div>
-            {filtered.length === 0 && (
-              <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
-                <p className="font-display text-[18px] text-[#1A1A1A]">No mentors match those filters.</p>
-                <button onClick={clearAll} className="mt-4 rounded-full bg-[#C4907F] px-5 py-2 text-[13px] font-medium text-[#FFFCFB]">Clear filters</button>
-              </div>
+            {isError ? (
+              <ErrorBanner message="Couldn't load mentors right now." onRetry={() => void refetch()} />
+            ) : (
+              <>
+                <p className="mb-4 text-[13px] text-[#1A1A1A]/60">{filtered.length} mentor{filtered.length === 1 ? "" : "s"}</p>
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                  {filtered.map((m) => (
+                    <MentorCard
+                      key={m.id}
+                      mentor={m}
+                      onBook={() => navigate({ to: "/mentor/$id", params: { id: m.id } })}
+                    />
+                  ))}
+                </div>
+                {filtered.length === 0 && (
+                  <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
+                    <p className="font-display text-[18px] text-[#1A1A1A]">No mentors match those filters.</p>
+                    <button onClick={clearAll} className="mt-4 rounded-full bg-[#C4907F] px-5 py-2 text-[13px] font-medium text-[#FFFCFB]">Clear filters</button>
+                  </div>
+                )}
+              </>
             )}
           </section>
         </div>
@@ -175,7 +189,6 @@ function BrowsePage() {
 
       <MobileBottomNav active={active} onSelect={onSelectSection} />
 
-      {/* Mobile drawer */}
       {drawerOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
           <div className="absolute inset-0 bg-black/40" onClick={() => setDrawerOpen(false)} />

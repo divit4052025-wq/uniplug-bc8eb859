@@ -1,8 +1,11 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft, Check, Circle, Pencil } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { resolveUserRole, dashboardPathForRole, type UserRole } from "@/lib/auth/role";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 export const Route = createFileRoute("/session-notes/$noteId")({
   head: () => ({
@@ -28,9 +31,7 @@ type Loaded = {
 function MentorNoteView() {
   const { noteId } = Route.useParams();
   const navigate = useNavigate();
-  const [note, setNote] = useState<Loaded | null>(null);
-  const [ready, setReady] = useState(false);
-  const [forbidden, setForbidden] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [role, setRole] = useState<UserRole>("unknown");
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
@@ -45,9 +46,21 @@ function MentorNoteView() {
         return;
       }
       setCurrentUserId(session.user.id);
-      const r = await resolveUserRole(session.user.id, session.user.email);
+      const meta = (session.user.user_metadata ?? {}) as { role?: string };
+      const r = await resolveUserRole(session.user.id, session.user.email, meta);
       if (cancelled) return;
       setRole(r);
+      setAuthReady(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  const { data: note, isLoading, isError, refetch } = useQuery<Loaded | null>({
+    queryKey: ["session-note", noteId],
+    enabled: authReady,
+    queryFn: async () => {
       const { data: row, error } = await supabase
         .from("session_notes")
         .select(
@@ -55,13 +68,8 @@ function MentorNoteView() {
         )
         .eq("id", noteId)
         .maybeSingle();
-      if (cancelled) return;
-      if (error || !row) {
-        setForbidden(true);
-        setReady(true);
-        return;
-      }
-      // Resolve student name + booking date
+      if (error) throw error;
+      if (!row) return null;
       const [studsRes, bookingRes, compRes] = await Promise.all([
         supabase.rpc("get_student_booking_names", { _ids: [row.student_id] }),
         row.booking_id
@@ -70,22 +78,24 @@ function MentorNoteView() {
               .select("date, time_slot")
               .eq("id", row.booking_id)
               .maybeSingle()
-          : Promise.resolve({ data: null as { date: string; time_slot: string } | null }),
+          : Promise.resolve({ data: null as { date: string; time_slot: string } | null, error: null }),
         supabase
           .from("action_point_completions")
           .select("action_point_index, completed")
           .eq("session_note_id", row.id),
       ]);
+      if (studsRes.error) throw studsRes.error;
+      if (bookingRes.error) throw bookingRes.error;
+      if (compRes.error) throw compRes.error;
       const studentName =
-        (studsRes.data ?? []).find((s: { id: string; full_name: string }) => s.id === row.student_id)
-          ?.full_name ?? "Student";
+        ((studsRes.data ?? []) as { id: string; full_name: string }[]).find(
+          (s) => s.id === row.student_id,
+        )?.full_name ?? "Student";
       const compMap: Record<number, boolean> = {};
-      (compRes.data ?? []).forEach(
-        (c: { action_point_index: number; completed: boolean }) =>
-          (compMap[c.action_point_index] = c.completed),
+      ((compRes.data ?? []) as { action_point_index: number; completed: boolean }[]).forEach(
+        (c) => (compMap[c.action_point_index] = c.completed),
       );
-      if (cancelled) return;
-      setNote({
+      return {
         id: row.id,
         mentor_id: row.mentor_id,
         student_id: row.student_id,
@@ -99,18 +109,33 @@ function MentorNoteView() {
         completions: compMap,
         updated_at: row.updated_at,
         created_at: row.created_at,
-      });
-      setReady(true);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [noteId, navigate]);
+      };
+    },
+  });
 
-  if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
+  if (!authReady || isLoading) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
-  if (forbidden || !note) {
-    const backTo = dashboardPathForRole(role);
+  const backTo = dashboardPathForRole(role);
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-[#FFFCFB]">
+        <div className="mx-auto max-w-[800px] px-5 pb-20 pt-12 sm:px-8">
+          <button
+            onClick={() => navigate({ to: backTo })}
+            className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to dashboard
+          </button>
+          <div className="mt-6">
+            <ErrorBanner message="Couldn't load this note." onRetry={() => void refetch()} />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!note) {
     return (
       <div className="min-h-screen bg-[#FFFCFB]">
         <div className="mx-auto max-w-[800px] px-5 pb-20 pt-12 sm:px-8">
@@ -130,7 +155,6 @@ function MentorNoteView() {
 
   const wasEdited =
     new Date(note.updated_at).getTime() - new Date(note.created_at).getTime() > 2000;
-  const backTo = dashboardPathForRole(role);
   const canEdit = role === "mentor" && currentUserId === note.mentor_id;
 
   return (

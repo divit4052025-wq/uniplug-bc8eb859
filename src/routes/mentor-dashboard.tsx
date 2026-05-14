@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { MentorSidebar, type MentorSectionKey } from "@/components/mentor-dashboard/MentorSidebar";
 import { MentorMobileNav } from "@/components/mentor-dashboard/MentorMobileNav";
@@ -32,24 +34,18 @@ const SECTION_TO_ANCHOR: Partial<Record<MentorSectionKey, string>> = {
   earnings: "section-earnings",
 };
 
+type MentorRow = {
+  full_name: string | null;
+  status: "pending" | "approved" | "rejected" | null;
+};
+
 function MentorDashboard() {
   const navigate = useNavigate();
   const { edit } = Route.useSearch();
   const [mentorId, setMentorId] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState("");
-  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | null>(null);
+  const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(null);
   const [active, setActive] = useState<MentorSectionKey>("home");
   const [ready, setReady] = useState(false);
-  // null = not yet loaded; suppresses banner while fetching
-  const [availabilityCount, setAvailabilityCount] = useState<number | null>(null);
-
-  const loadAvailabilityCount = async (id: string) => {
-    const { count } = await supabase
-      .from("mentor_availability")
-      .select("id", { count: "exact", head: true })
-      .eq("mentor_id", id);
-    setAvailabilityCount(count ?? 0);
-  };
 
   useEffect(() => {
     let cancelled = false;
@@ -60,39 +56,63 @@ function MentorDashboard() {
         navigate({ to: "/mentor-signup" });
         return;
       }
-      // Block students / admin from the mentor dashboard
       if ((session.user.email ?? "").toLowerCase() === "divitfatehpuria7@gmail.com") {
         navigate({ to: "/admin" });
         return;
       }
-      const role = await resolveUserRole(session.user.id, session.user.email);
+      const meta = (session.user.user_metadata ?? {}) as { role?: string; full_name?: string };
+      const role = await resolveUserRole(session.user.id, session.user.email, meta);
       if (cancelled) return;
       if (role === "student") {
         navigate({ to: "/dashboard" });
         return;
       }
       setMentorId(session.user.id);
-      const { data: row } = await supabase
-        .from("mentors")
-        .select("full_name, status")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      if (cancelled) return;
-      const full = row?.full_name ?? (session.user.user_metadata?.full_name as string | undefined) ?? "";
-      setFirstName(full.split(" ")[0] ?? "");
-      setStatus((row?.status as typeof status) ?? "pending");
+      setUserMetadata(meta);
       setReady(true);
-      // Fire-and-forget: banner stays hidden while count is null.
-      void loadAvailabilityCount(session.user.id);
     });
     return () => {
       cancelled = true;
     };
   }, [navigate]);
 
+  const { data: mentorRow } = useQuery<MentorRow>({
+    queryKey: ["mentor-profile-header", mentorId],
+    enabled: !!mentorId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("mentors")
+        .select("full_name, status")
+        .eq("id", mentorId as string)
+        .maybeSingle();
+      if (error) throw error;
+      return {
+        full_name: data?.full_name ?? null,
+        status: (data?.status as MentorRow["status"]) ?? null,
+      };
+    },
+  });
+
+  const { data: availabilityCount } = useQuery<number>({
+    queryKey: ["mentor-availability-count", mentorId],
+    enabled: !!mentorId,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("mentor_availability")
+        .select("id", { count: "exact", head: true })
+        .eq("mentor_id", mentorId as string);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
+  const fullName = mentorRow?.full_name ?? userMetadata?.full_name ?? "";
+  const firstName = fullName.split(" ")[0] ?? "";
+  const status: MentorRow["status"] = mentorRow?.status ?? null;
+
   const select = (key: MentorSectionKey) => {
     setActive(key);
-    if (key === "settings") return; // rendered as its own view below
+    if (key === "settings") return;
     const anchor = SECTION_TO_ANCHOR[key];
     if (anchor) {
       const el = document.getElementById(anchor);
@@ -104,7 +124,10 @@ function MentorDashboard() {
     return <div className="min-h-screen bg-[#FFFCFB]" />;
   }
 
-  if (status !== "approved") {
+  // While the mentor row is still loading, render the empty shell rather
+  // than the "Application received" rejection screen — otherwise approved
+  // mentors flash that screen on first paint.
+  if (mentorRow && status !== "approved") {
     return (
       <main className="flex min-h-screen items-center justify-center bg-[#FFFCFB] px-6">
         <div className="max-w-2xl text-center">

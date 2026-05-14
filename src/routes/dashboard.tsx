@@ -1,5 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
@@ -28,7 +30,7 @@ const SECTION_TO_ANCHOR: Partial<Record<SectionKey, string>> = {
 function Dashboard() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
-  const [firstName, setFirstName] = useState("");
+  const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(null);
   const [active, setActive] = useState<SectionKey>("home");
   const [comingSoon, setComingSoon] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -46,29 +48,39 @@ function Dashboard() {
         navigate({ to: "/admin" });
         return;
       }
-      // Block mentors from the student dashboard
-      const role = await resolveUserRole(session.user.id, session.user.email);
+      const meta = (session.user.user_metadata ?? {}) as { role?: string; full_name?: string };
+      const role = await resolveUserRole(session.user.id, session.user.email, meta);
       if (cancelled) return;
       if (role === "mentor") {
         navigate({ to: "/mentor-dashboard", search: {} });
         return;
       }
       setUserId(session.user.id);
-      console.log("[dashboard] auth.uid():", session.user.id, "email:", session.user.email);
-      const { data: row } = await supabase
-        .from("students")
-        .select("full_name")
-        .eq("id", session.user.id)
-        .maybeSingle();
-      if (cancelled) return;
-      const full = row?.full_name ?? (session.user.user_metadata?.full_name as string | undefined) ?? "";
-      setFirstName(full.split(" ")[0] ?? "");
+      setUserMetadata(meta);
       setReady(true);
     });
     return () => {
       cancelled = true;
     };
   }, [navigate]);
+
+  const { data: profile } = useQuery<{ full_name: string | null }>({
+    queryKey: ["student-profile", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("students")
+        .select("full_name")
+        .eq("id", userId as string)
+        .maybeSingle();
+      if (error) throw error;
+      return { full_name: data?.full_name ?? null };
+    },
+  });
+
+  const fullName =
+    profile?.full_name ?? userMetadata?.full_name ?? "";
+  const firstName = fullName.split(" ")[0] ?? "";
 
   const select = (key: SectionKey) => {
     setActive(key);

@@ -2,6 +2,8 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { LayoutDashboard, UserCheck, Users, CalendarClock, TrendingUp, LogOut, Search } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/site/Logo";
 import { Input } from "@/components/ui/input";
@@ -10,6 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 const ADMIN_EMAIL = "divitfatehpuria7@gmail.com";
 
@@ -112,7 +115,6 @@ function AdminPage() {
         </button>
       </aside>
 
-      {/* mobile top nav */}
       <div className="sticky top-0 z-20 flex gap-1 overflow-x-auto bg-[#1A1A1A] px-3 py-2 md:hidden">
         {NAV.map((it) => (
           <button
@@ -157,46 +159,64 @@ function StatCard({ label, value }: { label: string; value: string }) {
 const inr = (n: number) => `₹${(n ?? 0).toLocaleString("en-IN")}`;
 
 function DashboardSection() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  useEffect(() => {
-    (supabase.rpc as any)("admin_stats").then(({ data, error }: any) => {
-      if (error) { toast.error(error.message); return; }
-      if (data && data[0]) setStats(data[0]);
-    });
-  }, []);
-  if (!stats) return <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>;
+  const { data, isLoading, isError, refetch } = useQuery<Stats | null>({
+    queryKey: ["admin-stats"],
+    queryFn: async () => {
+      const { data: rows, error } = await supabase.rpc("admin_stats");
+      if (error) throw error;
+      return ((rows as Stats[] | null) ?? [])[0] ?? null;
+    },
+  });
+
+  if (isError) return <ErrorBanner message="Couldn't load admin stats." onRetry={() => void refetch()} />;
+  if (isLoading || !data) return <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>;
+
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-      <StatCard label="Total Students" value={String(stats.total_students)} />
-      <StatCard label="Total Mentors" value={String(stats.total_mentors)} />
-      <StatCard label="Sessions This Month" value={String(stats.sessions_this_month)} />
-      <StatCard label="Revenue This Month" value={inr(stats.revenue_this_month)} />
+      <StatCard label="Total Students" value={String(data.total_students)} />
+      <StatCard label="Total Mentors" value={String(data.total_mentors)} />
+      <StatCard label="Sessions This Month" value={String(data.sessions_this_month)} />
+      <StatCard label="Revenue This Month" value={inr(data.revenue_this_month)} />
     </div>
   );
 }
 
 function ApprovalsSection() {
-  const [rows, setRows] = useState<MentorRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const queryKey = ["admin-mentors-pending"] as const;
 
-  const load = async () => {
-    setLoading(true);
-    const { data, error } = await (supabase.rpc as any)("admin_list_mentors", { _status: "pending" });
-    if (error) toast.error(error.message);
-    else setRows((data as MentorRow[]) ?? []);
-    setLoading(false);
-  };
-  useEffect(() => { load(); }, []);
+  const { data: rows = [], isLoading, isError, refetch } = useQuery<MentorRow[]>({
+    queryKey,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_mentors", { _status: "pending" });
+      if (error) throw error;
+      return (data as MentorRow[] | null) ?? [];
+    },
+  });
 
-  const setStatus = async (id: string, status: "approved" | "rejected") => {
-    const { error } = await (supabase.rpc as any)("admin_set_mentor_status", { _mentor_id: id, _status: status });
-    if (error) { toast.error(error.message); return; }
-    setRows((r) => r.filter((m) => m.id !== id));
-    if (status === "approved") toast.success("Mentor approved");
-    else toast.error("Mentor rejected");
-  };
+  const setStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: "approved" | "rejected" }) => {
+      const { error } = await supabase.rpc("admin_set_mentor_status", { _mentor_id: id, _status: status });
+      if (error) throw error;
+    },
+    onMutate: async ({ id }) => {
+      await qc.cancelQueries({ queryKey });
+      const prev = qc.getQueryData<MentorRow[]>(queryKey) ?? [];
+      qc.setQueryData<MentorRow[]>(queryKey, prev.filter((m) => m.id !== id));
+      return { prev };
+    },
+    onError: (err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(queryKey, ctx.prev);
+      toast.error(err instanceof Error ? err.message : "Status change failed.");
+    },
+    onSuccess: (_data, { status }) => {
+      if (status === "approved") toast.success("Mentor approved");
+      else toast.error("Mentor rejected");
+    },
+  });
 
-  if (loading) return <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>;
+  if (isError) return <ErrorBanner message="Couldn't load pending mentors." onRetry={() => void refetch()} />;
+  if (isLoading) return <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>;
   if (rows.length === 0) return <div className="rounded-xl border border-[#EDE0DB] bg-white p-8 text-center text-[14px] text-[#1A1A1A]/60">No pending applications.</div>;
 
   return (
@@ -224,12 +244,12 @@ function ApprovalsSection() {
                 <div className="inline-flex gap-2">
                   <Button
                     size="sm"
-                    onClick={() => setStatus(m.id, "approved")}
+                    onClick={() => setStatusMutation.mutate({ id: m.id, status: "approved" })}
                     className="bg-[#C4907F] text-white hover:bg-[#b3806f]"
                   >Approve</Button>
                   <Button
                     size="sm"
-                    onClick={() => setStatus(m.id, "rejected")}
+                    onClick={() => setStatusMutation.mutate({ id: m.id, status: "rejected" })}
                     className="bg-[#991B1B] text-white hover:bg-[#7f1616]"
                   >Reject</Button>
                 </div>
@@ -243,14 +263,25 @@ function ApprovalsSection() {
 }
 
 function UsersSection() {
-  const [students, setStudents] = useState<StudentRow[]>([]);
-  const [mentors, setMentors] = useState<MentorRow[]>([]);
   const [q, setQ] = useState("");
 
-  useEffect(() => {
-    (supabase.rpc as any)("admin_list_students").then(({ data }: any) => setStudents((data as StudentRow[]) ?? []));
-    (supabase.rpc as any)("admin_list_mentors", { _status: null }).then(({ data }: any) => setMentors((data as MentorRow[]) ?? []));
-  }, []);
+  const { data: students = [], isError: sErr, refetch: refetchStudents } = useQuery<StudentRow[]>({
+    queryKey: ["admin-students"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_students");
+      if (error) throw error;
+      return (data as StudentRow[] | null) ?? [];
+    },
+  });
+
+  const { data: mentors = [], isError: mErr, refetch: refetchMentors } = useQuery<MentorRow[]>({
+    queryKey: ["admin-mentors-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_mentors", { _status: null });
+      if (error) throw error;
+      return (data as MentorRow[] | null) ?? [];
+    },
+  });
 
   const filterFn = <T extends { full_name: string; email: string }>(arr: T[]) => {
     const term = q.trim().toLowerCase();
@@ -262,6 +293,17 @@ function UsersSection() {
 
   return (
     <div>
+      {(sErr || mErr) && (
+        <div className="mb-4">
+          <ErrorBanner
+            message="Couldn't load users."
+            onRetry={() => {
+              if (sErr) void refetchStudents();
+              if (mErr) void refetchMentors();
+            }}
+          />
+        </div>
+      )}
       <div className="relative mb-4 max-w-md">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#1A1A1A]/40" />
         <Input
@@ -336,13 +378,17 @@ function UsersSection() {
 }
 
 function SessionsSection() {
-  const [rows, setRows] = useState<BookingRow[]>([]);
-  useEffect(() => {
-    (supabase.rpc as any)("admin_list_bookings").then(({ data, error }: any) => {
-      if (error) toast.error(error.message);
-      else setRows((data as BookingRow[]) ?? []);
-    });
-  }, []);
+  const { data: rows = [], isError, refetch } = useQuery<BookingRow[]>({
+    queryKey: ["admin-bookings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_bookings");
+      if (error) throw error;
+      return (data as BookingRow[] | null) ?? [];
+    },
+  });
+
+  if (isError) return <ErrorBanner message="Couldn't load sessions." onRetry={() => void refetch()} />;
+
   return (
     <div className="overflow-hidden rounded-xl border border-[#EDE0DB] bg-white">
       <Table>
@@ -377,12 +423,33 @@ function SessionsSection() {
 }
 
 function RevenueSection() {
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [rows, setRows] = useState<BookingRow[]>([]);
-  useEffect(() => {
-    (supabase.rpc as any)("admin_stats").then(({ data }: any) => { if (data && data[0]) setStats(data[0]); });
-    (supabase.rpc as any)("admin_list_bookings").then(({ data }: any) => setRows((data as BookingRow[]) ?? []));
-  }, []);
+  const { data: stats, isError: sErr, refetch: refetchStats } = useQuery<Stats | null>({
+    queryKey: ["admin-stats-revenue"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_stats");
+      if (error) throw error;
+      return ((data as Stats[] | null) ?? [])[0] ?? null;
+    },
+  });
+  const { data: rows = [], isError: bErr, refetch: refetchBookings } = useQuery<BookingRow[]>({
+    queryKey: ["admin-bookings-revenue"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_bookings");
+      if (error) throw error;
+      return (data as BookingRow[] | null) ?? [];
+    },
+  });
+
+  if (sErr || bErr) return (
+    <ErrorBanner
+      message="Couldn't load revenue data."
+      onRetry={() => {
+        if (sErr) void refetchStats();
+        if (bErr) void refetchBookings();
+      }}
+    />
+  );
+
   const commission = stats ? Math.round(stats.total_revenue_all_time * 0.2) : 0;
   return (
     <div className="space-y-6">

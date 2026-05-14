@@ -2,8 +2,12 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { resolveUserRole } from "@/lib/auth/role";
+import { ErrorBanner } from "@/components/ui/error-banner";
+import { formatBookingDateTime } from "@/lib/time";
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({
@@ -24,21 +28,14 @@ type NotificationRow = {
   created_at: string;
 };
 
-function formatBookingDateTime(date: string, timeSlot: string) {
-  const dt = new Date(`${date}T00:00:00`);
-  const friendly = dt.toLocaleDateString(undefined, {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-  return `${friendly} · ${timeSlot}`;
-}
-
 function NotificationsPage() {
   const navigate = useNavigate();
-  const [rows, setRows] = useState<NotificationRow[]>([]);
+  const qc = useQueryClient();
+  const [userId, setUserId] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [mutationError, setMutationError] = useState<string | null>(null);
+
+  const notificationsKey = ["notifications", "list", userId] as const;
 
   useEffect(() => {
     let cancelled = false;
@@ -49,48 +46,62 @@ function NotificationsPage() {
         navigate({ to: "/login" });
         return;
       }
-      const role = await resolveUserRole(session.user.id, session.user.email);
+      const meta = (session.user.user_metadata ?? {}) as { role?: string };
+      const role = await resolveUserRole(session.user.id, session.user.email, meta);
       if (cancelled) return;
       if (role !== "mentor") {
         navigate({ to: "/dashboard" });
         return;
       }
-      await load(session.user.id);
-      if (!cancelled) setReady(true);
+      setUserId(session.user.id);
+      setReady(true);
     });
     return () => {
       cancelled = true;
     };
   }, [navigate]);
 
-  const load = async (uid: string) => {
-    const { data, error: err } = await (supabase as any)
-      .from("notifications")
-      .select("*")
-      .eq("recipient_id", uid)
-      .order("created_at", { ascending: false });
-    if (err) {
-      console.error("[notifications] load failed", err);
-      setError("Could not load notifications.");
-      return;
-    }
-    setRows((data ?? []) as NotificationRow[]);
-  };
+  const { data: rows = [], isError, refetch } = useQuery<NotificationRow[]>({
+    queryKey: notificationsKey,
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("recipient_id", userId as string)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as NotificationRow[];
+    },
+  });
 
-  const markAsRead = async (id: string) => {
+  const markAsReadMutation = useMutation({
+    mutationFn: async ({ id, readAt }: { id: string; readAt: string }) => {
+      const { error } = await supabase
+        .from("notifications")
+        .update({ read_at: readAt })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onMutate: async ({ id, readAt }) => {
+      await qc.cancelQueries({ queryKey: notificationsKey });
+      const prev = qc.getQueryData<NotificationRow[]>(notificationsKey) ?? [];
+      qc.setQueryData<NotificationRow[]>(
+        notificationsKey,
+        prev.map((r) => (r.id === id ? { ...r, read_at: readAt } : r)),
+      );
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) qc.setQueryData(notificationsKey, ctx.prev);
+      setMutationError("Could not mark notification as read.");
+    },
+  });
+
+  const markAsRead = (id: string) => {
     const row = rows.find((r) => r.id === id);
     if (!row || row.read_at) return;
-    const optimisticReadAt = new Date().toISOString();
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, read_at: optimisticReadAt } : r)));
-    const { error: err } = await (supabase as any)
-      .from("notifications")
-      .update({ read_at: optimisticReadAt })
-      .eq("id", id);
-    if (err) {
-      console.error("[notifications] mark-as-read failed", err);
-      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, read_at: null } : r)));
-      setError("Could not mark notification as read.");
-    }
+    markAsReadMutation.mutate({ id, readAt: new Date().toISOString() });
   };
 
   if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
@@ -111,12 +122,20 @@ function NotificationsPage() {
           Updates on your sessions and students.
         </p>
 
-        {error && (
+        {isError && (
+          <div className="mt-6">
+            <ErrorBanner
+              message="Could not load notifications."
+              onRetry={() => void refetch()}
+            />
+          </div>
+        )}
+        {mutationError && (
           <div className="mt-6 flex items-start justify-between gap-3 rounded-r-2xl border-l-4 border-[#C4907F] bg-[#EDE0DB] px-5 py-3">
-            <p className="text-[13px] text-[#1A1A1A]">{error}</p>
+            <p className="text-[13px] text-[#1A1A1A]">{mutationError}</p>
             <button
               type="button"
-              onClick={() => setError(null)}
+              onClick={() => setMutationError(null)}
               className="text-[12px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
             >
               Dismiss

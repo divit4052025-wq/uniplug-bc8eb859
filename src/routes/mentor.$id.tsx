@@ -1,10 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BadgeCheck, Star } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import MentorCalendar from "@/components/calendar/MentorCalendar";
+import { ErrorBanner } from "@/components/ui/error-banner";
 
 export const Route = createFileRoute("/mentor/$id")({
   head: () => ({
@@ -38,55 +41,83 @@ type Review = {
   studentName?: string;
 };
 
+type Page = {
+  mentor: MentorProfile | null;
+  reviews: Review[];
+  sessionCount: number;
+};
 
 function MentorProfilePage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [active, setActive] = useState<SectionKey>("browse");
-  const [mentor, setMentor] = useState<MentorProfile | null>(null);
-  const [notFound, setNotFound] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>([]);
-  const [sessionCount, setSessionCount] = useState(0);
 
   useEffect(() => {
-    const init = async () => {
-      const { data: sess } = await supabase.auth.getSession();
-      if (!sess.session) {
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
+      if (!data.session) {
         navigate({ to: "/login" });
         return;
       }
-      const { data: profile } = await (supabase as any).rpc("get_mentor_public_profile", { _mentor_id: id });
-      const m: MentorProfile | undefined = (profile ?? [])[0];
-      if (!m) {
-        setNotFound(true);
-        setReady(true);
-        return;
-      }
-      setMentor(m);
-      const { data: rev } = await (supabase as any)
+      setAuthReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
+
+  const { data, isLoading, isError, refetch } = useQuery<Page>({
+    queryKey: ["mentor-profile-page", id],
+    enabled: authReady,
+    queryFn: async () => {
+      const { data: profile, error: pErr } = await supabase.rpc(
+        "get_mentor_public_profile",
+        { _mentor_id: id },
+      );
+      if (pErr) throw pErr;
+      const mentor: MentorProfile | undefined = ((profile ?? []) as MentorProfile[])[0];
+      if (!mentor) return { mentor: null, reviews: [], sessionCount: 0 };
+
+      const { data: rev, error: rErr } = await supabase
         .from("reviews")
         .select("id, student_id, rating, review, created_at")
         .eq("mentor_id", id)
         .order("created_at", { ascending: false });
-      const reviewRows: Review[] = rev ?? [];
+      if (rErr) throw rErr;
+      const reviewRows: Review[] = (rev ?? []) as Review[];
       const studentIds = Array.from(new Set(reviewRows.map((r) => r.student_id)));
       let nameMap = new Map<string, string>();
       if (studentIds.length) {
-        const { data: names } = await (supabase as any).rpc("get_review_student_names", { _ids: studentIds });
-        nameMap = new Map((names ?? []).map((n: { id: string; full_name: string }) => [n.id, n.full_name]));
+        const { data: names, error: nErr } = await supabase.rpc(
+          "get_review_student_names",
+          { _ids: studentIds },
+        );
+        if (nErr) throw nErr;
+        nameMap = new Map(
+          ((names ?? []) as { id: string; full_name: string }[]).map((n) => [n.id, n.full_name]),
+        );
       }
-      setReviews(reviewRows.map((r) => ({ ...r, studentName: nameMap.get(r.student_id) ?? "Student" })));
-      const { count, error: scErr } = await (supabase as any)
+      const reviews = reviewRows.map((r) => ({
+        ...r,
+        studentName: nameMap.get(r.student_id) ?? "Student",
+      }));
+
+      const { count, error: cErr } = await supabase
         .from("bookings")
         .select("id", { count: "exact", head: true })
         .eq("mentor_id", id)
         .eq("status", "completed");
-      if (!scErr && count != null) setSessionCount(count);
-      setReady(true);
-    };
-    void init();
-  }, [id, navigate]);
+      if (cErr) throw cErr;
+      return { mentor, reviews, sessionCount: count ?? 0 };
+    },
+  });
+
+  const mentor = data?.mentor ?? null;
+  const reviews = data?.reviews ?? [];
+  const sessionCount = data?.sessionCount ?? 0;
+  const notFound = !isLoading && !isError && !mentor;
 
   const onSelectSection = (key: SectionKey) => {
     setActive(key);
@@ -94,7 +125,21 @@ function MentorProfilePage() {
     navigate({ to: "/dashboard" });
   };
 
-  if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
+  if (!authReady || isLoading) return <div className="min-h-screen bg-[#FFFCFB]" />;
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-[#FFFCFB]">
+        <DashboardSidebar active={active} onSelect={onSelectSection} />
+        <main className="md:ml-[240px]">
+          <div className="mx-auto max-w-2xl px-6 py-24">
+            <ErrorBanner message="Couldn't load this mentor right now." onRetry={() => void refetch()} />
+          </div>
+        </main>
+        <MobileBottomNav active={active} onSelect={onSelectSection} />
+      </div>
+    );
+  }
 
   if (notFound || !mentor) {
     return (
@@ -124,7 +169,6 @@ function MentorProfilePage() {
       <DashboardSidebar active={active} onSelect={onSelectSection} />
 
       <main className="pb-24 md:ml-[240px] md:pb-0">
-        {/* Banner */}
         <section className="bg-[#1A1A1A] px-5 py-10 sm:px-8 md:px-12 md:py-14">
           <div className="mx-auto flex max-w-5xl flex-col gap-8 md:flex-row md:items-center md:justify-between">
             <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
@@ -170,7 +214,6 @@ function MentorProfilePage() {
           </div>
         </section>
 
-        {/* About + Booking */}
         <section className="bg-[#FFFCFB] px-5 py-10 sm:px-8 md:px-12 md:py-14">
           <div className="mx-auto grid max-w-5xl gap-10 md:grid-cols-[1fr_360px]">
             <div className="space-y-8">
@@ -210,7 +253,6 @@ function MentorProfilePage() {
           </div>
         </section>
 
-        {/* Reviews */}
         <section className="bg-[#EDE0DB] px-5 py-10 sm:px-8 md:px-12 md:py-14">
           <div className="mx-auto max-w-5xl">
             <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">Reviews</h2>
