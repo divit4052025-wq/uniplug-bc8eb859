@@ -12,8 +12,12 @@ import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSecti
 import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
 import { SessionNotesSection } from "@/components/dashboard/sections/SessionNotesSection";
 import { resolveUserRole } from "@/lib/auth/role";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/dashboard")({
+  beforeLoad: () =>
+    clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
   head: () => ({
     meta: [{ title: "Dashboard — UniPlug" }],
   }),
@@ -28,18 +32,33 @@ const SECTION_TO_ANCHOR: Partial<Record<SectionKey, string>> = {
 };
 
 function Dashboard() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(null);
+  const [userId, setUserId] = useState<string | null>(ctx.userId ?? null);
+  const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(
+    ctx.userMetadata ?? null,
+  );
   const [active, setActive] = useState<SectionKey>("home");
   const [comingSoon, setComingSoon] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(!!ctx.userId);
 
+  // SSR / hard-refresh fallback: when beforeLoad was skipped on the server
+  // (typeof window check), do the auth resolution after hydration. Skipped
+  // entirely on client-side navigation since beforeLoad already populated
+  // ctx.userId.
   useEffect(() => {
+    if (ctx.userId) return;
     let cancelled = false;
-    supabase.auth.getSession().then(async ({ data }) => {
+    void (async () => {
+      const { data: sessionData, error: sessErr } = await withRetry(() =>
+        supabase.auth.getSession(),
+      );
       if (cancelled) return;
-      const session = data.session;
+      if (sessErr) {
+        navigate({ to: "/student-signup" });
+        return;
+      }
+      const session = sessionData?.session;
       if (!session) {
         navigate({ to: "/student-signup" });
         return;
@@ -58,11 +77,11 @@ function Dashboard() {
       setUserId(session.user.id);
       setUserMetadata(meta);
       setReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, ctx.userId]);
 
   const { data: profile } = useQuery<{ full_name: string | null }>({
     queryKey: ["student-profile", userId],

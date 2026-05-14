@@ -13,10 +13,13 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 const ADMIN_EMAIL = "divitfatehpuria7@gmail.com";
 
 export const Route = createFileRoute("/admin")({
+  beforeLoad: () => clientAuthGuard({ signedOutTo: "/login", requireRole: "admin" }),
   head: () => ({ meta: [{ title: "Admin — UniPlug" }] }),
   component: AdminPage,
 });
@@ -54,23 +57,35 @@ interface BookingRow {
 }
 
 function AdminPage() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(!!ctx.userId);
   const [active, setActive] = useState<SectionKey>("dashboard");
 
+  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
   useEffect(() => {
+    if (ctx.userId) return;
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
+    void (async () => {
+      const { data: sessionData, error: sessErr } = await withRetry(() =>
+        supabase.auth.getSession(),
+      );
       if (cancelled) return;
-      const email = data.session?.user.email?.toLowerCase();
-      if (!data.session || email !== ADMIN_EMAIL) {
+      if (sessErr) {
+        navigate({ to: "/login" });
+        return;
+      }
+      const email = sessionData?.session?.user.email?.toLowerCase();
+      if (!sessionData?.session || email !== ADMIN_EMAIL) {
         navigate({ to: "/login" });
         return;
       }
       setReady(true);
-    });
-    return () => { cancelled = true; };
-  }, [navigate]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, ctx.userId]);
 
   const signOut = async () => {
     await supabase.auth.signOut();

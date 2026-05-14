@@ -6,8 +6,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { resolveUserRole, dashboardPathForRole, type UserRole } from "@/lib/auth/role";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/session-notes/$noteId")({
+  beforeLoad: () =>
+    clientAuthGuard({ signedOutTo: "/login", requireRole: "any", allowAdmin: true }),
   head: () => ({
     meta: [{ title: "Session Note — UniPlug" }],
   }),
@@ -29,33 +33,51 @@ type Loaded = {
 };
 
 function MentorNoteView() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const { noteId } = Route.useParams();
   const navigate = useNavigate();
-  const [authReady, setAuthReady] = useState(false);
+  const [authReady, setAuthReady] = useState(!!ctx.userId);
   const [role, setRole] = useState<UserRole>("unknown");
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(ctx.userId ?? null);
 
+  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
+  // Note: even when ctx.userId is set by beforeLoad we still need to resolve
+  // role for the back-button destination and edit-permission check, so the
+  // role resolver runs regardless.
   useEffect(() => {
     let cancelled = false;
-    (async () => {
-      const { data: sessRes } = await supabase.auth.getSession();
-      if (cancelled) return;
-      const session = sessRes.session;
-      if (!session) {
-        navigate({ to: "/login" });
+    void (async () => {
+      if (!ctx.userId) {
+        const { data: sessRes, error: sessErr } = await withRetry(() =>
+          supabase.auth.getSession(),
+        );
+        if (cancelled) return;
+        const session = sessRes?.session;
+        if (sessErr || !session) {
+          navigate({ to: "/login" });
+          return;
+        }
+        setCurrentUserId(session.user.id);
+        const meta = (session.user.user_metadata ?? {}) as { role?: string };
+        const r = await resolveUserRole(session.user.id, session.user.email, meta);
+        if (cancelled) return;
+        setRole(r);
+        setAuthReady(true);
         return;
       }
-      setCurrentUserId(session.user.id);
-      const meta = (session.user.user_metadata ?? {}) as { role?: string };
-      const r = await resolveUserRole(session.user.id, session.user.email, meta);
+      // beforeLoad already verified auth; just resolve role for UI.
+      const r = await resolveUserRole(
+        ctx.userId,
+        undefined,
+        (ctx.userMetadata ?? {}) as { role?: string },
+      );
       if (cancelled) return;
       setRole(r);
-      setAuthReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, ctx.userId, ctx.userMetadata]);
 
   const { data: note, isLoading, isError, refetch } = useQuery<Loaded | null>({
     queryKey: ["session-note", noteId],

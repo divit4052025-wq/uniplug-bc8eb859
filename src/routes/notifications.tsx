@@ -8,8 +8,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveUserRole } from "@/lib/auth/role";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { formatBookingDateTime } from "@/lib/time";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/notifications")({
+  beforeLoad: () => clientAuthGuard({ signedOutTo: "/login", requireRole: "mentor" }),
   head: () => ({
     meta: [{ title: "Notifications — UniPlug" }],
   }),
@@ -29,19 +32,29 @@ type NotificationRow = {
 };
 
 function NotificationsPage() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [userId, setUserId] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+  const [userId, setUserId] = useState<string | null>(ctx.userId ?? null);
+  const [ready, setReady] = useState(!!ctx.userId);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const notificationsKey = ["notifications", "list", userId] as const;
 
+  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
   useEffect(() => {
+    if (ctx.userId) return;
     let cancelled = false;
-    supabase.auth.getSession().then(async ({ data }) => {
+    void (async () => {
+      const { data: sessionData, error: sessErr } = await withRetry(() =>
+        supabase.auth.getSession(),
+      );
       if (cancelled) return;
-      const session = data.session;
+      if (sessErr) {
+        navigate({ to: "/login" });
+        return;
+      }
+      const session = sessionData?.session;
       if (!session) {
         navigate({ to: "/login" });
         return;
@@ -55,11 +68,11 @@ function NotificationsPage() {
       }
       setUserId(session.user.id);
       setReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, ctx.userId]);
 
   const { data: rows = [], isError, refetch } = useQuery<NotificationRow[]>({
     queryKey: notificationsKey,

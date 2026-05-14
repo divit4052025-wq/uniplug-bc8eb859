@@ -7,8 +7,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/browse")({
+  beforeLoad: () =>
+    clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "any" }),
   head: () => ({
     meta: [
       { title: "Browse Plugs — UniPlug" },
@@ -47,8 +51,9 @@ type MentorProfile = {
 };
 
 function BrowsePage() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
-  const [authReady, setAuthReady] = useState(false);
+  const [authReady, setAuthReady] = useState(!!ctx.userId);
   const [active, setActive] = useState<SectionKey>("browse");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -59,20 +64,25 @@ function BrowsePage() {
   const [years, setYears] = useState<string[]>([]);
   const [sort, setSort] = useState("Relevance");
 
+  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
   useEffect(() => {
+    if (ctx.userId) return;
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
+    void (async () => {
+      const { data: sessionData, error: sessErr } = await withRetry(() =>
+        supabase.auth.getSession(),
+      );
       if (cancelled) return;
-      if (!data.session) {
+      if (sessErr || !sessionData?.session) {
         navigate({ to: "/student-signup" });
         return;
       }
       setAuthReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, ctx.userId]);
 
   const { data: mentors = [], isError, refetch } = useQuery<Mentor[]>({
     queryKey: ["browse", "approved-mentors"],

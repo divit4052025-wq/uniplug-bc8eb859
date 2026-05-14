@@ -5,8 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/progress")({
+  beforeLoad: () =>
+    clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
   head: () => ({
     meta: [{ title: "My Progress — UniPlug" }],
   }),
@@ -25,29 +29,35 @@ type Note = {
 };
 
 function ProgressPage() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [studentId, setStudentId] = useState<string | null>(null);
-  const [authReady, setAuthReady] = useState(false);
+  const [studentId, setStudentId] = useState<string | null>(ctx.userId ?? null);
+  const [authReady, setAuthReady] = useState(!!ctx.userId);
 
   const notesKey = ["progress-notes", studentId] as const;
 
+  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
   useEffect(() => {
+    if (ctx.userId) return;
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
+    void (async () => {
+      const { data: sessionData, error: sessErr } = await withRetry(() =>
+        supabase.auth.getSession(),
+      );
       if (cancelled) return;
-      const session = data.session;
-      if (!session) {
+      const session = sessionData?.session;
+      if (sessErr || !session) {
         navigate({ to: "/student-signup" });
         return;
       }
       setStudentId(session.user.id);
       setAuthReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, ctx.userId]);
 
   const { data: notes = [], isError, refetch } = useQuery<Note[]>({
     queryKey: notesKey,

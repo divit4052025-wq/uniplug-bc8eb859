@@ -8,8 +8,12 @@ import { DashboardSidebar, type SectionKey } from "@/components/dashboard/Dashbo
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import MentorCalendar from "@/components/calendar/MentorCalendar";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/mentor/$id")({
+  beforeLoad: () =>
+    clientAuthGuard({ signedOutTo: "/login", requireRole: "any", allowAdmin: true }),
   head: () => ({
     meta: [
       { title: "Mentor Profile — UniPlug" },
@@ -48,25 +52,31 @@ type Page = {
 };
 
 function MentorProfilePage() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const { id } = Route.useParams();
   const navigate = useNavigate();
-  const [authReady, setAuthReady] = useState(false);
+  const [authReady, setAuthReady] = useState(!!ctx.userId);
   const [active, setActive] = useState<SectionKey>("browse");
 
+  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
   useEffect(() => {
+    if (ctx.userId) return;
     let cancelled = false;
-    supabase.auth.getSession().then(({ data }) => {
+    void (async () => {
+      const { data: sessionData, error: sessErr } = await withRetry(() =>
+        supabase.auth.getSession(),
+      );
       if (cancelled) return;
-      if (!data.session) {
+      if (sessErr || !sessionData?.session) {
         navigate({ to: "/login" });
         return;
       }
       setAuthReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, ctx.userId]);
 
   const { data, isLoading, isError, refetch } = useQuery<Page>({
     queryKey: ["mentor-profile-page", id],

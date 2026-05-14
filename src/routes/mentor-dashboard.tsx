@@ -13,8 +13,12 @@ import { PostSessionNotesSection } from "@/components/mentor-dashboard/sections/
 import { EarningsSection } from "@/components/mentor-dashboard/sections/EarningsSection";
 import { SettingsSection } from "@/components/mentor-dashboard/sections/SettingsSection";
 import { resolveUserRole } from "@/lib/auth/role";
+import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
+import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/mentor-dashboard")({
+  beforeLoad: () =>
+    clientAuthGuard({ signedOutTo: "/mentor-signup", requireRole: "mentor" }),
   head: () => ({
     meta: [{ title: "Mentor Dashboard — UniPlug" }],
   }),
@@ -40,18 +44,30 @@ type MentorRow = {
 };
 
 function MentorDashboard() {
+  const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
   const { edit } = Route.useSearch();
-  const [mentorId, setMentorId] = useState<string | null>(null);
-  const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(null);
+  const [mentorId, setMentorId] = useState<string | null>(ctx.userId ?? null);
+  const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(
+    ctx.userMetadata ?? null,
+  );
   const [active, setActive] = useState<MentorSectionKey>("home");
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(!!ctx.userId);
 
+  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
   useEffect(() => {
+    if (ctx.userId) return;
     let cancelled = false;
-    supabase.auth.getSession().then(async ({ data }) => {
+    void (async () => {
+      const { data: sessionData, error: sessErr } = await withRetry(() =>
+        supabase.auth.getSession(),
+      );
       if (cancelled) return;
-      const session = data.session;
+      if (sessErr) {
+        navigate({ to: "/mentor-signup" });
+        return;
+      }
+      const session = sessionData?.session;
       if (!session) {
         navigate({ to: "/mentor-signup" });
         return;
@@ -70,11 +86,11 @@ function MentorDashboard() {
       setMentorId(session.user.id);
       setUserMetadata(meta);
       setReady(true);
-    });
+    })();
     return () => {
       cancelled = true;
     };
-  }, [navigate]);
+  }, [navigate, ctx.userId]);
 
   const { data: mentorRow } = useQuery<MentorRow>({
     queryKey: ["mentor-profile-header", mentorId],
