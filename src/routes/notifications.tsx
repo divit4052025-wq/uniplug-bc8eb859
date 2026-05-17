@@ -13,40 +13,66 @@ import { withRetry } from "@/lib/retry";
 import { useOptimisticMutation } from "@/lib/hooks/useOptimisticMutation";
 
 export const Route = createFileRoute("/notifications")({
-  beforeLoad: () => clientAuthGuard({ signedOutTo: "/login", requireRole: "mentor" }),
+  beforeLoad: () => clientAuthGuard({ signedOutTo: "/login", requireRole: "any" }),
   head: () => ({
     meta: [{ title: "Notifications — UniPlug" }],
   }),
   component: NotificationsPage,
 });
 
+type NotificationKind = "booking_confirmed" | "session_completed";
+
 type NotificationRow = {
   id: string;
   recipient_id: string;
   booking_id: string | null;
-  kind: string;
+  kind: NotificationKind | string;
   student_name: string;
+  mentor_name: string | null;
   booking_date: string;
   booking_time_slot: string;
   read_at: string | null;
   created_at: string;
 };
 
+type Role = "student" | "mentor";
+
 function NotificationsPage() {
   const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [userId, setUserId] = useState<string | null>(ctx.userId ?? null);
-  const [ready, setReady] = useState(!!ctx.userId);
+  const [role, setRole] = useState<Role | null>(null);
+  const [ready, setReady] = useState(false);
   const [mutationError, setMutationError] = useState<string | null>(null);
 
   const notificationsKey = ["notifications", "list", userId] as const;
 
-  // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
+  // Resolve role on mount (both for the SSR fallback case and the client-nav
+  // case where beforeLoad supplied userId but not role). beforeLoad's "any"
+  // gate already redirected admins to /admin, so we only need to disambiguate
+  // student vs. mentor here.
   useEffect(() => {
-    if (ctx.userId) return;
     let cancelled = false;
     void (async () => {
+      // Fast-path: ctx already has the userId; we just need the role.
+      if (ctx.userId) {
+        const meta = (ctx.userMetadata ?? {}) as { role?: string };
+        // resolveUserRole takes (id, email, meta); we don't have the email here
+        // but resolveUserRole tolerates undefined.
+        const resolved = await resolveUserRole(ctx.userId, undefined, meta);
+        if (cancelled) return;
+        if (resolved === "admin") {
+          navigate({ to: "/admin" });
+          return;
+        }
+        setUserId(ctx.userId);
+        setRole(resolved === "mentor" ? "mentor" : "student");
+        setReady(true);
+        return;
+      }
+
+      // Slow-path: SSR fallback — resolve session ourselves.
       const { data: sessionData, error: sessErr } = await withRetry(() =>
         supabase.auth.getSession(),
       );
@@ -61,19 +87,20 @@ function NotificationsPage() {
         return;
       }
       const meta = (session.user.user_metadata ?? {}) as { role?: string };
-      const role = await resolveUserRole(session.user.id, session.user.email, meta);
+      const resolved = await resolveUserRole(session.user.id, session.user.email, meta);
       if (cancelled) return;
-      if (role !== "mentor") {
-        navigate({ to: "/dashboard" });
+      if (resolved === "admin") {
+        navigate({ to: "/admin" });
         return;
       }
       setUserId(session.user.id);
+      setRole(resolved === "mentor" ? "mentor" : "student");
       setReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [navigate, ctx.userId]);
+  }, [navigate, ctx.userId, ctx.userMetadata]);
 
   const { data: rows = [], isError, refetch } = useQuery<NotificationRow[]>({
     queryKey: notificationsKey,
@@ -153,11 +180,21 @@ function NotificationsPage() {
 
   if (!ready) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
+  const dashboardTo = role === "mentor" ? "/mentor-dashboard" : "/dashboard";
+  const subhead =
+    role === "mentor"
+      ? "Updates on your sessions and students."
+      : "Updates on your sessions and mentors.";
+  const emptyMessage =
+    role === "mentor"
+      ? "No notifications yet. You'll be notified here when a student books a session with you."
+      : "No notifications yet. You'll be notified here when a session wraps up.";
+
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
       <div className="mx-auto max-w-[1100px] px-5 pb-20 pt-8 sm:px-8 md:pt-12">
         <Link
-          to="/mentor-dashboard"
+          to={dashboardTo}
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
         >
           <ArrowLeft className="h-4 w-4" /> Back to dashboard
@@ -167,9 +204,7 @@ function NotificationsPage() {
             <h1 className="font-display text-[32px] font-semibold text-[#1A1A1A] md:text-[40px]">
               Notifications
             </h1>
-            <p className="mt-1 text-[14px] font-light text-[#1A1A1A]/60">
-              Updates on your sessions and students.
-            </p>
+            <p className="mt-1 text-[14px] font-light text-[#1A1A1A]/60">{subhead}</p>
           </div>
           {unreadCount > 0 && (
             <button
@@ -207,7 +242,7 @@ function NotificationsPage() {
         <div className="mt-6 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-2">
           {rows.length === 0 ? (
             <p className="px-4 py-8 text-center text-[14px] font-light text-[#1A1A1A]/70">
-              No notifications yet. You'll be notified here when a student books a session with you.
+              {emptyMessage}
             </p>
           ) : (
             <ul className="divide-y divide-[#EDE0DB]">
@@ -230,7 +265,7 @@ function NotificationsPage() {
                     )}
                     <div className="min-w-0">
                       <p className="text-[15px] font-medium text-[#1A1A1A]">
-                        New booking from {n.student_name}
+                        {renderHeadline(n)}
                       </p>
                       <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
                         {formatBookingDateTime(n.booking_date, n.booking_time_slot)}
@@ -248,4 +283,14 @@ function NotificationsPage() {
       </div>
     </div>
   );
+}
+
+function renderHeadline(n: NotificationRow): string {
+  if (n.kind === "session_completed") {
+    const mentor = n.mentor_name?.trim() || "your mentor";
+    return `Session completed with ${mentor}`;
+  }
+  // booking_confirmed (default — also catches any unknown future kinds with
+  // sensible mentor-facing copy).
+  return `New booking from ${n.student_name}`;
 }

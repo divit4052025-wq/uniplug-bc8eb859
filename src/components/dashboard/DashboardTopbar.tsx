@@ -14,9 +14,10 @@ export function DashboardTopbar({
 }) {
   const greeting = istGreeting();
 
+  // Both mentors and students see notifications — students receive
+  // 'session_completed' rows when a booking auto-completes.
   const { data: unreadCount = 0 } = useQuery({
     queryKey: ["notifications", "unread-count", role],
-    enabled: role === "mentor",
     queryFn: async () => {
       const { data: sessionData } = await supabase.auth.getSession();
       const session = sessionData.session;
@@ -39,18 +40,16 @@ export function DashboardTopbar({
       >
         {greeting}{firstName ? `, ${firstName}` : ""}
       </h1>
-      {role === "mentor" && (
-        <Link
-          to="/notifications"
-          aria-label="Notifications"
-          className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#EDE0DB] bg-[#FFFCFB] text-[#1A1A1A] transition hover:border-[#C4907F]"
-        >
-          <Bell className="h-[18px] w-[18px]" />
-          {unreadCount > 0 && (
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#C4907F]" />
-          )}
-        </Link>
-      )}
+      <Link
+        to="/notifications"
+        aria-label="Notifications"
+        className="relative inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#EDE0DB] bg-[#FFFCFB] text-[#1A1A1A] transition hover:border-[#C4907F]"
+      >
+        <Bell className="h-[18px] w-[18px]" />
+        {unreadCount > 0 && (
+          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[#C4907F]" />
+        )}
+      </Link>
     </div>
   );
 }
