@@ -1,0 +1,22 @@
+{
+  "_comment": "Hook wiring reference. Copy these blocks into .claude/settings.json (or the project-level Claude Code settings) to activate the hooks. Each hook is independently togglable.",
+  "PostToolUse": [
+    {
+      "matcher": { "tool_name": "Edit|Write" },
+      "command": ".claude/plugins/uniplug-flo/hooks/post-edit-format.sh",
+      "_note": "Formats TS/TSX/JS/JSX after Claude edits them. Idempotent, safe."
+    },
+    {
+      "matcher": { "tool_name": "Edit|Write", "file_path": "supabase/migrations/.*\\.sql$" },
+      "command": ".claude/plugins/uniplug-flo/hooks/post-migration-dev-seed-check.sh",
+      "_note": "Warns if a migration is added without a matching dev-seed. Soft guard — does not block."
+    }
+  ],
+  "PreToolUse": [
+    {
+      "matcher": { "tool_name": "Bash", "command": "^git commit" },
+      "command": ".claude/plugins/uniplug-flo/hooks/pre-commit-typecheck.sh",
+      "_note": "Blocks commits with TypeScript errors. Can also be wired as .git/hooks/pre-commit directly."
+    }
+  ]
+}
