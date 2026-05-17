@@ -83,7 +83,13 @@ BEGIN
      SET status = 'completed'
    WHERE id = 'cccccccc-0000-0000-0000-0000000000a1';
 
-  SELECT count(*), max(recipient_id), max(mentor_name)
+  SELECT count(*),
+         (SELECT recipient_id FROM public.notifications
+           WHERE booking_id = 'cccccccc-0000-0000-0000-0000000000a1'
+             AND kind = 'session_completed' LIMIT 1),
+         (SELECT mentor_name FROM public.notifications
+           WHERE booking_id = 'cccccccc-0000-0000-0000-0000000000a1'
+             AND kind = 'session_completed' LIMIT 1)
     INTO v_count, v_recipient, v_mentor_name
     FROM public.notifications
    WHERE booking_id = 'cccccccc-0000-0000-0000-0000000000a1'
