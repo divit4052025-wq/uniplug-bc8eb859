@@ -1,0 +1,41 @@
+{
+  "name": "uniplug-flo",
+  "version": "0.1.0",
+  "description": "Custom Claude Code plugin for Uniplug — skills, subagents, hooks, slash commands, model routing.",
+  "author": "Divit Fatehpuria",
+  "license": "Private",
+  "skills": [
+    "supabase-migration",
+    "rls-review",
+    "security-audit",
+    "playwright-qa",
+    "brand-ui",
+    "payments-ledger",
+    "ai-feature-builder",
+    "react-query-mutation",
+    "observability",
+    "release-checklist"
+  ],
+  "agents": [
+    "db-reviewer",
+    "payments-reviewer",
+    "ux-reviewer",
+    "security-reviewer",
+    "release-reviewer",
+    "investigation-agent"
+  ],
+  "hooks": [
+    "post-edit-format",
+    "pre-commit-typecheck",
+    "post-migration-dev-seed-check"
+  ],
+  "commands": [
+    "audit-security",
+    "review-db",
+    "review-ux",
+    "review-payments",
+    "scaffold-test",
+    "run-release-checks",
+    "investigate"
+  ]
+}

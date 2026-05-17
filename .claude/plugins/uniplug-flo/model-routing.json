@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "model_aliases": {
+    "sonnet": "claude-sonnet-4-6",
+    "opus": "claude-opus-4-7",
+    "haiku": "claude-haiku-4-5-20251001"
+  },
+  "skill_routing": {
+    "supabase-migration": { "design": "opus", "execution": "sonnet" },
+    "rls-review": "opus",
+    "security-audit": "opus",
+    "playwright-qa": "sonnet",
+    "brand-ui": "sonnet",
+    "payments-ledger": "opus",
+    "ai-feature-builder": { "prompt_design": "opus", "wiring": "sonnet" },
+    "react-query-mutation": "sonnet",
+    "observability": "sonnet",
+    "release-checklist": "sonnet"
+  },
+  "agent_routing": {
+    "db-reviewer": "opus",
+    "payments-reviewer": "opus",
+    "ux-reviewer": "sonnet",
+    "security-reviewer": "opus",
+    "release-reviewer": "sonnet",
+    "investigation-agent": "opus"
+  },
+  "principles": {
+    "opus": "Design decisions, architecture, security review, RLS posture, payment flow design, complex investigation. Anything where a wrong answer creates permanent damage.",
+    "sonnet": "Execution against a clear spec, refactoring, UI work, test scaffolding, docs, release checks, mechanical migrations.",
+    "haiku": "Status reporting, file listings, diff summaries, simple yes/no checks. Use sparingly — Sonnet handles most execution well."
+  }
+}

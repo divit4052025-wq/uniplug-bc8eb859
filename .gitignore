@@ -34,3 +34,8 @@ dist-ssr
 *.sln
 *.sw?
 .claude/
+# Track the uniplug-flo plugin (custom Claude Code plugin for this repo).
+!.claude/
+!.claude/plugins/
+!.claude/plugins/uniplug-flo/
+!.claude/plugins/uniplug-flo/**
