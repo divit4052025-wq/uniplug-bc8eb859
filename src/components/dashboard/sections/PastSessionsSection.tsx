@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { formatBookingDate } from "@/lib/time";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
 
 type PastSessionRow = {
   id: string;
@@ -14,19 +15,27 @@ type PastSessionRow = {
   noteId: string | null;
   actionTotal: number;
   actionDone: number;
+  hasReviewed: boolean;
 };
 
 const COLLAPSED_LIMIT = 5;
 
 export function PastSessionsSection({ studentId }: { studentId: string }) {
   const [expanded, setExpanded] = useState(false);
+  const [reviewTarget, setReviewTarget] = useState<{
+    mentorId: string;
+    mentorName: string;
+  } | null>(null);
+
+  const pastSessionsKey = ["past-sessions", "student", studentId] as const;
+  const studentReviewedKey = ["reviews", "by-student", studentId] as const;
 
   const {
     data: rows = [],
     isError,
     refetch,
   } = useQuery<PastSessionRow[]>({
-    queryKey: ["past-sessions", "student", studentId],
+    queryKey: pastSessionsKey,
     queryFn: async () => {
       // 1. Completed bookings for this student, newest first.
       const { data: bookingRows, error: bErr } = await supabase
@@ -47,17 +56,22 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
       const mentorIds = Array.from(new Set(bookings.map((b) => b.mentor_id)));
       const bookingIds = bookings.map((b) => b.id);
 
-      // 2. Resolve mentor display names, session_notes for these bookings,
-      //    and action point completions in parallel.
-      const [namesRes, notesRes] = await Promise.all([
+      // 2. Resolve mentor display names, session notes for these bookings,
+      //    and which mentors the student has already reviewed.
+      const [namesRes, notesRes, reviewsRes] = await Promise.all([
         supabase.rpc("get_mentor_booking_names", { _ids: mentorIds }),
         supabase
           .from("session_notes")
           .select("id, booking_id, action_points")
           .in("booking_id", bookingIds),
+        supabase
+          .from("reviews")
+          .select("mentor_id")
+          .eq("student_id", studentId),
       ]);
       if (namesRes.error) throw namesRes.error;
       if (notesRes.error) throw notesRes.error;
+      if (reviewsRes.error) throw reviewsRes.error;
 
       const nameMap = new Map(
         ((namesRes.data ?? []) as { id: string; full_name: string }[]).map((m) => [
@@ -66,10 +80,7 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
         ]),
       );
 
-      const noteByBooking = new Map<
-        string,
-        { id: string; actionTotal: number }
-      >();
+      const noteByBooking = new Map<string, { id: string; actionTotal: number }>();
       ((notesRes.data ?? []) as {
         id: string;
         booking_id: string | null;
@@ -79,6 +90,10 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
         const total = Array.isArray(n.action_points) ? n.action_points.length : 0;
         noteByBooking.set(n.booking_id, { id: n.id, actionTotal: total });
       });
+
+      const reviewedMentors = new Set(
+        ((reviewsRes.data ?? []) as { mentor_id: string }[]).map((r) => r.mentor_id),
+      );
 
       const noteIds = Array.from(noteByBooking.values()).map((n) => n.id);
       const completedByNote = new Map<string, number>();
@@ -108,6 +123,7 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
           noteId: note?.id ?? null,
           actionTotal: note?.actionTotal ?? 0,
           actionDone: note ? completedByNote.get(note.id) ?? 0 : 0,
+          hasReviewed: reviewedMentors.has(b.mentor_id),
         };
       });
     },
@@ -179,6 +195,21 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
                     View notes
                   </a>
                 )}
+                {r.hasReviewed ? (
+                  <span className="inline-flex h-9 items-center justify-center rounded-full bg-[#EDE0DB]/60 px-4 text-[12px] font-medium text-[#1A1A1A]/60">
+                    Reviewed
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setReviewTarget({ mentorId: r.mentor_id, mentorName: r.mentorName })
+                    }
+                    className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
+                  >
+                    Leave Review
+                  </button>
+                )}
               </div>
             </li>
           ))}
@@ -202,6 +233,23 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
           </button>
         )}
       </div>
+
+      {reviewTarget && (
+        <ReviewForm
+          open={!!reviewTarget}
+          onOpenChange={(open) => {
+            if (!open) setReviewTarget(null);
+          }}
+          studentId={studentId}
+          mentorId={reviewTarget.mentorId}
+          mentorName={reviewTarget.mentorName}
+          invalidateOnSuccess={[
+            pastSessionsKey,
+            studentReviewedKey,
+            ["mentor-profile-page", reviewTarget.mentorId],
+          ]}
+        />
+      )}
     </section>
   );
 }
