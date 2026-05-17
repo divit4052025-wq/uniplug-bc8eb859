@@ -10,6 +10,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { formatBookingDateTime } from "@/lib/time";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
+import { useOptimisticMutation } from "@/lib/hooks/useOptimisticMutation";
 
 export const Route = createFileRoute("/notifications")({
   beforeLoad: () => clientAuthGuard({ signedOutTo: "/login", requireRole: "mentor" }),
@@ -113,9 +114,17 @@ function NotificationsPage() {
 
   // Bug 6.8: bulk mark-all-as-read. Client-side enumeration of unread ids
   // (current RLS UPDATE policy permits this; no new RPC required). On
-  // failure, restore previous state and surface the error banner.
-  const markAllReadMutation = useMutation({
-    mutationFn: async ({ ids, readAt }: { ids: string[]; readAt: string }) => {
+  // failure, the shared hook rolls back the optimistic patch and fires a
+  // sonner toast.
+  //
+  // Proof-of-pattern call site for src/lib/hooks/useOptimisticMutation.ts.
+  // Other inline-mutation call sites adopt incrementally in follow-up PRs.
+  const markAllReadMutation = useOptimisticMutation<
+    NotificationRow[],
+    { ids: string[]; readAt: string },
+    void
+  >({
+    mutationFn: async ({ ids, readAt }) => {
       if (ids.length === 0) return;
       const { error } = await supabase
         .from("notifications")
@@ -123,19 +132,10 @@ function NotificationsPage() {
         .in("id", ids);
       if (error) throw error;
     },
-    onMutate: async ({ readAt }) => {
-      await qc.cancelQueries({ queryKey: notificationsKey });
-      const prev = qc.getQueryData<NotificationRow[]>(notificationsKey) ?? [];
-      qc.setQueryData<NotificationRow[]>(
-        notificationsKey,
-        prev.map((r) => (r.read_at ? r : { ...r, read_at: readAt })),
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev !== undefined) qc.setQueryData(notificationsKey, ctx.prev);
-      setMutationError("Could not mark all as read.");
-    },
+    queryKeys: [notificationsKey],
+    optimisticUpdate: (rows, { readAt }) =>
+      (rows ?? []).map((r) => (r.read_at ? r : { ...r, read_at: readAt })),
+    errorMessage: "Could not mark all as read.",
   });
 
   const markAsRead = (id: string) => {

@@ -3,6 +3,7 @@ import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/r
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import { createQueryClient } from "../lib/queryClient";
+import { Toaster } from "../components/ui/sonner";
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -76,6 +77,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
+      <Toaster />
     </QueryClientProvider>
   );
 }
