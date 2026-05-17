@@ -10,6 +10,7 @@ import MentorCalendar from "@/components/calendar/MentorCalendar";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
+import { ReviewForm } from "@/components/reviews/ReviewForm";
 
 export const Route = createFileRoute("/mentor/$id")({
   beforeLoad: () =>
@@ -56,7 +57,9 @@ function MentorProfilePage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
   const [authReady, setAuthReady] = useState(!!ctx.userId);
+  const [viewerId, setViewerId] = useState<string | null>(ctx.userId ?? null);
   const [active, setActive] = useState<SectionKey>("browse");
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
   useEffect(() => {
@@ -71,6 +74,7 @@ function MentorProfilePage() {
         navigate({ to: "/login" });
         return;
       }
+      setViewerId(sessionData.session.user.id);
       setAuthReady(true);
     })();
     return () => {
@@ -128,6 +132,42 @@ function MentorProfilePage() {
   const reviews = data?.reviews ?? [];
   const sessionCount = data?.sessionCount ?? 0;
   const notFound = !isLoading && !isError && !mentor;
+
+  // "Leave Review" CTA eligibility:
+  //   - Viewer is signed in (viewerId set)
+  //   - Viewer has at least one completed booking with this mentor
+  //   - Viewer hasn't already written a review for this mentor
+  // RLS makes both queries scope-correct: bookings SELECT and reviews
+  // SELECT are both auth.uid()-gated.
+  const mentorReviewKey = ["mentor-profile-page", id] as const;
+  const reviewEligibilityKey = ["review-eligibility", id, viewerId] as const;
+  const { data: eligibility } = useQuery<{ hasCompleted: boolean; hasReviewed: boolean }>({
+    queryKey: reviewEligibilityKey,
+    enabled: !!viewerId && !!mentor,
+    queryFn: async () => {
+      const [{ count: cCount, error: cErr }, { count: rCount, error: rErr }] = await Promise.all([
+        supabase
+          .from("bookings")
+          .select("id", { count: "exact", head: true })
+          .eq("student_id", viewerId as string)
+          .eq("mentor_id", id)
+          .eq("status", "completed"),
+        supabase
+          .from("reviews")
+          .select("id", { count: "exact", head: true })
+          .eq("student_id", viewerId as string)
+          .eq("mentor_id", id),
+      ]);
+      if (cErr) throw cErr;
+      if (rErr) throw rErr;
+      return {
+        hasCompleted: (cCount ?? 0) > 0,
+        hasReviewed: (rCount ?? 0) > 0,
+      };
+    },
+  });
+  const canReview = !!eligibility?.hasCompleted && !eligibility?.hasReviewed;
+  const alreadyReviewed = !!eligibility?.hasReviewed;
 
   const onSelectSection = (key: SectionKey) => {
     setActive(key);
@@ -265,7 +305,23 @@ function MentorProfilePage() {
 
         <section className="bg-[#EDE0DB] px-5 py-10 sm:px-8 md:px-12 md:py-14">
           <div className="mx-auto max-w-5xl">
-            <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">Reviews</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">Reviews</h2>
+              {canReview && (
+                <button
+                  type="button"
+                  onClick={() => setReviewOpen(true)}
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-[#C4907F] px-5 text-[12px] font-medium text-white transition hover:opacity-90"
+                >
+                  Leave a Review
+                </button>
+              )}
+              {alreadyReviewed && (
+                <span className="inline-flex h-10 items-center justify-center rounded-full bg-[#FFFCFB] px-4 text-[12px] font-medium text-[#1A1A1A]/60">
+                  You've reviewed this mentor
+                </span>
+              )}
+            </div>
             {reviews.length === 0 ? (
               <div className="mt-5 rounded-2xl border border-[#E8C4B8] bg-[#FFFCFB] p-8 text-center">
                 <p className="text-[14px] text-[#1A1A1A]/70">No reviews yet — be the first to book a session.</p>
@@ -296,6 +352,17 @@ function MentorProfilePage() {
       </main>
 
       <MobileBottomNav active={active} onSelect={onSelectSection} />
+
+      {viewerId && (
+        <ReviewForm
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          studentId={viewerId}
+          mentorId={mentor.id}
+          mentorName={mentor.full_name}
+          invalidateOnSuccess={[mentorReviewKey, reviewEligibilityKey]}
+        />
+      )}
     </div>
   );
 }
