@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { resolveUserRole } from "@/lib/auth/role";
@@ -40,11 +40,9 @@ type Role = "student" | "mentor";
 function NotificationsPage() {
   const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
-  const qc = useQueryClient();
   const [userId, setUserId] = useState<string | null>(ctx.userId ?? null);
   const [role, setRole] = useState<Role | null>(null);
   const [ready, setReady] = useState(false);
-  const [mutationError, setMutationError] = useState<string | null>(null);
 
   const notificationsKey = ["notifications", "list", userId] as const;
 
@@ -116,36 +114,31 @@ function NotificationsPage() {
     },
   });
 
-  const markAsReadMutation = useMutation({
-    mutationFn: async ({ id, readAt }: { id: string; readAt: string }) => {
+  // Single-row mark-as-read. Both this and the bulk mutation below use the
+  // shared optimistic-mutation hook — proof-of-pattern call site for
+  // src/lib/hooks/useOptimisticMutation.ts.
+  const markAsReadMutation = useOptimisticMutation<
+    NotificationRow[],
+    { id: string; readAt: string },
+    void
+  >({
+    mutationFn: async ({ id, readAt }) => {
       const { error } = await supabase
         .from("notifications")
         .update({ read_at: readAt })
         .eq("id", id);
       if (error) throw error;
     },
-    onMutate: async ({ id, readAt }) => {
-      await qc.cancelQueries({ queryKey: notificationsKey });
-      const prev = qc.getQueryData<NotificationRow[]>(notificationsKey) ?? [];
-      qc.setQueryData<NotificationRow[]>(
-        notificationsKey,
-        prev.map((r) => (r.id === id ? { ...r, read_at: readAt } : r)),
-      );
-      return { prev };
-    },
-    onError: (_err, _vars, ctx) => {
-      if (ctx?.prev !== undefined) qc.setQueryData(notificationsKey, ctx.prev);
-      setMutationError("Could not mark notification as read.");
-    },
+    queryKeys: [notificationsKey],
+    optimisticUpdate: (rows, { id, readAt }) =>
+      (rows ?? []).map((r) => (r.id === id ? { ...r, read_at: readAt } : r)),
+    errorMessage: "Could not mark notification as read.",
   });
 
   // Bug 6.8: bulk mark-all-as-read. Client-side enumeration of unread ids
   // (current RLS UPDATE policy permits this; no new RPC required). On
   // failure, the shared hook rolls back the optimistic patch and fires a
   // sonner toast.
-  //
-  // Proof-of-pattern call site for src/lib/hooks/useOptimisticMutation.ts.
-  // Other inline-mutation call sites adopt incrementally in follow-up PRs.
   const markAllReadMutation = useOptimisticMutation<
     NotificationRow[],
     { ids: string[]; readAt: string },
@@ -224,18 +217,6 @@ function NotificationsPage() {
               message="Could not load notifications."
               onRetry={() => void refetch()}
             />
-          </div>
-        )}
-        {mutationError && (
-          <div className="mt-6 flex items-start justify-between gap-3 rounded-r-2xl border-l-4 border-[#C4907F] bg-[#EDE0DB] px-5 py-3">
-            <p className="text-[13px] text-[#1A1A1A]">{mutationError}</p>
-            <button
-              type="button"
-              onClick={() => setMutationError(null)}
-              className="text-[12px] font-medium text-[#1A1A1A]/70 hover:text-[#C4907F]"
-            >
-              Dismiss
-            </button>
           </div>
         )}
 

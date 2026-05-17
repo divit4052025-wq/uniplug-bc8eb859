@@ -18,7 +18,7 @@
 
 import * as React from "react";
 import { Star } from "lucide-react";
-import { useQueryClient, type QueryKey } from "@tanstack/react-query";
+import { type QueryKey } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -61,7 +61,6 @@ export function ReviewForm({
   mentorName,
   invalidateOnSuccess = [],
 }: ReviewFormProps) {
-  const qc = useQueryClient();
   const [rating, setRating] = React.useState<number>(0);
   const [draft, setDraft] = React.useState<string>("");
 
@@ -92,10 +91,9 @@ export function ReviewForm({
     errorMessage:
       "Could not submit your review. Make sure your session has completed and try again.",
     mutationOptions: {
+      // The hook's onSettled already invalidates every key in queryKeys; we
+      // only need to close the modal on success.
       onSuccess: () => {
-        for (const key of invalidateOnSuccess) {
-          void qc.invalidateQueries({ queryKey: key });
-        }
         onOpenChange(false);
       },
     },
