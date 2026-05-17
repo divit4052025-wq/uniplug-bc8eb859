@@ -8,6 +8,7 @@ import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 import { MyPlugsSection } from "@/components/dashboard/sections/MyPlugsSection";
 import { UpcomingSessionsSection } from "@/components/dashboard/sections/UpcomingSessionsSection";
+import { PastSessionsSection } from "@/components/dashboard/sections/PastSessionsSection";
 import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSection";
 import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
 import { SessionNotesSection } from "@/components/dashboard/sections/SessionNotesSection";
@@ -130,6 +131,7 @@ function Dashboard() {
           <div className="mt-8 space-y-12 animate-hero-rise">
             <MyPlugsSection studentId={userId} />
             <UpcomingSessionsSection studentId={userId} />
+            <PastSessionsSection studentId={userId} />
             <SessionNotesSection studentId={userId} />
             <MySchoolsSection userId={userId} />
             <MyDocumentsSection userId={userId} />
