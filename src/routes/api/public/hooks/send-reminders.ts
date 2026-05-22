@@ -51,8 +51,21 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
 
         let sent = 0;
         let failed = 0;
+        let skipped = 0;
         for (const b of bookings ?? []) {
           try {
+            // Bookings have ON DELETE SET NULL on mentor_id and student_id,
+            // so an orphan can have either field null. Skip the reminder
+            // (nobody to send to) and log enough context to investigate.
+            if (!b.mentor_id || !b.student_id) {
+              skipped++;
+              console.warn("[reminders] orphan booking — skipping", {
+                booking_id: b.id,
+                mentor_id_null: b.mentor_id === null,
+                student_id_null: b.student_id === null,
+              });
+              continue;
+            }
             const [{ data: mentor }, { data: student }] = await Promise.all([
               supabaseAdmin.from("mentors").select("full_name, email").eq("id", b.mentor_id).maybeSingle(),
               supabaseAdmin.from("students").select("full_name, email").eq("id", b.student_id).maybeSingle(),
@@ -81,7 +94,7 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
           }
         }
 
-        return new Response(JSON.stringify({ ok: true, date: targetDate, processed: bookings?.length ?? 0, sent, failed }), {
+        return new Response(JSON.stringify({ ok: true, date: targetDate, processed: bookings?.length ?? 0, sent, failed, skipped }), {
           headers: { "Content-Type": "application/json" },
         });
       },

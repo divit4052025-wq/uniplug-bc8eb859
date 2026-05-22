@@ -46,6 +46,22 @@ export const sendBookingEmails = createServerFn({ method: "POST" })
       }
       console.log("[booking-emails] booking loaded", { mentor_id: booking.mentor_id, student_id: booking.student_id });
 
+      // Bookings have ON DELETE SET NULL on mentor_id and student_id, so an
+      // orphaned booking can legitimately have either field null after a
+      // user row is deleted. Sending a reminder serves no one in that case;
+      // skip and let an admin investigate from the warning.
+      if (!booking.mentor_id || !booking.student_id) {
+        console.warn(
+          "[booking-emails] orphan booking — skipping",
+          {
+            booking_id: booking.id,
+            mentor_id_null: booking.mentor_id === null,
+            student_id_null: booking.student_id === null,
+          },
+        );
+        return { ok: false, reason: "orphan_booking" };
+      }
+
       const [{ data: mentor }, { data: student }] = await Promise.all([
         supabaseAdmin.from("mentors").select("full_name, email").eq("id", booking.mentor_id).maybeSingle(),
         supabaseAdmin.from("students").select("full_name, email").eq("id", booking.student_id).maybeSingle(),
