@@ -55,10 +55,10 @@ export type Database = {
           date: string
           duration: number
           id: string
-          mentor_id: string
+          mentor_id: string | null
           price: number
           status: string
-          student_id: string
+          student_id: string | null
           time_slot: string
         }
         Insert: {
@@ -66,10 +66,10 @@ export type Database = {
           date: string
           duration?: number
           id?: string
-          mentor_id: string
+          mentor_id?: string | null
           price?: number
           status?: string
-          student_id: string
+          student_id?: string | null
           time_slot: string
         }
         Update: {
@@ -77,13 +77,28 @@ export type Database = {
           date?: string
           duration?: number
           id?: string
-          mentor_id?: string
+          mentor_id?: string | null
           price?: number
           status?: string
-          student_id?: string
+          student_id?: string | null
           time_slot?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookings_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentors"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mentor_availability: {
         Row: {
@@ -107,7 +122,15 @@ export type Database = {
           mentor_id?: string
           start_hour?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mentor_availability_mentor_id_fkey"
+            columns: ["mentor_id"]
+            isOneToOne: false
+            referencedRelation: "mentors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mentor_payouts: {
         Row: {
@@ -183,6 +206,53 @@ export type Database = {
           year?: string
         }
         Relationships: []
+      }
+      notifications: {
+        Row: {
+          booking_date: string
+          booking_id: string | null
+          booking_time_slot: string
+          created_at: string
+          id: string
+          kind: string
+          mentor_name: string | null
+          read_at: string | null
+          recipient_id: string
+          student_name: string
+        }
+        Insert: {
+          booking_date: string
+          booking_id?: string | null
+          booking_time_slot: string
+          created_at?: string
+          id?: string
+          kind?: string
+          mentor_name?: string | null
+          read_at?: string | null
+          recipient_id: string
+          student_name: string
+        }
+        Update: {
+          booking_date?: string
+          booking_id?: string | null
+          booking_time_slot?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          mentor_name?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          student_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -472,14 +542,25 @@ export type Database = {
           university: string
         }[]
       }
+      get_mentor_calendar: {
+        Args: { _days_ahead?: number; _from_date?: string; _mentor_id: string }
+        Returns: {
+          date: string
+          state: string
+          time_slot: string
+        }[]
+      }
       get_mentor_public_profile: {
         Args: { _mentor_id: string }
         Returns: {
+          bio: string
           countries: string[]
           course: string
           full_name: string
           id: string
+          photo_url: string
           price_inr: number
+          topics: string[]
           university: string
           year: string
         }[]
@@ -500,7 +581,21 @@ export type Database = {
           school: string
         }[]
       }
+      get_student_overview_for_mentor: {
+        Args: { _student_id: string }
+        Returns: {
+          documents: Json
+          email: string
+          full_name: string
+          grade: string
+          phone: string
+          school: string
+          schools: Json
+          student_id: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
+      is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean }
       list_approved_mentor_profiles: {
         Args: never
         Returns: {
@@ -512,6 +607,10 @@ export type Database = {
           university: string
           year: string
         }[]
+      }
+      update_booking_status_as_mentor: {
+        Args: { _booking_id: string; _new_status: string }
+        Returns: undefined
       }
     }
     Enums: {
