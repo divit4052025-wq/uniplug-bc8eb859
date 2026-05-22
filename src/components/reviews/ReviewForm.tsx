@@ -190,87 +190,85 @@ interface StarRatingProps {
   labelId: string;
 }
 
-export const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(
-  function StarRating({ value, onChange, labelId }, ref) {
-    // Roving tabindex: exactly ONE radio in the group receives Tab focus.
-    // When a value is selected, that radio is the tab stop. When nothing
-    // is selected, the first radio is the tab stop. Arrow keys move
-    // between radios and update the selection (focus follows selection).
-    const buttonRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
+export const StarRating = React.forwardRef<HTMLDivElement, StarRatingProps>(function StarRating(
+  { value, onChange, labelId },
+  ref,
+) {
+  // Roving tabindex: exactly ONE radio in the group receives Tab focus.
+  // When a value is selected, that radio is the tab stop. When nothing
+  // is selected, the first radio is the tab stop. Arrow keys move
+  // between radios and update the selection (focus follows selection).
+  const buttonRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
 
-    const setRating = (next: number) => {
-      const clamped = Math.max(1, Math.min(5, next));
-      onChange(clamped);
-      // Focus the newly-selected radio so the roving tab stop and the
-      // visible focus ring track the selection.
-      buttonRefs.current[clamped - 1]?.focus();
-    };
+  const setRating = (next: number) => {
+    const clamped = Math.max(1, Math.min(5, next));
+    onChange(clamped);
+    // Focus the newly-selected radio so the roving tab stop and the
+    // visible focus ring track the selection.
+    buttonRefs.current[clamped - 1]?.focus();
+  };
 
-    const onKeyDown = (
-      e: React.KeyboardEvent<HTMLButtonElement>,
-      idx: number,
-    ) => {
-      const current = value > 0 ? value : idx + 1;
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        e.preventDefault();
-        setRating(current >= 5 ? 1 : current + 1);
-      } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        e.preventDefault();
-        setRating(current <= 1 ? 5 : current - 1);
-      } else if (e.key >= "1" && e.key <= "5") {
-        e.preventDefault();
-        setRating(Number.parseInt(e.key, 10));
-      } else if (e.key === "Home") {
-        e.preventDefault();
-        setRating(1);
-      } else if (e.key === "End") {
-        e.preventDefault();
-        setRating(5);
-      } else if (e.key === " " || e.key === "Enter") {
-        e.preventDefault();
-        setRating(idx + 1);
-      }
-    };
+  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, idx: number) => {
+    const current = value > 0 ? value : idx + 1;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      setRating(current >= 5 ? 1 : current + 1);
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setRating(current <= 1 ? 5 : current - 1);
+    } else if (e.key >= "1" && e.key <= "5") {
+      e.preventDefault();
+      setRating(Number.parseInt(e.key, 10));
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      setRating(1);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      setRating(5);
+    } else if (e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      setRating(idx + 1);
+    }
+  };
 
-    // The radio that owns the tab stop: the selected one, or the first
-    // when nothing is selected yet.
-    const tabStopIdx = value > 0 ? value - 1 : 0;
+  // The radio that owns the tab stop: the selected one, or the first
+  // when nothing is selected yet.
+  const tabStopIdx = value > 0 ? value - 1 : 0;
 
-    return (
-      <div
-        ref={ref}
-        role="radiogroup"
-        aria-labelledby={labelId}
-        className="mt-2 inline-flex items-center gap-1 rounded-md"
-      >
-        {[1, 2, 3, 4, 5].map((n) => {
-          const idx = n - 1;
-          const active = n <= value;
-          const isChecked = value === n;
-          return (
-            <button
-              key={n}
-              ref={(el) => {
-                buttonRefs.current[idx] = el;
-              }}
-              type="button"
-              role="radio"
-              aria-checked={isChecked}
-              aria-label={`${n} of 5 stars`}
-              tabIndex={idx === tabStopIdx ? 0 : -1}
-              onClick={() => setRating(n)}
-              onKeyDown={(e) => onKeyDown(e, idx)}
-              className="grid h-9 w-9 place-content-center rounded-full outline-none hover:bg-[#EDE0DB]/50 focus-visible:ring-2 focus-visible:ring-[#C4907F] focus-visible:ring-offset-2"
-            >
-              <Star
-                className={`h-6 w-6 ${
-                  active ? "fill-[#C4907F] text-[#C4907F]" : "text-[#1A1A1A]/25"
-                }`}
-              />
-            </button>
-          );
-        })}
-      </div>
-    );
-  },
-);
+  return (
+    <div
+      ref={ref}
+      role="radiogroup"
+      aria-labelledby={labelId}
+      className="mt-2 inline-flex items-center gap-1 rounded-md"
+    >
+      {[1, 2, 3, 4, 5].map((n) => {
+        const idx = n - 1;
+        const active = n <= value;
+        const isChecked = value === n;
+        return (
+          <button
+            key={n}
+            ref={(el) => {
+              buttonRefs.current[idx] = el;
+            }}
+            type="button"
+            role="radio"
+            aria-checked={isChecked}
+            aria-label={`${n} of 5 stars`}
+            tabIndex={idx === tabStopIdx ? 0 : -1}
+            onClick={() => setRating(n)}
+            onKeyDown={(e) => onKeyDown(e, idx)}
+            className="grid h-9 w-9 place-content-center rounded-full outline-none hover:bg-[#EDE0DB]/50 focus-visible:ring-2 focus-visible:ring-[#C4907F] focus-visible:ring-offset-2"
+          >
+            <Star
+              className={`h-6 w-6 ${
+                active ? "fill-[#C4907F] text-[#C4907F]" : "text-[#1A1A1A]/25"
+              }`}
+            />
+          </button>
+        );
+      })}
+    </div>
+  );
+});

@@ -67,15 +67,31 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
               continue;
             }
             const [{ data: mentor }, { data: student }] = await Promise.all([
-              supabaseAdmin.from("mentors").select("full_name, email").eq("id", b.mentor_id).maybeSingle(),
-              supabaseAdmin.from("students").select("full_name, email").eq("id", b.student_id).maybeSingle(),
+              supabaseAdmin
+                .from("mentors")
+                .select("full_name, email")
+                .eq("id", b.mentor_id)
+                .maybeSingle(),
+              supabaseAdmin
+                .from("students")
+                .select("full_name, email")
+                .eq("id", b.student_id)
+                .maybeSingle(),
             ]);
             if (!mentor || !student) {
               failed++;
               continue;
             }
-            const sEmail = studentReminderEmail({ mentorName: mentor.full_name, date: b.date, timeSlot: b.time_slot });
-            const mEmail = mentorReminderEmail({ studentName: student.full_name, date: b.date, timeSlot: b.time_slot });
+            const sEmail = studentReminderEmail({
+              mentorName: mentor.full_name,
+              date: b.date,
+              timeSlot: b.time_slot,
+            });
+            const mEmail = mentorReminderEmail({
+              studentName: student.full_name,
+              date: b.date,
+              timeSlot: b.time_slot,
+            });
             const results = await Promise.allSettled([
               sendViaResend(apiKey, student.email, sEmail.subject, sEmail.html),
               sendViaResend(apiKey, mentor.email, mEmail.subject, mEmail.html),
@@ -83,7 +99,10 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
             results.forEach((r, i) => {
               if (r.status === "rejected") {
                 failed++;
-                console.error(`[reminders] send ${i === 0 ? "student" : "mentor"} for booking ${b.id} failed`, r.reason);
+                console.error(
+                  `[reminders] send ${i === 0 ? "student" : "mentor"} for booking ${b.id} failed`,
+                  r.reason,
+                );
               } else {
                 sent++;
               }
@@ -94,9 +113,19 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
           }
         }
 
-        return new Response(JSON.stringify({ ok: true, date: targetDate, processed: bookings?.length ?? 0, sent, failed, skipped }), {
-          headers: { "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            ok: true,
+            date: targetDate,
+            processed: bookings?.length ?? 0,
+            sent,
+            failed,
+            skipped,
+          }),
+          {
+            headers: { "Content-Type": "application/json" },
+          },
+        );
       },
     },
   },

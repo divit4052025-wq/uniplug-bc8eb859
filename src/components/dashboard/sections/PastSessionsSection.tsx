@@ -64,10 +64,7 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
           .from("session_notes")
           .select("id, booking_id, action_points")
           .in("booking_id", bookingIds),
-        supabase
-          .from("reviews")
-          .select("mentor_id")
-          .eq("student_id", studentId),
+        supabase.from("reviews").select("mentor_id").eq("student_id", studentId),
       ]);
       if (namesRes.error) throw namesRes.error;
       if (notesRes.error) throw notesRes.error;
@@ -81,11 +78,13 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
       );
 
       const noteByBooking = new Map<string, { id: string; actionTotal: number }>();
-      ((notesRes.data ?? []) as {
-        id: string;
-        booking_id: string | null;
-        action_points: unknown;
-      }[]).forEach((n) => {
+      (
+        (notesRes.data ?? []) as {
+          id: string;
+          booking_id: string | null;
+          action_points: unknown;
+        }[]
+      ).forEach((n) => {
         if (!n.booking_id) return;
         const total = Array.isArray(n.action_points) ? n.action_points.length : 0;
         noteByBooking.set(n.booking_id, { id: n.id, actionTotal: total });
@@ -105,10 +104,7 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
           .eq("completed", true);
         if (cErr) throw cErr;
         ((comps ?? []) as { session_note_id: string; completed: boolean }[]).forEach((c) => {
-          completedByNote.set(
-            c.session_note_id,
-            (completedByNote.get(c.session_note_id) ?? 0) + 1,
-          );
+          completedByNote.set(c.session_note_id, (completedByNote.get(c.session_note_id) ?? 0) + 1);
         });
       }
 
@@ -122,7 +118,7 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
           mentorName: nameMap.get(b.mentor_id) ?? "Mentor",
           noteId: note?.id ?? null,
           actionTotal: note?.actionTotal ?? 0,
-          actionDone: note ? completedByNote.get(note.id) ?? 0 : 0,
+          actionDone: note ? (completedByNote.get(note.id) ?? 0) : 0,
           hasReviewed: reviewedMentors.has(b.mentor_id),
         };
       });
@@ -134,10 +130,7 @@ export function PastSessionsSection({ studentId }: { studentId: string }) {
       <section id="section-past-sessions" className="scroll-mt-24">
         <h2 className="font-display text-[22px] font-semibold text-[#1A1A1A]">Past Sessions</h2>
         <div className="mt-4">
-          <ErrorBanner
-            message="Couldn't load your past sessions."
-            onRetry={() => void refetch()}
-          />
+          <ErrorBanner message="Couldn't load your past sessions." onRetry={() => void refetch()} />
         </div>
       </section>
     );

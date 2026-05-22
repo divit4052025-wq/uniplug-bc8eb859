@@ -17,8 +17,7 @@ import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/dashboard")({
-  beforeLoad: () =>
-    clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
+  beforeLoad: () => clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
   head: () => ({
     meta: [{ title: "Dashboard — UniPlug" }],
   }),
@@ -98,8 +97,7 @@ function Dashboard() {
     },
   });
 
-  const fullName =
-    profile?.full_name ?? userMetadata?.full_name ?? "";
+  const fullName = profile?.full_name ?? userMetadata?.full_name ?? "";
   const firstName = fullName.split(" ")[0] ?? "";
 
   const select = (key: SectionKey) => {

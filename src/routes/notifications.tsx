@@ -100,7 +100,11 @@ function NotificationsPage() {
     };
   }, [navigate, ctx.userId, ctx.userMetadata]);
 
-  const { data: rows = [], isError, refetch } = useQuery<NotificationRow[]>({
+  const {
+    data: rows = [],
+    isError,
+    refetch,
+  } = useQuery<NotificationRow[]>({
     queryKey: notificationsKey,
     enabled: !!userId,
     queryFn: async () => {
@@ -213,10 +217,7 @@ function NotificationsPage() {
 
         {isError && (
           <div className="mt-6">
-            <ErrorBanner
-              message="Could not load notifications."
-              onRetry={() => void refetch()}
-            />
+            <ErrorBanner message="Could not load notifications." onRetry={() => void refetch()} />
           </div>
         )}
 
@@ -245,9 +246,7 @@ function NotificationsPage() {
                       <span className="mt-2 h-2 w-2 shrink-0" aria-hidden="true" />
                     )}
                     <div className="min-w-0">
-                      <p className="text-[15px] font-medium text-[#1A1A1A]">
-                        {renderHeadline(n)}
-                      </p>
+                      <p className="text-[15px] font-medium text-[#1A1A1A]">{renderHeadline(n)}</p>
                       <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
                         {formatBookingDateTime(n.booking_date, n.booking_time_slot)}
                       </p>

@@ -1,9 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import {
-  studentBookingConfirmationEmail,
-  mentorBookingAlertEmail,
-} from "./templates";
+import { studentBookingConfirmationEmail, mentorBookingAlertEmail } from "./templates";
 
 const FROM = "UniPlug <onboarding@resend.dev>";
 
@@ -29,7 +26,12 @@ export const sendBookingEmails = createServerFn({ method: "POST" })
     console.log("[booking-emails] handler invoked for booking", data.bookingId);
     try {
       const apiKey = process.env.RESEND_API_KEY;
-      console.log("[booking-emails] RESEND_API_KEY present?", Boolean(apiKey), "length:", apiKey?.length ?? 0);
+      console.log(
+        "[booking-emails] RESEND_API_KEY present?",
+        Boolean(apiKey),
+        "length:",
+        apiKey?.length ?? 0,
+      );
       if (!apiKey) {
         console.error("[booking-emails] RESEND_API_KEY not set");
         return { ok: false, reason: "missing_api_key" };
@@ -44,27 +46,35 @@ export const sendBookingEmails = createServerFn({ method: "POST" })
         console.error("[booking-emails] booking not found", bErr);
         return { ok: false, reason: "booking_not_found" };
       }
-      console.log("[booking-emails] booking loaded", { mentor_id: booking.mentor_id, student_id: booking.student_id });
+      console.log("[booking-emails] booking loaded", {
+        mentor_id: booking.mentor_id,
+        student_id: booking.student_id,
+      });
 
       // Bookings have ON DELETE SET NULL on mentor_id and student_id, so an
       // orphaned booking can legitimately have either field null after a
       // user row is deleted. Sending a reminder serves no one in that case;
       // skip and let an admin investigate from the warning.
       if (!booking.mentor_id || !booking.student_id) {
-        console.warn(
-          "[booking-emails] orphan booking — skipping",
-          {
-            booking_id: booking.id,
-            mentor_id_null: booking.mentor_id === null,
-            student_id_null: booking.student_id === null,
-          },
-        );
+        console.warn("[booking-emails] orphan booking — skipping", {
+          booking_id: booking.id,
+          mentor_id_null: booking.mentor_id === null,
+          student_id_null: booking.student_id === null,
+        });
         return { ok: false, reason: "orphan_booking" };
       }
 
       const [{ data: mentor }, { data: student }] = await Promise.all([
-        supabaseAdmin.from("mentors").select("full_name, email").eq("id", booking.mentor_id).maybeSingle(),
-        supabaseAdmin.from("students").select("full_name, email").eq("id", booking.student_id).maybeSingle(),
+        supabaseAdmin
+          .from("mentors")
+          .select("full_name, email")
+          .eq("id", booking.mentor_id)
+          .maybeSingle(),
+        supabaseAdmin
+          .from("students")
+          .select("full_name, email")
+          .eq("id", booking.student_id)
+          .maybeSingle(),
       ]);
 
       if (!mentor || !student) {
@@ -91,7 +101,10 @@ export const sendBookingEmails = createServerFn({ method: "POST" })
       results.forEach((r, i) => {
         const who = i === 0 ? "student" : "mentor";
         if (r.status === "rejected") {
-          console.error(`[booking-emails] send ${who} failed:`, r.reason instanceof Error ? r.reason.message : r.reason);
+          console.error(
+            `[booking-emails] send ${who} failed:`,
+            r.reason instanceof Error ? r.reason.message : r.reason,
+          );
         } else {
           console.log(`[booking-emails] send ${who} ok:`, r.value);
         }

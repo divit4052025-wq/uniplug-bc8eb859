@@ -38,7 +38,8 @@ export function DashboardTopbar({
         className="font-display text-[#1A1A1A]"
         style={{ fontSize: "clamp(22px, 4vw, 28px)", fontWeight: 600, letterSpacing: "-0.02em" }}
       >
-        {greeting}{firstName ? `, ${firstName}` : ""}
+        {greeting}
+        {firstName ? `, ${firstName}` : ""}
       </h1>
       <Link
         to="/notifications"
