@@ -292,7 +292,10 @@ function UsersSection() {
   const { data: mentors = [], isError: mErr, refetch: refetchMentors } = useQuery<MentorRow[]>({
     queryKey: ["admin-mentors-all"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_list_mentors", { _status: null });
+      // Omit _status to get all mentors (the SQL fn defaults _status to NULL,
+      // which the function treats as "no filter"). Matches the pattern used
+      // by admin_list_students / admin_list_bookings above.
+      const { data, error } = await supabase.rpc("admin_list_mentors");
       if (error) throw error;
       return (data as MentorRow[] | null) ?? [];
     },
