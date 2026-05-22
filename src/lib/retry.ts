@@ -38,24 +38,33 @@ interface RetryOpts {
 }
 
 /**
- * Wrap a Supabase-shaped call ({ data, error }) with exponential-backoff
- * retry on transient failures. Bails immediately on 4xx / RLS denials.
+ * Wrap any thenable that resolves to a `{ error: unknown, ... }` shape with
+ * exponential-backoff retry on transient failures. Bails immediately on
+ * 4xx / RLS denials.
  *
- * Default: 3 attempts × 200ms × 2^i = max ~1.4s total before giving up.
+ * Generic T is the FULL response shape, not just the data type — this lets
+ * the same helper handle both Postgrest-style responses (`data: T | null`)
+ * and auth-style responses (`data: { session: Session | null }`) without
+ * forcing callsites to massage the shape. `PromiseLike` (not `Promise`)
+ * accepts Supabase's PostgrestBuilder, which is thenable but not a real
+ * Promise.
+ *
+ * Default: 3 attempts × 200ms × 2^i = max ~600ms backoff before giving up.
  */
-export async function withRetry<T>(
-  fn: () => Promise<{ data: T | null; error: unknown }>,
+export async function withRetry<T extends { error: unknown }>(
+  fn: () => PromiseLike<T>,
   opts?: RetryOpts,
-): Promise<{ data: T | null; error: unknown }> {
-  const attempts = opts?.attempts ?? 3;
+): Promise<T> {
+  const attempts = Math.max(1, opts?.attempts ?? 3);
   const baseMs = opts?.baseMs ?? 200;
-  let last: { data: T | null; error: unknown } = { data: null, error: null };
-  for (let i = 0; i < attempts; i++) {
-    last = await fn();
+  // First call always happens; this initializes `last` so we never need a
+  // non-null assertion when returning from outside the loop.
+  let last: T = await fn();
+  for (let i = 1; i < attempts; i++) {
     if (!last.error) return last;
     if (!isTransient(last.error)) return last;
-    if (i === attempts - 1) break;
-    await new Promise((r) => setTimeout(r, baseMs * 2 ** i));
+    await new Promise((r) => setTimeout(r, baseMs * 2 ** (i - 1)));
+    last = await fn();
   }
   return last;
 }
