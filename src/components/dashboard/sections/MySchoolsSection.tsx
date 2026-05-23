@@ -18,7 +18,12 @@ export function MySchoolsSection({ userId }: { userId: string }) {
   const qc = useQueryClient();
   const queryKey = ["my-schools", userId] as const;
 
-  const { data: schools = [], isLoading, isError, refetch } = useQuery<School[]>({
+  const {
+    data: schools = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<School[]>({
     queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -66,7 +71,10 @@ export function MySchoolsSection({ userId }: { userId: string }) {
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey });
       const prev = qc.getQueryData<School[]>(queryKey) ?? [];
-      qc.setQueryData<School[]>(queryKey, prev.filter((s) => s.id !== id));
+      qc.setQueryData<School[]>(
+        queryKey,
+        prev.filter((s) => s.id !== id),
+      );
       return { prev };
     },
     onError: (_err, _vars, ctx) => {

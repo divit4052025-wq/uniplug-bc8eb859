@@ -22,17 +22,14 @@ export function MyPlugsSection({ studentId }: { studentId: string }) {
         .eq("status", "confirmed");
       if (bErr) throw bErr;
       const ids = Array.from(
-        new Set(
-          (bookings ?? []).map((b) => b.mentor_id).filter((v): v is string => !!v),
-        ),
+        new Set((bookings ?? []).map((b) => b.mentor_id).filter((v): v is string => !!v)),
       );
       if (ids.length === 0) return [];
-      const { data: mentors, error: mErr } = await supabase.rpc(
-        "get_mentor_booking_names",
-        { _ids: ids },
-      );
+      const { data: mentors, error: mErr } = await supabase.rpc("get_mentor_booking_names", {
+        _ids: ids,
+      });
       if (mErr) throw mErr;
-      return ((mentors ?? []) as Plug[]);
+      return (mentors ?? []) as Plug[];
     },
   });
 
@@ -47,9 +44,7 @@ export function MyPlugsSection({ studentId }: { studentId: string }) {
         <div className="mt-4 h-32 rounded-2xl bg-[#EDE0DB]" />
       ) : plugs.length === 0 ? (
         <div className="mt-4 rounded-2xl bg-[#EDE0DB] px-6 py-10 text-center">
-          <p className="text-[15px] font-light text-[#1A1A1A]">
-            You haven't found your Plug yet
-          </p>
+          <p className="text-[15px] font-light text-[#1A1A1A]">You haven't found your Plug yet</p>
           <a
             href="/browse"
             className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[#C4907F] px-6 text-[13px] font-medium text-white transition hover:opacity-90"

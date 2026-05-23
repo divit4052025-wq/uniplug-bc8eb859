@@ -10,8 +10,8 @@ import { formatBookingDate } from "@/lib/time";
 // Hand-written shape of the get_mentor_calendar RPC response. Stays in sync
 // with supabase/migrations/20260514100004_bug_6_5_calendar_ist_dates.sql.
 type CalendarSlot = {
-  date: string;       // "YYYY-MM-DD"
-  time_slot: string;  // "HH:MM" with leading zero, e.g. "14:00"
+  date: string; // "YYYY-MM-DD"
+  time_slot: string; // "HH:MM" with leading zero, e.g. "14:00"
   state: "available" | "booked";
 };
 
@@ -175,50 +175,50 @@ export default function MentorCalendar({
         )}
 
         {!isLoading && !isError && days.length === 0 && (
-          <p className="text-[13px] text-[#1A1A1A]/70">
-            No availability in the next 30 days.
-          </p>
+          <p className="text-[13px] text-[#1A1A1A]/70">No availability in the next 30 days.</p>
         )}
 
-        {!isLoading && !isError && days.map(({ date, slots: daySlots }) => (
-          <div key={date}>
-            <h4 className="font-display text-[16px] font-semibold text-[#1A1A1A]">
-              {formatBookingDate(date)}
-            </h4>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {daySlots.map((slot) => {
-                const isSelected =
-                  selected?.date === slot.date && selected?.time_slot === slot.time_slot;
-                if (slot.state === "booked") {
+        {!isLoading &&
+          !isError &&
+          days.map(({ date, slots: daySlots }) => (
+            <div key={date}>
+              <h4 className="font-display text-[16px] font-semibold text-[#1A1A1A]">
+                {formatBookingDate(date)}
+              </h4>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {daySlots.map((slot) => {
+                  const isSelected =
+                    selected?.date === slot.date && selected?.time_slot === slot.time_slot;
+                  if (slot.state === "booked") {
+                    return (
+                      <div
+                        key={`${slot.date}-${slot.time_slot}`}
+                        aria-disabled
+                        className="inline-flex h-11 cursor-not-allowed items-center justify-center rounded-full bg-[#EDE0DB] px-4 text-[13px] font-medium text-[#1A1A1A]/50"
+                      >
+                        {slot.time_slot} · Booked
+                      </div>
+                    );
+                  }
                   return (
-                    <div
+                    <button
                       key={`${slot.date}-${slot.time_slot}`}
-                      aria-disabled
-                      className="inline-flex h-11 cursor-not-allowed items-center justify-center rounded-full bg-[#EDE0DB] px-4 text-[13px] font-medium text-[#1A1A1A]/50"
+                      type="button"
+                      onClick={() => onChipClick(slot)}
+                      aria-pressed={isSelected}
+                      className={
+                        isSelected
+                          ? "inline-flex h-11 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[13px] font-medium text-[#FFFCFB] transition"
+                          : "inline-flex h-11 items-center justify-center rounded-full border border-[#C4907F] bg-[#FFFCFB] px-4 text-[13px] font-medium text-[#1A1A1A] transition hover:bg-[#E8C4B8]"
+                      }
                     >
-                      {slot.time_slot} · Booked
-                    </div>
+                      {slot.time_slot}
+                    </button>
                   );
-                }
-                return (
-                  <button
-                    key={`${slot.date}-${slot.time_slot}`}
-                    type="button"
-                    onClick={() => onChipClick(slot)}
-                    aria-pressed={isSelected}
-                    className={
-                      isSelected
-                        ? "inline-flex h-11 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[13px] font-medium text-[#FFFCFB] transition"
-                        : "inline-flex h-11 items-center justify-center rounded-full border border-[#C4907F] bg-[#FFFCFB] px-4 text-[13px] font-medium text-[#1A1A1A] transition hover:bg-[#E8C4B8]"
-                    }
-                  >
-                    {slot.time_slot}
-                  </button>
-                );
-              })}
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {selected && (
@@ -239,9 +239,7 @@ export default function MentorCalendar({
             {confirmMutation.isPending ? "Confirming…" : "Confirm Booking"}
           </button>
 
-          {submitError && (
-            <p className="mt-3 text-[13px] text-destructive">{submitError}</p>
-          )}
+          {submitError && <p className="mt-3 text-[13px] text-destructive">{submitError}</p>}
           {needsAuth && (
             <p className="mt-3 text-[13px] text-[#1A1A1A]/80">
               <Link to="/login" className="underline decoration-[#C4907F] underline-offset-4">

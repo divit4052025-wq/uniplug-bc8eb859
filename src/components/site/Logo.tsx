@@ -40,15 +40,15 @@ const GLYPH_METRICS: Record<
   LogoVariant,
   { hRatio: number; wRatio: number; centerYPct: number; centerXPct: number }
 > = {
-  "umark-offwhite": { hRatio: 0.340, wRatio: 0.424, centerYPct: 49.90, centerXPct: 54.95 },
-  "umark-dark":     { hRatio: 0.344, wRatio: 0.430, centerYPct: 50.13, centerXPct: 55.13 },
-  "umark-sand":     { hRatio: 0.344, wRatio: 0.429, centerYPct: 50.03, centerXPct: 55.18 },
-  "umark-rose":     { hRatio: 0.341, wRatio: 0.425, centerYPct: 49.90, centerXPct: 55.05 },
-  "umark-blush":    { hRatio: 0.581, wRatio: 0.581, centerYPct: 50.03, centerXPct: 50.03 },
-  "wordmark-dark":     { hRatio: 0.1585, wRatio: 0.6045, centerYPct: 45.52, centerXPct: 50.02 },
-  "wordmark-offwhite": { hRatio: 0.1575, wRatio: 0.5990, centerYPct: 50.08, centerXPct: 50.00 },
-  "wordmark-sand":     { hRatio: 0.1600, wRatio: 0.6075, centerYPct: 46.10, centerXPct: 51.52 },
-  "wordmark-blush":    { hRatio: 0.1575, wRatio: 0.6000, centerYPct: 42.98, centerXPct: 50.15 },
+  "umark-offwhite": { hRatio: 0.34, wRatio: 0.424, centerYPct: 49.9, centerXPct: 54.95 },
+  "umark-dark": { hRatio: 0.344, wRatio: 0.43, centerYPct: 50.13, centerXPct: 55.13 },
+  "umark-sand": { hRatio: 0.344, wRatio: 0.429, centerYPct: 50.03, centerXPct: 55.18 },
+  "umark-rose": { hRatio: 0.341, wRatio: 0.425, centerYPct: 49.9, centerXPct: 55.05 },
+  "umark-blush": { hRatio: 0.581, wRatio: 0.581, centerYPct: 50.03, centerXPct: 50.03 },
+  "wordmark-dark": { hRatio: 0.1585, wRatio: 0.6045, centerYPct: 45.52, centerXPct: 50.02 },
+  "wordmark-offwhite": { hRatio: 0.1575, wRatio: 0.599, centerYPct: 50.08, centerXPct: 50.0 },
+  "wordmark-sand": { hRatio: 0.16, wRatio: 0.6075, centerYPct: 46.1, centerXPct: 51.52 },
+  "wordmark-blush": { hRatio: 0.1575, wRatio: 0.6, centerYPct: 42.98, centerXPct: 50.15 },
 };
 
 export function Logo({

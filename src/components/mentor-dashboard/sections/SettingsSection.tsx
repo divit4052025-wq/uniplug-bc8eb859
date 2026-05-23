@@ -29,7 +29,12 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
 
   const photoInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: profile, isLoading, isError, refetch } = useQuery<MentorProfile>({
+  const {
+    data: profile,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<MentorProfile>({
     queryKey: profileKey,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -95,9 +100,7 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
         .from("mentor-photos")
         .upload(path, file, { contentType: file.type, upsert: true });
       if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage
-        .from("mentor-photos")
-        .getPublicUrl(path);
+      const { data: urlData } = supabase.storage.from("mentor-photos").getPublicUrl(path);
       setPhotoUrl(urlData.publicUrl);
       toast.success("Photo uploaded — click Save Changes to keep it.");
     } catch (err) {
@@ -265,9 +268,7 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
             <Plus className="h-4 w-4" />
           </button>
         </div>
-        <p className="mt-2 text-[11px] text-[#1A1A1A]/50">
-          Press Enter or click + to add a topic.
-        </p>
+        <p className="mt-2 text-[11px] text-[#1A1A1A]/50">Press Enter or click + to add a topic.</p>
       </section>
 
       <button
