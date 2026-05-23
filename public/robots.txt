@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /mentor-dashboard
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://uniplug.app/sitemap.xml
