@@ -25,13 +25,13 @@ SELECT name, setting, source FROM pg_settings
 
 ## Conclusion
 
-**PASS.** PITR is enabled on the live tier:
-- `archive_mode = on` → WAL segments are archived
-- `wal_level = logical` → WAL contains enough info for replay (also enables logical replication)
-- `max_wal_senders = 5` → replication connections allowed
-- Supabase Dashboard → Database → Backups should show "Point-in-Time Recovery: Enabled" with the project's retention window
+**INCONCLUSIVE — prerequisites pass; dashboard confirmation required before launch.**
 
-No pre-launch blocker.
+The `pg_settings` values above prove the *prerequisites* for PITR are in place (archiving on, logical WAL, replication slots available), but on Supabase these are **tier-independent defaults** — a Free-tier project (no PITR retention available) shows the same `pg_settings` shape. The actual PITR retention window is a dashboard/billing toggle that is not observable from `pg_settings`. So this SQL evidence alone cannot distinguish a PITR-enabled project from a PITR-not-enabled one.
+
+To close H5 the operator must visually confirm the Supabase Dashboard → Database → Backups page shows "Point-in-Time Recovery: Enabled" with the expected retention window (typically 7 days on Pro tier, longer on Team). Paste a screenshot or note the retention window into this file before launch.
+
+**Until that confirmation lands, H5 stays open and v1-readiness-final.md's launch-blocker count reflects it as the one open blocker.**
 
 ## Operator follow-up
 

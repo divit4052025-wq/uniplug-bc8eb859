@@ -14,7 +14,7 @@ Status check across the 8-phase execution plan (A–H, locked 2026-05-23 with 7 
 | Dev-seed PASS rows | 40 / 40 |
 | TS typecheck | clean across every phase branch |
 | Operator steps remaining | 5 — see "Pre-launch operator queue" below |
-| Pre-launch blockers | 0 hard, 2 soft (UI integration, Worker secret installation) |
+| Pre-launch blockers | 0 hard confirmed, 1 open (PITR dashboard confirmation — see H5), 2 soft (UI integration, Worker secret installation) |
 
 ## Phase-by-phase status
 
@@ -94,7 +94,7 @@ Status check across the 8-phase execution plan (A–H, locked 2026-05-23 with 7 
 
 ## Pre-launch operator queue (5 items)
 
-1. **`wrangler secret put CRON_SECRET`** — value `b9e542011892cf1fb408a4860edac5d2f666dc3d1a07e6e3322338b113327d3f` (matches Vault `cron_secret` already set). Without this, both crons (24h reminder + 1h reminder) and all 4 C2 triggers POST a Bearer the endpoint will 401. Logs appear in Cloudflare Worker tail.
+1. **`wrangler secret put CRON_SECRET`** — value must match the current `vault.cron_secret` (Vault entry id `20176555-98e5-4c8b-bd40-be71917b1714`, rotated 2026-05-24 after the original value was inadvertently committed to git in an earlier draft of this audit). **The value is intentionally not in this file or anywhere else in the repo.** Ask Divit out-of-band for the current value, or fetch it from the Supabase Dashboard → Project Settings → Vault. Without this, both crons (24h reminder + 1h reminder) and all 4 C2 triggers POST a Bearer the endpoint will 401. Logs appear in Cloudflare Worker tail.
 2. **`wrangler secret put ANTHROPIC_API_KEY`** — your Anthropic API key. Required for D1/D2/D3 features to function. Endpoints return 500 `missing_api_key` until set.
 3. **Grant `workflow` scope on the GitHub PAT** (or push Phase B's branch yourself) — Phase B's CI workflow can't push without this. Alternative: `git push -u origin claude/phase-b-ci-2026-05-23` from your shell, no scope change needed.
 4. **Supabase Dashboard → Auth → SMTP Settings** — swap to Resend SMTP per C1. Unblocks the 3/hour built-in cap already biting real signups.
