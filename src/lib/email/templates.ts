@@ -157,3 +157,168 @@ export function mentorReminderEmail(p: { studentName: string; date: string; time
     }),
   };
 }
+
+// ─── Phase C2 (2026-05-23): cancellation, completion, review, approval ────
+
+export function studentBookingCancelledEmail(p: {
+  mentorName: string;
+  date: string;
+  timeSlot: string;
+}) {
+  return {
+    subject: "Your session was cancelled — UniPlug",
+    html: shell({
+      preheader: `Session with ${p.mentorName} was cancelled`,
+      heading: "Your session was cancelled",
+      bodyHtml: `
+        <p style="margin:0;">Your upcoming session has been cancelled:</p>
+        ${detailsBlock([
+          ["Mentor", p.mentorName],
+          ["Date", formatDate(p.date)],
+          ["Time", p.timeSlot],
+        ])}
+        <p style="margin:0;">You can browse and book another mentor any time from your dashboard.</p>
+      `,
+      ctaLabel: "Browse Mentors",
+      ctaUrl: "https://uniplug.lovable.app/browse",
+    }),
+  };
+}
+
+export function mentorBookingCancelledEmail(p: {
+  studentName: string;
+  date: string;
+  timeSlot: string;
+}) {
+  return {
+    subject: "A session was cancelled — UniPlug",
+    html: shell({
+      preheader: `Session with ${p.studentName} was cancelled`,
+      heading: "Session cancelled",
+      bodyHtml: `
+        <p style="margin:0;">A booked session has been cancelled:</p>
+        ${detailsBlock([
+          ["Student", p.studentName],
+          ["Date", formatDate(p.date)],
+          ["Time", p.timeSlot],
+        ])}
+        <p style="margin:0;">The slot is now free again on your calendar.</p>
+      `,
+      ctaLabel: "View Schedule",
+      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+    }),
+  };
+}
+
+export function studentSessionCompletedEmail(p: {
+  mentorName: string;
+  date: string;
+  timeSlot: string;
+  bookingId: string;
+}) {
+  return {
+    subject: "How was your session? — UniPlug",
+    html: shell({
+      preheader: `Your session with ${p.mentorName} just wrapped`,
+      heading: "How was your session?",
+      bodyHtml: `
+        <p style="margin:0;">Your session with ${p.mentorName} is complete:</p>
+        ${detailsBlock([
+          ["Mentor", p.mentorName],
+          ["Date", formatDate(p.date)],
+          ["Time", p.timeSlot],
+        ])}
+        <p style="margin:0;">Take a minute to leave a review — it helps future students find the right mentor.</p>
+      `,
+      ctaLabel: "Leave a Review",
+      ctaUrl: `https://uniplug.lovable.app/dashboard?review=${p.bookingId}`,
+    }),
+  };
+}
+
+export function mentorSessionCompletedEmail(p: {
+  studentName: string;
+  date: string;
+  timeSlot: string;
+  bookingId: string;
+}) {
+  return {
+    subject: "Session complete — add your notes — UniPlug",
+    html: shell({
+      preheader: `Session with ${p.studentName} just wrapped`,
+      heading: "Session complete",
+      bodyHtml: `
+        <p style="margin:0;">Nice work. Your session with ${p.studentName} just wrapped:</p>
+        ${detailsBlock([
+          ["Student", p.studentName],
+          ["Date", formatDate(p.date)],
+          ["Time", p.timeSlot],
+        ])}
+        <p style="margin:0;">Add your session notes and action points while the conversation is fresh.</p>
+      `,
+      ctaLabel: "Add Notes",
+      ctaUrl: `https://uniplug.lovable.app/mentor-dashboard?notes=${p.bookingId}`,
+    }),
+  };
+}
+
+export function mentorReviewReceivedEmail(p: {
+  studentName: string;
+  rating: number;
+  reviewExcerpt: string;
+}) {
+  const stars = "★".repeat(p.rating) + "☆".repeat(Math.max(0, 5 - p.rating));
+  return {
+    subject: `New ${p.rating}-star review — UniPlug`,
+    html: shell({
+      preheader: `${p.studentName} left you a ${p.rating}-star review`,
+      heading: "You got a new review",
+      bodyHtml: `
+        <p style="margin:0;">${p.studentName} left you a review:</p>
+        ${detailsBlock([
+          ["Rating", stars],
+          ["From", p.studentName],
+        ])}
+        ${p.reviewExcerpt ? `<p style="margin:0;font-style:italic;opacity:0.85;">&ldquo;${p.reviewExcerpt}&rdquo;</p>` : ""}
+        <p style="margin:18px 0 0 0;">Reviews build your reputation and help new students find you.</p>
+      `,
+      ctaLabel: "View Reviews",
+      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+    }),
+  };
+}
+
+export function mentorApprovedEmail(p: { mentorName: string }) {
+  return {
+    subject: "You're approved — welcome to UniPlug",
+    html: shell({
+      preheader: "Your mentor application was approved",
+      heading: "You're in",
+      bodyHtml: `
+        <p style="margin:0;">${p.mentorName ? `Hi ${p.mentorName},` : "Hi,"}</p>
+        <p style="margin:14px 0 0 0;">Your mentor application has been approved. Your profile is now live on UniPlug and students can book sessions with you.</p>
+        <p style="margin:14px 0 0 0;">Next up: complete the safeguarding + code-of-conduct training (required before your first session), then head to your dashboard to set your availability.</p>
+      `,
+      ctaLabel: "Open Dashboard",
+      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+    }),
+  };
+}
+
+export function mentorRejectedEmail(p: { mentorName: string; reason: string }) {
+  return {
+    subject: "About your UniPlug mentor application",
+    html: shell({
+      preheader: "An update on your UniPlug mentor application",
+      heading: "About your application",
+      bodyHtml: `
+        <p style="margin:0;">${p.mentorName ? `Hi ${p.mentorName},` : "Hi,"}</p>
+        <p style="margin:14px 0 0 0;">Thanks for applying to mentor on UniPlug. After reviewing your application, we're not able to approve it at this time.</p>
+        ${p.reason ? `<p style="margin:14px 0 0 0;"><strong>Reason:</strong> ${p.reason}</p>` : ""}
+        <p style="margin:14px 0 0 0;">If you think this was a mistake or you've added new credentials since applying, reply to this email and we'll take another look.</p>
+      `,
+      ctaLabel: "Contact Support",
+      ctaUrl: "mailto:support@uniplug.app",
+    }),
+  };
+}
