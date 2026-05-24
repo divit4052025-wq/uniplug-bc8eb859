@@ -55,20 +55,20 @@ export const Route = createFileRoute("/api/public/hooks/send-event-email")({
         const expectedSecret = process.env.CRON_SECRET;
         if (!expectedSecret) {
           console.error("[event-email] CRON_SECRET not set in worker env");
-          return new Response(
-            JSON.stringify({ ok: false, reason: "missing_cron_secret" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ ok: false, reason: "missing_cron_secret" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
         if (!bearerOk(request.headers.get("authorization"), expectedSecret)) {
           console.warn("[event-email] auth denied", {
             ip: request.headers.get("cf-connecting-ip"),
             ua: request.headers.get("user-agent"),
           });
-          return new Response(
-            JSON.stringify({ ok: false, reason: "unauthorized" }),
-            { status: 401, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ ok: false, reason: "unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         const apiKey = process.env.RESEND_API_KEY;
@@ -141,21 +141,29 @@ async function dispatchBookingEvent(
   }
   if (!booking.mentor_id || !booking.student_id) {
     console.warn("[event-email] orphan booking", { booking_id: booking.id });
-    return new Response(
-      JSON.stringify({ ok: true, skipped: "orphan_booking" }),
-      { status: 200, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ ok: true, skipped: "orphan_booking" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const [{ data: mentor }, { data: student }] = await Promise.all([
-    supabaseAdmin.from("mentors").select("full_name, email").eq("id", booking.mentor_id).maybeSingle(),
-    supabaseAdmin.from("students").select("full_name, email").eq("id", booking.student_id).maybeSingle(),
+    supabaseAdmin
+      .from("mentors")
+      .select("full_name, email")
+      .eq("id", booking.mentor_id)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("students")
+      .select("full_name, email")
+      .eq("id", booking.student_id)
+      .maybeSingle(),
   ]);
   if (!mentor || !student) {
-    return new Response(
-      JSON.stringify({ ok: false, reason: "user_not_found" }),
-      { status: 404, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ ok: false, reason: "user_not_found" }), {
+      status: 404,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 
   const sEmail =
@@ -221,7 +229,11 @@ async function dispatchReviewReceived(
   }
 
   const [{ data: mentor }, { data: student }] = await Promise.all([
-    supabaseAdmin.from("mentors").select("full_name, email").eq("id", review.mentor_id).maybeSingle(),
+    supabaseAdmin
+      .from("mentors")
+      .select("full_name, email")
+      .eq("id", review.mentor_id)
+      .maybeSingle(),
     supabaseAdmin.from("students").select("full_name").eq("id", review.student_id).maybeSingle(),
   ]);
   if (!mentor || !student) {
@@ -244,10 +256,10 @@ async function dispatchReviewReceived(
     });
   } catch (err) {
     console.error("[event-email] review_received send failed", err);
-    return new Response(
-      JSON.stringify({ ok: false, reason: "send_failed" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ ok: false, reason: "send_failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
 
@@ -278,9 +290,9 @@ async function dispatchMentorStatus(
     });
   } catch (err) {
     console.error(`[event-email] ${body.type} send failed`, err);
-    return new Response(
-      JSON.stringify({ ok: false, reason: "send_failed" }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ ok: false, reason: "send_failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 }
