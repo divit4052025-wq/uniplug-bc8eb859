@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": "Phase B3 (2026-05-23) wired the two uniplug-flo PostToolUse hooks via Claude Code's standard settings.json schema. The third hook (pre-commit-typecheck) is intentionally NOT a PreToolUse-Bash hook because that would run tsc on every Bash call; instead install it as a git pre-commit hook by running `.claude/install-git-hooks.sh` once per developer.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/plugins/uniplug-flo/hooks/post-edit-format.sh"
+          },
+          {
+            "type": "command",
+            "command": ".claude/plugins/uniplug-flo/hooks/post-migration-dev-seed-check.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

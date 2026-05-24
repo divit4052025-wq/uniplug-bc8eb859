@@ -21,7 +21,12 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
   const qc = useQueryClient();
   const queryKey = ["session-notes", studentId] as const;
 
-  const { data: notes = [], isLoading, isError, refetch } = useQuery<Note[]>({
+  const {
+    data: notes = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<Note[]>({
     queryKey,
     queryFn: async () => {
       const { data: rows, error: nErr } = await supabase
@@ -33,7 +38,9 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
       const list = rows ?? [];
       if (list.length === 0) return [];
 
-      const mentorIds = Array.from(new Set(list.map((n) => n.mentor_id).filter((v): v is string => !!v)));
+      const mentorIds = Array.from(
+        new Set(list.map((n) => n.mentor_id).filter((v): v is string => !!v)),
+      );
       const bookingIds = Array.from(
         new Set(list.map((n) => n.booking_id).filter((v): v is string => !!v)),
       );
@@ -64,11 +71,13 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
         bookingDate.set(b.id, b.date),
       );
       const compMap = new Map<string, Record<number, boolean>>();
-      ((completionsRes.data ?? []) as {
-        session_note_id: string;
-        action_point_index: number;
-        completed: boolean;
-      }[]).forEach((c) => {
+      (
+        (completionsRes.data ?? []) as {
+          session_note_id: string;
+          action_point_index: number;
+          completed: boolean;
+        }[]
+      ).forEach((c) => {
         const cur = compMap.get(c.session_note_id) ?? {};
         cur[c.action_point_index] = c.completed;
         compMap.set(c.session_note_id, cur);
@@ -90,19 +99,25 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: async ({ noteId, index, next }: { noteId: string; index: number; next: boolean }) => {
-      const { error } = await supabase
-        .from("action_point_completions")
-        .upsert(
-          {
-            session_note_id: noteId,
-            action_point_index: index,
-            completed: next,
-            student_id: studentId,
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: "session_note_id,action_point_index" },
-        );
+    mutationFn: async ({
+      noteId,
+      index,
+      next,
+    }: {
+      noteId: string;
+      index: number;
+      next: boolean;
+    }) => {
+      const { error } = await supabase.from("action_point_completions").upsert(
+        {
+          session_note_id: noteId,
+          action_point_index: index,
+          completed: next,
+          student_id: studentId,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: "session_note_id,action_point_index" },
+      );
       if (error) throw error;
     },
     onMutate: async ({ noteId, index, next }) => {
@@ -111,9 +126,7 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
       qc.setQueryData<Note[]>(
         queryKey,
         prev.map((n) =>
-          n.id === noteId
-            ? { ...n, completions: { ...n.completions, [index]: next } }
-            : n,
+          n.id === noteId ? { ...n, completions: { ...n.completions, [index]: next } } : n,
         ),
       );
       return { prev };
@@ -136,22 +149,17 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
       <h2 className="font-display text-[22px] font-semibold text-[#1A1A1A]">Session Notes</h2>
       <div className="mt-4 space-y-4">
         {isError ? (
-          <ErrorBanner
-            message="Couldn't load your session notes."
-            onRetry={() => void refetch()}
-          />
+          <ErrorBanner message="Couldn't load your session notes." onRetry={() => void refetch()} />
         ) : isLoading ? null : notes.length === 0 ? (
           <div className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-6 text-center">
             <p className="text-[14px] font-light text-[#1A1A1A]/70">
-              No session notes yet. After your mentor writes notes from a session, they'll appear here.
+              No session notes yet. After your mentor writes notes from a session, they'll appear
+              here.
             </p>
           </div>
         ) : (
           notes.map((n) => (
-            <article
-              key={n.id}
-              className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-5"
-            >
+            <article key={n.id} className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-[15px] font-medium text-[#1A1A1A]">{n.mentor_name}</p>
@@ -186,7 +194,11 @@ export function SessionNotesSection({ studentId }: { studentId: string }) {
                                   : "border-[#1A1A1A]/30 bg-white text-transparent"
                               }`}
                             >
-                              {done ? <Check className="h-3 w-3" /> : <Circle className="h-3 w-3 opacity-0" />}
+                              {done ? (
+                                <Check className="h-3 w-3" />
+                              ) : (
+                                <Circle className="h-3 w-3 opacity-0" />
+                              )}
                             </span>
                             <span
                               className={`text-[13px] ${

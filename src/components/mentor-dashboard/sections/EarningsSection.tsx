@@ -42,7 +42,9 @@ export function EarningsSection({ mentorId }: { mentorId: string }) {
         if (s.date >= monthStart) mo += s.price ?? 0;
       });
 
-      const ids = Array.from(new Set(list.map((s) => s.student_id).filter((v): v is string => !!v)));
+      const ids = Array.from(
+        new Set(list.map((s) => s.student_id).filter((v): v is string => !!v)),
+      );
       const nameMap = new Map<string, string>();
       if (ids.length) {
         const { data: studs, error: sErr } = await supabase
@@ -97,7 +99,14 @@ export function EarningsSection({ mentorId }: { mentorId: string }) {
             <Stat label="All time" value={fmt(allTime)} />
             <Stat
               label="Next payout"
-              value={nextPayout ? new Date(nextPayout).toLocaleDateString(undefined, { day: "numeric", month: "short" }) : "—"}
+              value={
+                nextPayout
+                  ? new Date(nextPayout).toLocaleDateString(undefined, {
+                      day: "numeric",
+                      month: "short",
+                    })
+                  : "—"
+              }
             />
           </div>
 
@@ -113,7 +122,10 @@ export function EarningsSection({ mentorId }: { mentorId: string }) {
               <tbody className="divide-y divide-[#EDE0DB] text-[#1A1A1A]">
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={3} className="px-4 py-8 text-center text-[13px] font-light text-[#1A1A1A]/60">
+                    <td
+                      colSpan={3}
+                      className="px-4 py-8 text-center text-[13px] font-light text-[#1A1A1A]/60"
+                    >
                       No earnings yet.
                     </td>
                   </tr>
