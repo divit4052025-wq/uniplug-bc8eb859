@@ -76,15 +76,15 @@ function HomePage() {
   const [mentorsReady, setMentorsReady] = useState(false);
 
   useEffect(() => {
-    supabase.rpc("list_approved_mentor_profiles" as any).then(({ data, error }) => {
+    supabase.rpc("list_approved_mentor_profiles").then(({ data, error }) => {
       if (!error && data && data.length > 0) {
-        const mapped: HomeMentor[] = (data as any[]).slice(0, 4).map((m) => ({
+        const mapped: HomeMentor[] = data.slice(0, 4).map((m) => ({
           id: m.id,
           name: m.full_name,
           university: m.university,
           course: `${m.course} · ${m.year}`,
           tags: [m.course, ...(m.countries ?? []).slice(0, 1)].filter(Boolean),
-          initials: m.full_name.split(" ").map((p: string) => p[0]).slice(0, 2).join(""),
+          initials: m.full_name.split(" ").map((p) => p[0]).slice(0, 2).join(""),
         }));
         setMentors(mapped);
       }
