@@ -223,30 +223,30 @@ BEGIN
 END $$;
 
 -- ─── A1.6: anon caller → reject ─────────────────────────────────────────────
---          The function is REVOKEd from anon, so the GRANT check fires
---          before the function body. Pin SQLSTATE=42501 so a syntax error
---          or unrelated permission failure can't masquerade as a pass.
+--          Proves the property without actually switching to the anon role.
+--          The earlier role-switching variant of this test caused a hard
+--          Postgres connection drop on the Supabase CLI's local-dev
+--          Postgres image (CI run 26366818927); replaced with a privilege-
+--          table check that is functionally equivalent — book_session
+--          must NOT have EXECUTE granted to anon. The privilege table
+--          itself is the source of truth for the GRANT/REVOKE semantics
+--          that would 42501 a real anon caller.
 DO $$
 DECLARE
   v_pass boolean := false; v_msg text := '';
-  v_future date := ((CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date + 7);
+  v_anon_can_exec boolean;
 BEGIN
-  PERFORM set_config('request.jwt.claims', '{"role":"anon"}', true);
-  EXECUTE 'SET LOCAL ROLE anon';
-  BEGIN
-    PERFORM public.book_session(
-      '11111111-1111-1111-1111-111111110a02'::uuid, v_future, '14:00');
-    v_msg := 'anon booking ACCEPTED';
-  EXCEPTION WHEN OTHERS THEN
-    IF SQLSTATE = '42501'
-       OR SQLERRM ILIKE '%authentication required%' THEN
-      v_pass := true; v_msg := 'denied ['||SQLSTATE||']: '||SQLERRM;
-    ELSE
-      v_msg := 'wrong reject ['||SQLSTATE||']: '||SQLERRM;
-    END IF;
-  END;
-  EXECUTE 'RESET ROLE';
-  PERFORM set_config('request.jwt.claims', '{"role":"service_role"}', true);
+  v_anon_can_exec := has_function_privilege(
+    'anon',
+    'public.book_session(uuid, date, text)',
+    'execute'
+  );
+  IF v_anon_can_exec THEN
+    v_msg := 'anon has EXECUTE on book_session — should be revoked';
+  ELSE
+    v_pass := true;
+    v_msg := 'anon has no EXECUTE on book_session (REVOKE in effect)';
+  END IF;
   INSERT INTO _a1_results VALUES ('A1.6_anon_reject',
     CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
 END $$;
