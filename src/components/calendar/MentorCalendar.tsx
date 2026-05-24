@@ -96,14 +96,11 @@ export default function MentorCalendar({
       // Server-side validates mentor approval, price (no client-controlled
       // price), availability, IST past-slot, and double-book. Returns the
       // new booking's uuid which sendBookingEmails consumes below.
-      const { data: bookingId, error: rpcErr } = await supabase.rpc(
-        "book_session",
-        {
-          _mentor_id: mentorId,
-          _date: slot.date,
-          _time_slot: slot.time_slot,
-        },
-      );
+      const { data: bookingId, error: rpcErr } = await supabase.rpc("book_session", {
+        _mentor_id: mentorId,
+        _date: slot.date,
+        _time_slot: slot.time_slot,
+      });
       if (rpcErr) throw rpcErr;
       if (bookingId) {
         try {

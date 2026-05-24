@@ -39,20 +39,20 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
         const expectedSecret = process.env.CRON_SECRET;
         if (!expectedSecret) {
           console.error("[reminders] CRON_SECRET not set in worker env");
-          return new Response(
-            JSON.stringify({ ok: false, reason: "missing_cron_secret" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ ok: false, reason: "missing_cron_secret" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
         if (!bearerOk(request.headers.get("authorization"), expectedSecret)) {
           console.warn("[reminders] auth denied", {
             ip: request.headers.get("cf-connecting-ip"),
             ua: request.headers.get("user-agent"),
           });
-          return new Response(
-            JSON.stringify({ ok: false, reason: "unauthorized" }),
-            { status: 401, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ ok: false, reason: "unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         // Window param. Today only '24h'; C2 will add '1h'. Default
