@@ -21,8 +21,6 @@ type MentorCalendarProps = {
   pricePerSessionInr: number;
 };
 
-const DURATION_MINUTES = 60;
-
 function isCalendarSlot(value: unknown): value is CalendarSlot {
   if (!value || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
@@ -94,23 +92,22 @@ export default function MentorCalendar({
       if (!studentId) {
         return { needsAuth: true as const };
       }
-      const { data: inserted, error: insErr } = await supabase
-        .from("bookings")
-        .insert({
-          mentor_id: mentorId,
-          student_id: studentId,
-          date: slot.date,
-          time_slot: slot.time_slot,
-          duration: DURATION_MINUTES,
-          price: pricePerSessionInr,
-          status: "confirmed",
-        })
-        .select("id")
-        .single();
-      if (insErr) throw insErr;
-      if (inserted?.id) {
+      // Phase A1: book_session is the only INSERT path into bookings.
+      // Server-side validates mentor approval, price (no client-controlled
+      // price), availability, IST past-slot, and double-book. Returns the
+      // new booking's uuid which sendBookingEmails consumes below.
+      const { data: bookingId, error: rpcErr } = await supabase.rpc(
+        "book_session",
+        {
+          _mentor_id: mentorId,
+          _date: slot.date,
+          _time_slot: slot.time_slot,
+        },
+      );
+      if (rpcErr) throw rpcErr;
+      if (bookingId) {
         try {
-          await sendBookingEmails({ data: { bookingId: inserted.id } });
+          await sendBookingEmails({ data: { bookingId } });
         } catch (e) {
           // Email dispatch failure is non-fatal — booking is already saved.
           console.error("[booking-emails] dispatch failed", e);

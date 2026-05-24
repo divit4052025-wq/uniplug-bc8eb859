@@ -1,8 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { studentReminderEmail, mentorReminderEmail } from "@/lib/email/templates";
+import { bearerOk } from "@/lib/auth/bearer";
 
 const FROM = "UniPlug <onboarding@resend.dev>";
+
+// Windows supported by this endpoint. Phase A3 (2026-05-23) wires '24h'
+// behind the existing tomorrowISTDate() logic. Phase C2 will add '1h'.
+const ALLOWED_WINDOWS = new Set(["24h"]);
 
 async function sendViaResend(apiKey: string, to: string, subject: string, html: string) {
   const res = await fetch("https://api.resend.com/emails", {
@@ -25,7 +30,47 @@ function tomorrowISTDate(): string {
 export const Route = createFileRoute("/api/public/hooks/send-reminders")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }: { request: Request }) => {
+        // Phase A3: Bearer-token auth. Without this guard the endpoint
+        // was POSTable by anyone and would scan all confirmed bookings
+        // for tomorrow IST + send two Resend emails each — cost + spam.
+        // CRON_SECRET must match the pg_cron job's bearer (the migration
+        // reads from vault.decrypted_secrets to inject it).
+        const expectedSecret = process.env.CRON_SECRET;
+        if (!expectedSecret) {
+          console.error("[reminders] CRON_SECRET not set in worker env");
+          return new Response(
+            JSON.stringify({ ok: false, reason: "missing_cron_secret" }),
+            { status: 500, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        if (!bearerOk(request.headers.get("authorization"), expectedSecret)) {
+          console.warn("[reminders] auth denied", {
+            ip: request.headers.get("cf-connecting-ip"),
+            ua: request.headers.get("user-agent"),
+          });
+          return new Response(
+            JSON.stringify({ ok: false, reason: "unauthorized" }),
+            { status: 401, headers: { "Content-Type": "application/json" } },
+          );
+        }
+
+        // Window param. Today only '24h'; C2 will add '1h'. Default
+        // preserves prior caller-less behavior for any operator who
+        // POSTs the endpoint manually for an ad-hoc next-day send.
+        const window = new URL(request.url).searchParams.get("window") ?? "24h";
+        if (!ALLOWED_WINDOWS.has(window)) {
+          return new Response(
+            JSON.stringify({
+              ok: false,
+              reason: "unsupported_window",
+              window,
+              allowed: Array.from(ALLOWED_WINDOWS),
+            }),
+            { status: 400, headers: { "Content-Type": "application/json" } },
+          );
+        }
+
         const apiKey = process.env.RESEND_API_KEY;
         if (!apiKey) {
           return new Response(JSON.stringify({ ok: false, reason: "missing_api_key" }), {
