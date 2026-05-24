@@ -11,11 +11,16 @@
 --   Each row status='PASS'.
 -- ════════════════════════════════════════════════════════════════════════════
 
+-- Plain TEMP TABLE (no ON COMMIT DROP): this dev-seed has no outer
+-- BEGIN..COMMIT, and psql autocommits each statement — ON COMMIT
+-- DROP would fire on the CREATE TABLE's implicit txn and the table
+-- would vanish before the next DO block could INSERT into it. Temp
+-- tables die at psql session end anyway.
 CREATE TEMP TABLE _d0_results (
   test_id text PRIMARY KEY,
   status  text NOT NULL,
   detail  text NOT NULL
-) ON COMMIT DROP;
+);
 
 -- ─── D0.1: ai_rate_limit_events table exists with RLS + feature CHECK ──────
 DO $$
