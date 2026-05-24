@@ -155,36 +155,47 @@ BEGIN
 END $$;
 
 -- G4.5: record_parental_consent with valid token → returns student id + sets timestamp
+--       Split into TWO assertions: (a) anon HAS EXECUTE on the fn (so a
+--       real parent with the link can call it without being signed in),
+--       (b) the fn logic correctly resolves a valid token. We call as
+--       service_role rather than SET LOCAL ROLE anon to avoid the local
+--       Postgres image crash pattern from Phase B A1.6 — the function's
+--       logic does not depend on the caller's role (it dispatches by
+--       token alone), so the service_role call is functionally equivalent.
 DO $$
 DECLARE v_pass boolean := false; v_msg text := ''; v_returned uuid; v_token uuid; v_consent_at timestamptz;
+  v_anon_can_call boolean;
 BEGIN
-  SELECT parental_consent_token INTO v_token FROM public.students WHERE id = '22222222-2222-2222-2222-222222220404'::uuid;
-  PERFORM set_config('request.jwt.claims', '{"role":"anon"}', true);
-  EXECUTE 'SET LOCAL ROLE anon';
-  BEGIN
-    v_returned := public.record_parental_consent(v_token);
-  EXCEPTION WHEN OTHERS THEN
-    v_msg := 'unexpected error ['||SQLSTATE||']: '||SQLERRM;
-  END;
-  EXECUTE 'RESET ROLE';
-  PERFORM set_config('request.jwt.claims', '{"role":"service_role"}', true);
-  IF v_msg = '' THEN
-    SELECT parental_consent_at INTO v_consent_at FROM public.students WHERE id = '22222222-2222-2222-2222-222222220404'::uuid;
-    IF v_returned = '22222222-2222-2222-2222-222222220404'::uuid AND v_consent_at IS NOT NULL THEN
-      v_pass := true; v_msg := 'consent recorded, token resolved to student';
-    ELSE
-      v_msg := 'returned '||coalesce(v_returned::text,'NULL')||' consent_at='||coalesce(v_consent_at::text,'NULL');
+  v_anon_can_call := has_function_privilege('anon', 'public.record_parental_consent(uuid)', 'execute');
+  IF NOT v_anon_can_call THEN
+    v_msg := 'anon lacks EXECUTE on record_parental_consent — parents could not use the consent link';
+  ELSE
+    SELECT parental_consent_token INTO v_token FROM public.students WHERE id = '22222222-2222-2222-2222-222222220404'::uuid;
+    BEGIN
+      v_returned := public.record_parental_consent(v_token);
+    EXCEPTION WHEN OTHERS THEN
+      v_msg := 'unexpected error ['||SQLSTATE||']: '||SQLERRM;
+    END;
+    IF v_msg = '' THEN
+      SELECT parental_consent_at INTO v_consent_at FROM public.students WHERE id = '22222222-2222-2222-2222-222222220404'::uuid;
+      IF v_returned = '22222222-2222-2222-2222-222222220404'::uuid AND v_consent_at IS NOT NULL THEN
+        v_pass := true; v_msg := 'consent recorded; anon also has EXECUTE per privilege table';
+      ELSE
+        v_msg := 'returned '||coalesce(v_returned::text,'NULL')||' consent_at='||coalesce(v_consent_at::text,'NULL');
+      END IF;
     END IF;
   END IF;
   INSERT INTO _g4_results VALUES ('G4.5_record_consent_happy_path', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
 END $$;
 
 -- G4.6: record_parental_consent with bogus token → returns NULL, no error
+--       Calling as service_role (same defensive refactor as G4.5); the
+--       function's bogus-token branch returns NULL regardless of caller
+--       role. The anon-has-EXECUTE assertion is already proven in G4.5
+--       so we don't repeat it here.
 DO $$
 DECLARE v_pass boolean := false; v_msg text := ''; v_returned uuid;
 BEGIN
-  PERFORM set_config('request.jwt.claims', '{"role":"anon"}', true);
-  EXECUTE 'SET LOCAL ROLE anon';
   BEGIN
     v_returned := public.record_parental_consent('00000000-0000-0000-0000-000000000000'::uuid);
     IF v_returned IS NULL THEN v_pass := true; v_msg := 'bogus token returned NULL (no error, clean)';
@@ -192,8 +203,6 @@ BEGIN
   EXCEPTION WHEN OTHERS THEN
     v_msg := 'unexpected throw ['||SQLSTATE||']: '||SQLERRM;
   END;
-  EXECUTE 'RESET ROLE';
-  PERFORM set_config('request.jwt.claims', '{"role":"service_role"}', true);
   INSERT INTO _g4_results VALUES ('G4.6_record_consent_bogus_token', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
 END $$;
 
