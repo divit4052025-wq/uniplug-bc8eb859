@@ -6,7 +6,10 @@ export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
       { title: "About — UniPlug" },
-      { name: "description", content: "Learn about UniPlug and our mission to connect students with university mentors." },
+      {
+        name: "description",
+        content: "Learn about UniPlug and our mission to connect students with university mentors.",
+      },
     ],
   }),
   component: AboutPage,
@@ -22,7 +25,9 @@ function AboutPage() {
           Your College Plug
         </h1>
         <p className="mt-6 text-[17px] leading-relaxed text-[#1A1A1A]/70">
-          UniPlug connects Indian high schoolers with verified university students for real, 1-on-1 mentorship. No agencies, no fluff — just honest conversations with people who've been exactly where you want to go.
+          UniPlug connects Indian high schoolers with verified university students for real, 1-on-1
+          mentorship. No agencies, no fluff — just honest conversations with people who've been
+          exactly where you want to go.
         </p>
         <Link
           to="/browse"

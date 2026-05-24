@@ -36,16 +36,12 @@ export function UpcomingSessionsSection({ studentId }: { studentId: string }) {
       );
       const ids = Array.from(new Set(bookings.map((b) => b.mentor_id)));
       if (ids.length === 0) return [];
-      const { data: mentors, error: rpcErr } = await supabase.rpc(
-        "get_mentor_booking_names",
-        { _ids: ids },
-      );
+      const { data: mentors, error: rpcErr } = await supabase.rpc("get_mentor_booking_names", {
+        _ids: ids,
+      });
       if (rpcErr) throw rpcErr;
       const names = new Map(
-        ((mentors ?? []) as { id: string; full_name: string }[]).map((m) => [
-          m.id,
-          m.full_name,
-        ]),
+        ((mentors ?? []) as { id: string; full_name: string }[]).map((m) => [m.id, m.full_name]),
       );
       return bookings.map((b) => ({
         ...b,
@@ -68,7 +64,9 @@ export function UpcomingSessionsSection({ studentId }: { studentId: string }) {
         <div className="mt-4 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-2">
           {rows.length === 0 ? (
             <div className="px-6 py-10 text-center">
-              <p className="text-[15px] font-light text-[#1A1A1A]">No upcoming sessions — book one now</p>
+              <p className="text-[15px] font-light text-[#1A1A1A]">
+                No upcoming sessions — book one now
+              </p>
               <a
                 href="/browse"
                 className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[#C4907F] px-6 text-[13px] font-medium text-white transition hover:opacity-90"

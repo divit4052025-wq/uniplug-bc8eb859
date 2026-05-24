@@ -49,7 +49,11 @@ export function PostSessionNotesSection({
   const [savedAt, setSavedAt] = useState<number | null>(null);
   const [extraBookings, setExtraBookings] = useState<BookingOption[]>([]);
 
-  const { data: bookingsBase = [], isError: bErr, refetch: refetchBookings } = useQuery<BookingOption[]>({
+  const {
+    data: bookingsBase = [],
+    isError: bErr,
+    refetch: refetchBookings,
+  } = useQuery<BookingOption[]>({
     queryKey: bookingsKey,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -63,13 +67,14 @@ export function PostSessionNotesSection({
       const past = (data ?? []).filter((b) =>
         isBookingEnded(b.date, (b.time_slot ?? "00:00").slice(0, 5)),
       );
-      const ids = Array.from(new Set(past.map((r) => r.student_id).filter((v): v is string => !!v)));
+      const ids = Array.from(
+        new Set(past.map((r) => r.student_id).filter((v): v is string => !!v)),
+      );
       const nameMap = new Map<string, string>();
       if (ids.length) {
-        const { data: studs, error: rpcErr } = await supabase.rpc(
-          "get_student_booking_names",
-          { _ids: ids },
-        );
+        const { data: studs, error: rpcErr } = await supabase.rpc("get_student_booking_names", {
+          _ids: ids,
+        });
         if (rpcErr) throw rpcErr;
         ((studs ?? []) as { id: string; full_name: string }[]).forEach((s) =>
           nameMap.set(s.id, s.full_name),
@@ -87,7 +92,11 @@ export function PostSessionNotesSection({
 
   const bookings = [...bookingsBase, ...extraBookings];
 
-  const { data: previous = [], isError: pErr, refetch: refetchPrevious } = useQuery<PreviousNote[]>({
+  const {
+    data: previous = [],
+    isError: pErr,
+    refetch: refetchPrevious,
+  } = useQuery<PreviousNote[]>({
     queryKey: previousKey,
     queryFn: async () => {
       const { data: rows, error } = await supabase
@@ -98,7 +107,9 @@ export function PostSessionNotesSection({
       if (error) throw error;
       const list = rows ?? [];
       if (list.length === 0) return [];
-      const studentIds = Array.from(new Set(list.map((n) => n.student_id).filter((v): v is string => !!v)));
+      const studentIds = Array.from(
+        new Set(list.map((n) => n.student_id).filter((v): v is string => !!v)),
+      );
       const bookingIds = Array.from(
         new Set(list.map((n) => n.booking_id).filter((v): v is string => !!v)),
       );
@@ -108,7 +119,10 @@ export function PostSessionNotesSection({
           : Promise.resolve({ data: [] as { id: string; full_name: string }[], error: null }),
         bookingIds.length
           ? supabase.from("bookings").select("id, date, time_slot").in("id", bookingIds)
-          : Promise.resolve({ data: [] as { id: string; date: string; time_slot: string }[], error: null }),
+          : Promise.resolve({
+              data: [] as { id: string; date: string; time_slot: string }[],
+              error: null,
+            }),
       ]);
       if (studsRes.error) throw studsRes.error;
       if (bookingsRes.error) throw bookingsRes.error;
@@ -340,9 +354,7 @@ export function PostSessionNotesSection({
           >
             {saveMutation.isPending ? "Saving…" : "Save Notes"}
           </button>
-          {savedAt && (
-            <span className="text-[12px] font-medium text-[#3F9D6E]">✓ Saved</span>
-          )}
+          {savedAt && <span className="text-[12px] font-medium text-[#3F9D6E]">✓ Saved</span>}
         </div>
       </div>
 

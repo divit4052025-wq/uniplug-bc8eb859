@@ -50,20 +50,20 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
         const expectedSecret = process.env.CRON_SECRET;
         if (!expectedSecret) {
           console.error("[reminders] CRON_SECRET not set in worker env");
-          return new Response(
-            JSON.stringify({ ok: false, reason: "missing_cron_secret" }),
-            { status: 500, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ ok: false, reason: "missing_cron_secret" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
         }
         if (!bearerOk(request.headers.get("authorization"), expectedSecret)) {
           console.warn("[reminders] auth denied", {
             ip: request.headers.get("cf-connecting-ip"),
             ua: request.headers.get("user-agent"),
           });
-          return new Response(
-            JSON.stringify({ ok: false, reason: "unauthorized" }),
-            { status: 401, headers: { "Content-Type": "application/json" } },
-          );
+          return new Response(JSON.stringify({ ok: false, reason: "unauthorized" }), {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          });
         }
 
         const window = new URL(request.url).searchParams.get("window") ?? "24h";
@@ -113,9 +113,7 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
           const windowEnd = now + 75 * 60_000;
           const istNow = new Date(now + 5.5 * 60 * 60_000);
           const today = istNow.toISOString().slice(0, 10);
-          const tomorrow = new Date(istNow.getTime() + 24 * 60 * 60_000)
-            .toISOString()
-            .slice(0, 10);
+          const tomorrow = new Date(istNow.getTime() + 24 * 60 * 60_000).toISOString().slice(0, 10);
           const { data, error } = await supabaseAdmin
             .from("bookings")
             .select("id, mentor_id, student_id, date, time_slot, status")
