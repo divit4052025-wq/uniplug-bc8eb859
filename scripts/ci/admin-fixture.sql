@@ -27,3 +27,14 @@ INSERT INTO auth.users (
   '00000000-0000-0000-0000-000000000000'
 )
 ON CONFLICT (id) DO NOTHING;
+
+-- CI fixture: seed a dummy Vault secret so the A3 dev-seed's
+-- A3.3_vault_cron_secret_present test finds a non-empty
+-- vault.cron_secret and passes. The value is meaningless (CI's local
+-- Supabase never fires the cron job), but the dev-seed checks
+-- length >= 16 so we use a 32-char hex.
+SELECT vault.create_secret(
+  'ci-dummy-cron-secret-0123456789abcdef',
+  'cron_secret',
+  'CI-only fixture — not used for real auth; satisfies A3.3 dev-seed length check'
+);

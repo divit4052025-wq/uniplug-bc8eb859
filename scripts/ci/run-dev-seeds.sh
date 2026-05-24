@@ -74,7 +74,9 @@ for path in "${seeds_dir}"/*.sql; do
     continue
   }
   echo "${output}"
-  if echo "${output}" | grep -qE '\| FAIL \|'; then
+  # psql right-pads the status column (e.g. "| FAIL   |"), so match
+  # with flexible whitespace on both sides of FAIL.
+  if echo "${output}" | grep -qE '\|\s*FAIL\s*\|'; then
     echo "::error file=supabase/dev-seeds/${fname}::dev-seed contains FAIL rows"
     failed=$((failed + 1))
     failed_files+=("${fname}")

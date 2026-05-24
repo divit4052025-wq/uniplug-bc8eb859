@@ -71,7 +71,7 @@ INSERT INTO auth.users (
   crypt('seed-mentor-dev-2026', gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"full_name":"Seed Mentor (Dev)"}'::jsonb,
+  jsonb_build_object('role','mentor','full_name','Seed Mentor (Dev)','university','T','course','T','year','2nd Year'),
   '',
   '',
   '',
