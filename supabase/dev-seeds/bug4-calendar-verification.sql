@@ -71,7 +71,7 @@ INSERT INTO auth.users (
   crypt('seed-mentor-dev-2026', gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','Seed Mentor (Dev)','university','T','course','T','year','2nd Year'),
+  jsonb_build_object('role','mentor','full_name','Seed Mentor (Dev)','university','University of Cambridge','course','Engineering','year','2nd year'),
   '',
   '',
   '',
@@ -99,19 +99,12 @@ INSERT INTO auth.identities (
   now(), now(), now()
 );
 
--- ── (b) Seed mentor in public.mentors (id = auth.users id; FK enforced) ──
-INSERT INTO public.mentors (
-  id, full_name, email, university, course, year, status, price_inr
-) VALUES (
-  '11111111-1111-1111-1111-111111111111',
-  'Seed Mentor (Dev)',
-  'seed-mentor@uniplug-dev.local',
-  'University of Cambridge',
-  'Engineering',
-  '2nd year',
-  'approved',
-  500
-);
+-- handle_new_user() trigger already cascaded a public.mentors row with
+-- status='pending' and price_inr=1800 from the auth.users INSERT above.
+-- Just UPDATE the fields the trigger can't set.
+UPDATE public.mentors
+   SET status = 'approved', price_inr = 500
+ WHERE id = '11111111-1111-1111-1111-111111111111';
 
 -- ── (c) Three weekly-recurring availability rows: today, today+1, today+2 at 14:00.
 -- mentor_availability has no is_available column - row presence == available.
@@ -145,7 +138,7 @@ INSERT INTO auth.users (
   crypt('seed-student-dev-2026', gen_salt('bf')),
   now(),
   '{"provider":"email","providers":["email"]}'::jsonb,
-  '{"full_name":"Seed Student (Dev)"}'::jsonb,
+  jsonb_build_object('role','student','full_name','Seed Student (Dev)','phone','+91-0000000000','school','Seed International School','grade','Grade 12'),
   '',
   '',
   '',
@@ -171,17 +164,9 @@ INSERT INTO auth.identities (
   now(), now(), now()
 );
 
--- ── (e) Seed student in public.students (id = auth.users id; FK enforced) ──
-INSERT INTO public.students (
-  id, full_name, email, phone, school, grade
-) VALUES (
-  '33333333-3333-3333-3333-333333333333',
-  'Seed Student (Dev)',
-  'seed-student@uniplug-dev.local',
-  '+91-0000000000',
-  'Seed International School',
-  'Grade 12'
-);
+-- handle_new_user() trigger already cascaded a public.students row from
+-- the auth.users INSERT above using the raw_user_meta_data fields.
+-- No manual INSERT needed.
 
 -- ── (f) One confirmed booking for tomorrow at 14:00 (so the calendar renders
 -- one Booked chip and two Available chips in a single screen).
