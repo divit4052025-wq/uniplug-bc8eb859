@@ -35,11 +35,17 @@
 --     -H "Authorization: Bearer $CRON_SECRET"
 -- ════════════════════════════════════════════════════════════════════════════
 
+-- Plain TEMP TABLE (no ON COMMIT DROP): this dev-seed has no outer
+-- BEGIN..ROLLBACK (it's read-only verification, not write tests), so
+-- ON COMMIT DROP would fire on the implicit per-statement transaction
+-- psql autocommits and the table would vanish before the next DO
+-- block could INSERT into it. Temp tables die at psql session end
+-- anyway.
 CREATE TEMP TABLE _a3_results (
   test_id text PRIMARY KEY,
   status  text NOT NULL,
   detail  text NOT NULL
-) ON COMMIT DROP;
+);
 
 -- ─── A3.1: cron.job has the new send_reminders_24h job, active ──────────────
 DO $$
