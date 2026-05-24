@@ -26,11 +26,17 @@
 --     -d '{"type":"booking_cancelled","booking_id":"00000000-0000-0000-0000-000000000000"}'
 -- ════════════════════════════════════════════════════════════════════════════
 
+-- Plain TEMP TABLE (no ON COMMIT DROP): this dev-seed has no outer
+-- BEGIN..COMMIT (it's read-only verification, not write tests), and
+-- psql autocommits each statement — ON COMMIT DROP would fire on
+-- the CREATE TABLE's implicit txn and the table would vanish before
+-- the next DO block could INSERT into it. Temp tables die at psql
+-- session end anyway.
 CREATE TEMP TABLE _c2_results (
   test_id text PRIMARY KEY,
   status  text NOT NULL,
   detail  text NOT NULL
-) ON COMMIT DROP;
+);
 
 -- ─── C2.1: notify_event_email exists, SECURITY DEFINER, locked search_path ─
 DO $$
