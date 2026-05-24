@@ -28,10 +28,10 @@ export function NotFound() {
           Home
         </Link>
         <Link
-          to="/browse"
+          to="/how-it-works"
           className="inline-flex h-11 items-center justify-center rounded-full border border-brand-brown px-6 text-[13px] font-medium text-brand-dark transition hover:bg-brand-blush"
         >
-          Browse Plugs
+          How it works
         </Link>
       </div>
     </div>

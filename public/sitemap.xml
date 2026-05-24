@@ -16,16 +16,14 @@
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
-  <url>
-    <loc>https://uniplug.app/privacy</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  <url>
-    <loc>https://uniplug.app/terms</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
-  </url>
+  <!--
+    /privacy and /terms intentionally excluded: src/routes/privacy.tsx and
+    src/routes/terms.tsx currently render placeholder "being drafted" copy.
+    For a minors-PII service (per Phase G4 safeguarding) the canonical
+    Privacy/Terms URL must not advertise stub copy to crawlers. Add the
+    <url> entries once Divit fills the legal copy.
+  -->
+
   <url>
     <loc>https://uniplug.app/how-it-works</loc>
     <changefreq>monthly</changefreq>

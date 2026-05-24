@@ -14,7 +14,7 @@ Status check across the 8-phase execution plan (A–H, locked 2026-05-23 with 7 
 | Dev-seed PASS rows | 40 / 40 |
 | TS typecheck | clean across every phase branch |
 | Operator steps remaining | 5 — see "Pre-launch operator queue" below |
-| Pre-launch blockers | 0 hard confirmed, 1 open (PITR dashboard confirmation — see H5), 2 soft (UI integration, Worker secret installation) |
+| Pre-launch blockers | 0 hard confirmed, 2 open (PITR dashboard confirmation — see H5; Privacy/Terms copy — see operator queue), 2 soft (UI integration, Worker secret installation) |
 
 ## Phase-by-phase status
 
@@ -89,16 +89,18 @@ Status check across the 8-phase execution plan (A–H, locked 2026-05-23 with 7 
 | **H1** Playwright coverage | 🟡 deferred | — | Scaffold in B; per-flow coverage waits on E2 Supabase test project. |
 | **H2** Manual QA checklist | 🟡 deferred | — | Browser-required, pre-launch operator task. |
 | **H3** Sentry telemetry | 🟡 deferred | — | ENV.md slot for SENTRY_DSN documented; init code is a baseline-merge follow-up. |
-| **H4** 404 + robots + sitemap | ✅ shipped | `claude/phase-h-launch-2026-05-23` | Brand-styled NotFound component, robots.txt, manual sitemap.xml (7 routes). Privacy/Terms routes pre-existed; Divit fills legal copy. |
-| **H5 (amendment)** Supabase PITR verification | ✅ shipped | same branch | Confirmed `archive_mode=on`, `wal_level=logical`. Audit at `audits/2026-05-24/h5-pitr-verification.md`. |
+| **H4** 404 + robots + sitemap | ✅ shipped | `claude/phase-h-launch-2026-05-23` | Brand-styled NotFound component (wired into root notFoundComponent), robots.txt (Disallows all auth-gated prefixes + /browse), manual sitemap.xml (6 public routes; /privacy + /terms held out until legal copy lands). |
+| **H5 (amendment)** Supabase PITR verification | 🟡 prerequisites only | same branch | Prerequisites confirmed (`archive_mode=on`, `wal_level=logical`); **dashboard confirmation pending** — see [h5-pitr-verification.md](./h5-pitr-verification.md). |
 
-## Pre-launch operator queue (5 items)
+## Pre-launch operator queue (7 items)
 
-1. **`wrangler secret put CRON_SECRET`** — value must match the current `vault.cron_secret` (Vault entry id `20176555-98e5-4c8b-bd40-be71917b1714`, rotated 2026-05-24 after the original value was inadvertently committed to git in an earlier draft of this audit). **The value is intentionally not in this file or anywhere else in the repo.** Ask Divit out-of-band for the current value, or fetch it from the Supabase Dashboard → Project Settings → Vault. Without this, both crons (24h reminder + 1h reminder) and all 4 C2 triggers POST a Bearer the endpoint will 401. Logs appear in Cloudflare Worker tail.
+1. **`wrangler secret put CRON_SECRET`** — value must match the current `vault.cron_secret` (Vault entry id `20176555-98e5-4c8b-bd40-be71917b1714`, rotated 2026-05-24 after the original value was inadvertently committed to git in an earlier draft of this audit). **The value has been redacted from this file at HEAD, but the original hex remains in this branch's commit `f1d8ef0` history.** Squash-merge this branch (or rewrite the commit before landing) so the original value does not propagate to `main`'s permanent history. Treat the in-history value as known-compromised regardless; the Vault rotation has invalidated it. Fetch the current value from Divit out-of-band or from the Supabase Dashboard → Project Settings → Vault. Without this Worker secret, both crons (24h reminder + 1h reminder) and all 4 C2 triggers POST a Bearer the endpoint will 401.
 2. **`wrangler secret put ANTHROPIC_API_KEY`** — your Anthropic API key. Required for D1/D2/D3 features to function. Endpoints return 500 `missing_api_key` until set.
 3. **Grant `workflow` scope on the GitHub PAT** (or push Phase B's branch yourself) — Phase B's CI workflow can't push without this. Alternative: `git push -u origin claude/phase-b-ci-2026-05-23` from your shell, no scope change needed.
 4. **Supabase Dashboard → Auth → SMTP Settings** — swap to Resend SMTP per C1. Unblocks the 3/hour built-in cap already biting real signups.
-5. **Provide `UniPlug_V1_Feature_Specification_1.docx`** — for true V1 spec reconciliation (this audit measured against the plan's Phase A–H as the de facto definition).
+5. **Supabase Dashboard → Database → Backups** — visually confirm "Point-in-Time Recovery: Enabled" with the expected retention window. The H5 SQL-only check proves the WAL prerequisites; the dashboard toggle + retention window proves PITR is actually configured on the project's tier. Until confirmed, treat this as an open launch blocker. Document the retention window in `audits/2026-05-24/h5-pitr-verification.md` once verified.
+6. **Fill in Privacy + Terms copy** — `src/routes/privacy.tsx` and `src/routes/terms.tsx` currently render "being drafted" placeholders. The sitemap intentionally excludes these routes until the copy lands; re-add the two `<url>` entries when shipping the real text.
+7. **Provide `UniPlug_V1_Feature_Specification_1.docx`** — for true V1 spec reconciliation (this audit measured against the plan's Phase A–H as the de facto definition).
 
 ## Live DB state vs. deployed code
 
