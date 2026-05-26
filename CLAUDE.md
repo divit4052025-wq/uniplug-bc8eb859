@@ -93,3 +93,4 @@ The split is in `.claude/plugins/uniplug-flo/model-routing.json` — the princip
 - Most recent security audit: `audits/2026-05-14/rls-audit.md`.
 - Canonical mutation pattern: `src/routes/notifications.tsx markAsRead`.
 - The shared `useOptimisticMutation` hook (WIP on a parallel branch) will replace inline optimistic patterns once it lands on `main`.
+- Env vars + Supabase Vault secrets: `ENV.md` (single source of truth for what's set, where, and what breaks if missing).

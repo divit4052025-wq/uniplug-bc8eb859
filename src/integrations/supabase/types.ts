@@ -528,6 +528,10 @@ export type Database = {
           total_students: number;
         }[];
       };
+      book_session: {
+        Args: { _date: string; _mentor_id: string; _time_slot: string };
+        Returns: string;
+      };
       get_mentor_booking_names: {
         Args: { _ids: string[] };
         Returns: {

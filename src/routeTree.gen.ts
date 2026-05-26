@@ -27,6 +27,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
+import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -119,6 +120,12 @@ const ApiPublicHooksSendRemindersRoute =
     path: '/api/public/hooks/send-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksSendEventEmailRoute =
+  ApiPublicHooksSendEventEmailRouteImport.update({
+    id: '/api/public/hooks/send-event-email',
+    path: '/api/public/hooks/send-event-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRoutesByTo {
@@ -158,6 +166,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRoutesById {
@@ -179,6 +188,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
 export interface FileRouteTypes {
@@ -201,6 +211,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/mentor/$id'
     | '/session-notes/$noteId'
+    | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/mentor/$id'
     | '/session-notes/$noteId'
+    | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
   id:
     | '__root__'
@@ -241,6 +253,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/mentor/$id'
     | '/session-notes/$noteId'
+    | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
   fileRoutesById: FileRoutesById
 }
@@ -261,6 +274,7 @@ export interface RootRouteChildren {
   StudentSignupRoute: typeof StudentSignupRoute
   TermsRoute: typeof TermsRoute
   MentorIdRoute: typeof MentorIdRoute
+  ApiPublicHooksSendEventEmailRoute: typeof ApiPublicHooksSendEventEmailRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
 }
 
@@ -392,6 +406,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/send-event-email': {
+      id: '/api/public/hooks/send-event-email'
+      path: '/api/public/hooks/send-event-email'
+      fullPath: '/api/public/hooks/send-event-email'
+      preLoaderRoute: typeof ApiPublicHooksSendEventEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -424,6 +445,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudentSignupRoute: StudentSignupRoute,
   TermsRoute: TermsRoute,
   MentorIdRoute: MentorIdRoute,
+  ApiPublicHooksSendEventEmailRoute: ApiPublicHooksSendEventEmailRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
 }
 export const routeTree = rootRouteImport

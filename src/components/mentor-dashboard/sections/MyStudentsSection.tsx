@@ -30,7 +30,11 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
     notes: StudentNote[];
   } | null>(null);
 
-  const { data: rows = [], isError, refetch } = useQuery<StudentRow[]>({
+  const {
+    data: rows = [],
+    isError,
+    refetch,
+  } = useQuery<StudentRow[]>({
     queryKey: ["my-students", mentorId],
     queryFn: async () => {
       const { data: sessions, error: bErr } = await supabase
@@ -50,20 +54,20 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
       });
       const ids = Array.from(agg.keys());
       if (ids.length === 0) return [];
-      const { data: studs, error: rpcErr } = await supabase.rpc(
-        "get_student_booking_names",
-        { _ids: ids },
-      );
+      const { data: studs, error: rpcErr } = await supabase.rpc("get_student_booking_names", {
+        _ids: ids,
+      });
       if (rpcErr) throw rpcErr;
-      return ((studs ?? []) as { id: string; full_name: string; grade: string; school: string }[])
-        .map((s) => ({
-          id: s.id,
-          full_name: s.full_name,
-          grade: s.grade,
-          school: s.school,
-          total: agg.get(s.id)?.total ?? 0,
-          last: agg.get(s.id)?.last ?? null,
-        }));
+      return (
+        (studs ?? []) as { id: string; full_name: string; grade: string; school: string }[]
+      ).map((s) => ({
+        id: s.id,
+        full_name: s.full_name,
+        grade: s.grade,
+        school: s.school,
+        total: agg.get(s.id)?.total ?? 0,
+        last: agg.get(s.id)?.last ?? null,
+      }));
     },
   });
 
@@ -77,10 +81,14 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
         .eq("mentor_id", mentorId)
         .order("created_at", { ascending: false }),
     ]);
-    const overviewRow = (overview as {
-      documents?: { id: string; file_name: string }[];
-      schools?: { id: string; name: string; category: string }[];
-    }[] | null)?.[0];
+    const overviewRow = (
+      overview as
+        | {
+            documents?: { id: string; file_name: string }[];
+            schools?: { id: string; name: string; category: string }[];
+          }[]
+        | null
+    )?.[0];
     const docs = overviewRow?.documents ?? [];
     const schools = overviewRow?.schools ?? [];
     const noteRows = notes ?? [];
@@ -138,7 +146,9 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
                     </p>
                     <p className="mt-1 text-[12px] text-[#1A1A1A]/60">
                       {r.total} session{r.total === 1 ? "" : "s"}
-                      {r.last ? ` · last ${new Date(r.last + "T00:00:00").toLocaleDateString()}` : ""}
+                      {r.last
+                        ? ` · last ${new Date(r.last + "T00:00:00").toLocaleDateString()}`
+                        : ""}
                     </p>
                   </div>
                   <button
@@ -174,7 +184,10 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
                   <p className="text-[12px] text-[#1A1A1A]/50">None added.</p>
                 )}
                 {open.schools.map((s) => (
-                  <span key={s.id} className="rounded-full bg-[#EDE0DB] px-3 py-1 text-[12px] text-[#1A1A1A]">
+                  <span
+                    key={s.id}
+                    className="rounded-full bg-[#EDE0DB] px-3 py-1 text-[12px] text-[#1A1A1A]"
+                  >
                     {s.name} <span className="opacity-50">· {s.category}</span>
                   </span>
                 ))}
@@ -223,7 +236,11 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
                               ) : (
                                 <Circle className="h-4 w-4 text-[#1A1A1A]/30" />
                               )}
-                              <span className={done ? "text-[#1A1A1A]/60 line-through" : "text-[#1A1A1A]"}>
+                              <span
+                                className={
+                                  done ? "text-[#1A1A1A]/60 line-through" : "text-[#1A1A1A]"
+                                }
+                              >
                                 {ap}
                               </span>
                             </li>

@@ -49,9 +49,7 @@ export function DashboardSidebar({ active, onSelect }: Props) {
                 onSelect(it.key);
               }}
               className={`relative flex items-center gap-3 px-6 py-3 text-left text-[14px] font-medium transition ${
-                isActive
-                  ? "text-white"
-                  : "text-white/60 hover:text-white"
+                isActive ? "text-white" : "text-white/60 hover:text-white"
               }`}
             >
               {isActive && (

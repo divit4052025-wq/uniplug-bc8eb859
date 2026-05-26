@@ -30,7 +30,11 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
     schools: School[];
   } | null>(null);
 
-  const { data: rows = [], isError, refetch } = useQuery<Row[]>({
+  const {
+    data: rows = [],
+    isError,
+    refetch,
+  } = useQuery<Row[]>({
     queryKey: ["mentor-upcoming-sessions", mentorId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -49,13 +53,15 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
       const ids = Array.from(new Set(bookings.map((s) => s.student_id)));
       const studMap = new Map<string, { full_name: string; grade: string; school: string }>();
       if (ids.length) {
-        const { data: studs, error: rpcErr } = await supabase.rpc(
-          "get_student_booking_names",
-          { _ids: ids },
-        );
+        const { data: studs, error: rpcErr } = await supabase.rpc("get_student_booking_names", {
+          _ids: ids,
+        });
         if (rpcErr) throw rpcErr;
-        ((studs ?? []) as { id: string; full_name: string; grade: string; school: string }[])
-          .forEach((s) => studMap.set(s.id, { full_name: s.full_name, grade: s.grade, school: s.school }));
+        (
+          (studs ?? []) as { id: string; full_name: string; grade: string; school: string }[]
+        ).forEach((s) =>
+          studMap.set(s.id, { full_name: s.full_name, grade: s.grade, school: s.school }),
+        );
       }
       return bookings.map((s) => ({
         id: s.id,
@@ -67,12 +73,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
     },
   });
 
-  const openProfile = async (
-    studentId: string,
-    name: string,
-    grade: string,
-    school: string,
-  ) => {
+  const openProfile = async (studentId: string, name: string, grade: string, school: string) => {
     const { data } = await supabase.rpc("get_student_overview_for_mentor", {
       _student_id: studentId,
     });
@@ -159,8 +160,12 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
             >
               <X className="h-5 w-5" />
             </button>
-            <h3 className="font-display text-[22px] font-semibold text-[#1A1A1A]">{profile.name}</h3>
-            <p className="text-[12px] text-[#1A1A1A]/60">{profile.grade} · {profile.school}</p>
+            <h3 className="font-display text-[22px] font-semibold text-[#1A1A1A]">
+              {profile.name}
+            </h3>
+            <p className="text-[12px] text-[#1A1A1A]/60">
+              {profile.grade} · {profile.school}
+            </p>
 
             <div className="mt-5">
               <p className="text-[13px] font-medium text-[#1A1A1A]">School List</p>
@@ -186,10 +191,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                   <p className="text-[12px] text-[#1A1A1A]/50">No documents shared.</p>
                 )}
                 {profile.docs.map((d) => (
-                  <li
-                    key={d.id}
-                    className="flex items-center gap-2 text-[13px] text-[#1A1A1A]"
-                  >
+                  <li key={d.id} className="flex items-center gap-2 text-[13px] text-[#1A1A1A]">
                     <FileText className="h-4 w-4 text-[#C4907F]" />
                     {d.file_name}
                   </li>
