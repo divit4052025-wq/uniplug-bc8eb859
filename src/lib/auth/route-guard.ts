@@ -39,9 +39,7 @@ export interface GuardOpts {
 export async function clientAuthGuard(opts: GuardOpts): Promise<AuthContext> {
   if (typeof window === "undefined") return {};
 
-  const { data: sessionData, error: sessErr } = await withRetry(() =>
-    supabase.auth.getSession(),
-  );
+  const { data: sessionData, error: sessErr } = await withRetry(() => supabase.auth.getSession());
   if (sessErr) {
     // All retries exhausted on a transient transport error — fall back to
     // signed-out destination so the user can recover.

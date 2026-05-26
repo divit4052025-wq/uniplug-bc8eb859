@@ -17,8 +17,7 @@ export const Route = createFileRoute("/mentor-signup")({
       { property: "og:title", content: "Become a Plug — Mentor with UniPlug" },
       {
         property: "og:description",
-        content:
-          "Share your story. Open doors. Get paid for one-on-one mentorship sessions.",
+        content: "Share your story. Open doors. Get paid for one-on-one mentorship sessions.",
       },
     ],
   }),
@@ -26,7 +25,17 @@ export const Route = createFileRoute("/mentor-signup")({
 });
 
 const years = ["1st Year", "2nd Year", "3rd Year", "4th Year", "Final Year", "Postgraduate"];
-const countries = ["United Kingdom", "United States", "India", "Singapore", "Canada", "Australia", "Germany", "Netherlands", "Hong Kong"];
+const countries = [
+  "United Kingdom",
+  "United States",
+  "India",
+  "Singapore",
+  "Canada",
+  "Australia",
+  "Germany",
+  "Netherlands",
+  "Hong Kong",
+];
 
 const schema = z.object({
   fullName: z.string().trim().min(1, "Required").max(100),
@@ -109,13 +118,20 @@ function MentorSignup() {
           {errors.fullName && <p className="mt-1 text-xs text-destructive">{errors.fullName}</p>}
         </Field>
         <Field label="University email address">
-          <input name="email" type="email" className={inputClass} placeholder="you@university.edu" />
+          <input
+            name="email"
+            type="email"
+            className={inputClass}
+            placeholder="you@university.edu"
+          />
           {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
         </Field>
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="University name">
             <input name="university" className={inputClass} placeholder="University of Oxford" />
-            {errors.university && <p className="mt-1 text-xs text-destructive">{errors.university}</p>}
+            {errors.university && (
+              <p className="mt-1 text-xs text-destructive">{errors.university}</p>
+            )}
           </Field>
           <Field label="Course of study">
             <input name="course" className={inputClass} placeholder="Computer Science" />
@@ -125,18 +141,34 @@ function MentorSignup() {
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Current year of study">
             <select name="year" className={inputClass} defaultValue="">
-              <option value="" disabled>Select year</option>
-              {years.map((y) => <option key={y}>{y}</option>)}
+              <option value="" disabled>
+                Select year
+              </option>
+              {years.map((y) => (
+                <option key={y}>{y}</option>
+              ))}
             </select>
             {errors.year && <p className="mt-1 text-xs text-destructive">{errors.year}</p>}
           </Field>
           <Field label="Countries you can advise on">
-            <MultiSelect options={countries} value={picked} onChange={setPicked} placeholder="Pick countries" />
-            {errors.countries && <p className="mt-1 text-xs text-destructive">{errors.countries}</p>}
+            <MultiSelect
+              options={countries}
+              value={picked}
+              onChange={setPicked}
+              placeholder="Pick countries"
+            />
+            {errors.countries && (
+              <p className="mt-1 text-xs text-destructive">{errors.countries}</p>
+            )}
           </Field>
         </div>
         <Field label="Password">
-          <input name="password" type="password" className={inputClass} placeholder="At least 8 characters" />
+          <input
+            name="password"
+            type="password"
+            className={inputClass}
+            placeholder="At least 8 characters"
+          />
           {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password}</p>}
         </Field>
         <button
@@ -146,9 +178,7 @@ function MentorSignup() {
         >
           {submitting ? "Submitting…" : "Apply Now"}
         </button>
-        {serverError && (
-          <p className="text-center text-xs text-destructive">{serverError}</p>
-        )}
+        {serverError && <p className="text-center text-xs text-destructive">{serverError}</p>}
       </form>
     </AuthShell>
   );

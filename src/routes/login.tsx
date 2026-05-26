@@ -7,7 +7,10 @@ export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
       { title: "Log in — UniPlug" },
-      { name: "description", content: "Log in to your UniPlug account to access mentors, sessions and your dashboard." },
+      {
+        name: "description",
+        content: "Log in to your UniPlug account to access mentors, sessions and your dashboard.",
+      },
       { property: "og:title", content: "Log in — UniPlug" },
       { property: "og:description", content: "Log in to your UniPlug account." },
     ],
@@ -32,7 +35,10 @@ function LoginPage() {
     }
     setSubmitting(true);
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       if (signInError) throw signInError;
       const userId = data.user?.id;
       if (!userId) throw new Error("Login failed.");
@@ -45,13 +51,19 @@ function LoginPage() {
 
       // Determine role: check mentors first, then students.
       const { data: mentorRow } = await supabase
-        .from("mentors").select("id").eq("id", userId).maybeSingle();
+        .from("mentors")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
       if (mentorRow) {
         navigate({ to: "/mentor-dashboard" });
         return;
       }
       const { data: studentRow } = await supabase
-        .from("students").select("id").eq("id", userId).maybeSingle();
+        .from("students")
+        .select("id")
+        .eq("id", userId)
+        .maybeSingle();
       if (studentRow) {
         navigate({ to: "/dashboard" });
         return;
@@ -74,10 +86,24 @@ function LoginPage() {
     >
       <form onSubmit={onSubmit} className="space-y-5">
         <Field label="Email">
-          <input name="email" type="email" autoComplete="email" required className={inputClass} placeholder="you@school.com" />
+          <input
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            className={inputClass}
+            placeholder="you@school.com"
+          />
         </Field>
         <Field label="Password">
-          <input name="password" type="password" autoComplete="current-password" required className={inputClass} placeholder="••••••••" />
+          <input
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            className={inputClass}
+            placeholder="••••••••"
+          />
         </Field>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
@@ -93,11 +119,15 @@ function LoginPage() {
         <div className="space-y-1.5 pt-2 text-center text-[13px] text-[#1A1A1A]/70">
           <p>
             New student?{" "}
-            <Link to="/student-signup" className="font-medium text-[#C4907F] hover:underline">Find Your Plug</Link>
+            <Link to="/student-signup" className="font-medium text-[#C4907F] hover:underline">
+              Find Your Plug
+            </Link>
           </p>
           <p>
             Want to become a Plug?{" "}
-            <Link to="/mentor-signup" className="font-medium text-[#C4907F] hover:underline">Apply here</Link>
+            <Link to="/mentor-signup" className="font-medium text-[#C4907F] hover:underline">
+              Apply here
+            </Link>
           </p>
         </div>
       </form>

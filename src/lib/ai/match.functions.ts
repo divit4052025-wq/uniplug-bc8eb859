@@ -28,7 +28,10 @@ function safeParseRanked(raw: string, validIds: Set<string>): Suggestion[] | nul
       const out = parsed.ranked
         .filter(
           (s) =>
-            s && typeof s.mentor_id === "string" && typeof s.reason === "string" && validIds.has(s.mentor_id),
+            s &&
+            typeof s.mentor_id === "string" &&
+            typeof s.reason === "string" &&
+            validIds.has(s.mentor_id),
         )
         .slice(0, 3);
       return out.length > 0 ? out : null;

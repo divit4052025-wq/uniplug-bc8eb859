@@ -25,7 +25,11 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
   const slotsKey = ["mentor-availability", mentorId] as const;
   const bookingsKey = ["mentor-week-bookings", mentorId] as const;
 
-  const { data: slots = [], isError: slotsErr, refetch: refetchSlots } = useQuery<Slot[]>({
+  const {
+    data: slots = [],
+    isError: slotsErr,
+    refetch: refetchSlots,
+  } = useQuery<Slot[]>({
     queryKey: slotsKey,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -37,7 +41,11 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
     },
   });
 
-  const { data: bookings = [], isError: bookingsErr, refetch: refetchBookings } = useQuery<Booking[]>({
+  const {
+    data: bookings = [],
+    isError: bookingsErr,
+    refetch: refetchBookings,
+  } = useQuery<Booking[]>({
     queryKey: bookingsKey,
     queryFn: async () => {
       const weekStartStr = startOfISTWeekMonday();
@@ -51,13 +59,14 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
         .lte("date", weekEndStr);
       if (error) throw error;
       const rows = data ?? [];
-      const ids = Array.from(new Set(rows.map((r) => r.student_id).filter((v): v is string => !!v)));
+      const ids = Array.from(
+        new Set(rows.map((r) => r.student_id).filter((v): v is string => !!v)),
+      );
       const nameMap = new Map<string, string>();
       if (ids.length) {
-        const { data: studs, error: rpcErr } = await supabase.rpc(
-          "get_student_booking_names",
-          { _ids: ids },
-        );
+        const { data: studs, error: rpcErr } = await supabase.rpc("get_student_booking_names", {
+          _ids: ids,
+        });
         if (rpcErr) throw rpcErr;
         ((studs ?? []) as { id: string; full_name: string }[]).forEach((s) =>
           nameMap.set(s.id, s.full_name),
@@ -158,7 +167,9 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
           <div className="grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1 text-[11px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
             <div />
             {DAYS.map((d) => (
-              <div key={d} className="text-center">{d}</div>
+              <div key={d} className="text-center">
+                {d}
+              </div>
             ))}
           </div>
           {HOURS.map((h) => (
@@ -175,11 +186,7 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
                     key={key}
                     className="flex h-9 items-center justify-center rounded-md text-[11px]"
                     style={{
-                      backgroundColor: booked
-                        ? "#C4907F"
-                        : available
-                          ? "#EDE0DB"
-                          : "transparent",
+                      backgroundColor: booked ? "#C4907F" : available ? "#EDE0DB" : "transparent",
                       color: booked ? "#FFFCFB" : "#1A1A1A",
                       border: booked || available ? "none" : "1px dashed #EDE0DB",
                     }}
@@ -195,10 +202,7 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
 
       {panelOpen && (
         <div className="fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-[#1A1A1A]/40"
-            onClick={() => setPanelOpen(false)}
-          />
+          <div className="absolute inset-0 bg-[#1A1A1A]/40" onClick={() => setPanelOpen(false)} />
           <aside className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-[#FFFCFB] p-6 shadow-2xl">
             <div className="flex items-center justify-between">
               <h3 className="font-display text-[20px] font-semibold text-[#1A1A1A]">

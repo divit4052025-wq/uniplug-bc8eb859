@@ -6,7 +6,11 @@ export const Route = createFileRoute("/how-it-works")({
   head: () => ({
     meta: [
       { title: "How It Works — UniPlug" },
-      { name: "description", content: "Learn how UniPlug works — browse mentors, book a session, and level up your application." },
+      {
+        name: "description",
+        content:
+          "Learn how UniPlug works — browse mentors, book a session, and level up your application.",
+      },
     ],
   }),
   component: HowItWorksPage,
@@ -35,7 +39,9 @@ function HowItWorksPage() {
     <div className="min-h-screen bg-[#FFFCFB]">
       <Nav />
       <main className="mx-auto max-w-5xl px-6 py-24 md:px-10">
-        <p className="text-[12px] font-medium uppercase tracking-widest text-[#C4907F]">How It Works</p>
+        <p className="text-[12px] font-medium uppercase tracking-widest text-[#C4907F]">
+          How It Works
+        </p>
         <h1 className="mt-3 font-display text-[40px] font-bold leading-tight text-[#1A1A1A] md:text-[56px]">
           Three steps to your dream uni
         </h1>
@@ -48,8 +54,12 @@ function HowItWorksPage() {
               >
                 {s.n}
               </div>
-              <h2 className="mt-4 font-display text-[24px] font-semibold text-[#1A1A1A]">{s.title}</h2>
-              <p className="mt-3 text-[15px] font-light leading-relaxed text-[#1A1A1A]/70">{s.body}</p>
+              <h2 className="mt-4 font-display text-[24px] font-semibold text-[#1A1A1A]">
+                {s.title}
+              </h2>
+              <p className="mt-3 text-[15px] font-light leading-relaxed text-[#1A1A1A]/70">
+                {s.body}
+              </p>
             </div>
           ))}
         </div>

@@ -26,7 +26,17 @@ export const Route = createFileRoute("/student-signup")({
 });
 
 const grades = ["Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12"];
-const countries = ["United Kingdom", "United States", "India", "Singapore", "Canada", "Australia", "Germany", "Netherlands", "Hong Kong"];
+const countries = [
+  "United Kingdom",
+  "United States",
+  "India",
+  "Singapore",
+  "Canada",
+  "Australia",
+  "Germany",
+  "Netherlands",
+  "Hong Kong",
+];
 
 const schema = z.object({
   fullName: z.string().trim().min(1, "Required").max(100),
@@ -125,18 +135,34 @@ function StudentSignup() {
         <div className="grid gap-5 sm:grid-cols-2">
           <Field label="Current grade">
             <select name="grade" className={inputClass} defaultValue="">
-              <option value="" disabled>Select grade</option>
-              {grades.map((g) => <option key={g}>{g}</option>)}
+              <option value="" disabled>
+                Select grade
+              </option>
+              {grades.map((g) => (
+                <option key={g}>{g}</option>
+              ))}
             </select>
             {errors.grade && <p className="mt-1 text-xs text-destructive">{errors.grade}</p>}
           </Field>
           <Field label="Target countries">
-            <MultiSelect options={countries} value={picked} onChange={setPicked} placeholder="Pick countries" />
-            {errors.countries && <p className="mt-1 text-xs text-destructive">{errors.countries}</p>}
+            <MultiSelect
+              options={countries}
+              value={picked}
+              onChange={setPicked}
+              placeholder="Pick countries"
+            />
+            {errors.countries && (
+              <p className="mt-1 text-xs text-destructive">{errors.countries}</p>
+            )}
           </Field>
         </div>
         <Field label="Password">
-          <input name="password" type="password" className={inputClass} placeholder="At least 8 characters" />
+          <input
+            name="password"
+            type="password"
+            className={inputClass}
+            placeholder="At least 8 characters"
+          />
           {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password}</p>}
         </Field>
         <button
@@ -146,9 +172,7 @@ function StudentSignup() {
         >
           {submitting ? "Creating account…" : "Get Started"}
         </button>
-        {serverError && (
-          <p className="text-center text-xs text-destructive">{serverError}</p>
-        )}
+        {serverError && <p className="text-center text-xs text-destructive">{serverError}</p>}
       </form>
     </AuthShell>
   );
