@@ -1,11 +1,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
+  __InternalSupabase: { PostgrestVersion: "14.5" };
   public: {
     Tables: {
       action_point_completions: {
@@ -42,6 +38,12 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      ai_rate_limit_events: {
+        Row: { created_at: string; feature: string; id: string; user_id: string };
+        Insert: { created_at?: string; feature: string; id?: string; user_id: string };
+        Update: { created_at?: string; feature?: string; id?: string; user_id?: string };
+        Relationships: [];
       };
       bookings: {
         Row: {
@@ -94,6 +96,47 @@ export type Database = {
           },
         ];
       };
+      disputes: {
+        Row: {
+          admin_notes: string | null;
+          booking_id: string | null;
+          created_at: string;
+          id: string;
+          opened_by: string;
+          reason: string;
+          resolved_at: string | null;
+          status: string;
+        };
+        Insert: {
+          admin_notes?: string | null;
+          booking_id?: string | null;
+          created_at?: string;
+          id?: string;
+          opened_by: string;
+          reason: string;
+          resolved_at?: string | null;
+          status?: string;
+        };
+        Update: {
+          admin_notes?: string | null;
+          booking_id?: string | null;
+          created_at?: string;
+          id?: string;
+          opened_by?: string;
+          reason?: string;
+          resolved_at?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "disputes_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: false;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       mentor_availability: {
         Row: {
           created_at: string;
@@ -126,6 +169,38 @@ export type Database = {
           },
         ];
       };
+      mentor_match_suggestions: {
+        Row: {
+          generated_at: string;
+          generated_on: string;
+          id: string;
+          student_id: string;
+          suggestions: Json;
+        };
+        Insert: {
+          generated_at?: string;
+          generated_on?: string;
+          id?: string;
+          student_id: string;
+          suggestions: Json;
+        };
+        Update: {
+          generated_at?: string;
+          generated_on?: string;
+          id?: string;
+          student_id?: string;
+          suggestions?: Json;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mentor_match_suggestions_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       mentor_payouts: {
         Row: {
           amount_inr: number;
@@ -153,50 +228,82 @@ export type Database = {
         };
         Relationships: [];
       };
+      mentor_training_completions: {
+        Row: { completed_at: string; mentor_id: string; section_key: string };
+        Insert: { completed_at?: string; mentor_id: string; section_key: string };
+        Update: { completed_at?: string; mentor_id?: string; section_key?: string };
+        Relationships: [
+          {
+            foreignKeyName: "mentor_training_completions_mentor_id_fkey";
+            columns: ["mentor_id"];
+            isOneToOne: false;
+            referencedRelation: "mentors";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       mentors: {
         Row: {
           bio: string | null;
+          code_of_conduct_accepted_at: string | null;
           countries: string[];
           course: string;
           created_at: string;
           email: string;
+          enrollment_letter_path: string | null;
           full_name: string;
           id: string;
+          id_document_path: string | null;
           photo_url: string | null;
           price_inr: number;
           status: Database["public"]["Enums"]["mentor_status"];
           topics: string[];
           university: string;
+          verification_notes: string | null;
+          verified_at: string | null;
+          verified_by: string | null;
           year: string;
         };
         Insert: {
           bio?: string | null;
+          code_of_conduct_accepted_at?: string | null;
           countries?: string[];
           course: string;
           created_at?: string;
           email: string;
+          enrollment_letter_path?: string | null;
           full_name: string;
           id: string;
+          id_document_path?: string | null;
           photo_url?: string | null;
           price_inr?: number;
           status?: Database["public"]["Enums"]["mentor_status"];
           topics?: string[];
           university: string;
+          verification_notes?: string | null;
+          verified_at?: string | null;
+          verified_by?: string | null;
           year: string;
         };
         Update: {
           bio?: string | null;
+          code_of_conduct_accepted_at?: string | null;
           countries?: string[];
           course?: string;
           created_at?: string;
           email?: string;
+          enrollment_letter_path?: string | null;
           full_name?: string;
           id?: string;
+          id_document_path?: string | null;
           photo_url?: string | null;
           price_inr?: number;
           status?: Database["public"]["Enums"]["mentor_status"];
           topics?: string[];
           university?: string;
+          verification_notes?: string | null;
+          verified_at?: string | null;
+          verified_by?: string | null;
           year?: string;
         };
         Relationships: [];
@@ -244,6 +351,62 @@ export type Database = {
             columns: ["booking_id"];
             isOneToOne: false;
             referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      referral_codes: {
+        Row: { code: string; created_at: string; id: string; owner_id: string };
+        Insert: { code: string; created_at?: string; id?: string; owner_id: string };
+        Update: { code?: string; created_at?: string; id?: string; owner_id?: string };
+        Relationships: [
+          {
+            foreignKeyName: "referral_codes_owner_id_fkey";
+            columns: ["owner_id"];
+            isOneToOne: true;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      referral_credits: {
+        Row: {
+          amount_inr: number;
+          created_at: string;
+          id: string;
+          referee_id: string;
+          referrer_id: string;
+          status: string;
+        };
+        Insert: {
+          amount_inr: number;
+          created_at?: string;
+          id?: string;
+          referee_id: string;
+          referrer_id: string;
+          status?: string;
+        };
+        Update: {
+          amount_inr?: number;
+          created_at?: string;
+          id?: string;
+          referee_id?: string;
+          referrer_id?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "referral_credits_referee_id_fkey";
+            columns: ["referee_id"];
+            isOneToOne: true;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "referral_credits_referrer_id_fkey";
+            columns: ["referrer_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
             referencedColumns: ["id"];
           },
         ];
@@ -349,6 +512,38 @@ export type Database = {
         };
         Relationships: [];
       };
+      session_prep_questions: {
+        Row: {
+          booking_id: string;
+          generated_at: string;
+          id: string;
+          questions: Json;
+          source: string;
+        };
+        Insert: {
+          booking_id: string;
+          generated_at?: string;
+          id?: string;
+          questions: Json;
+          source?: string;
+        };
+        Update: {
+          booking_id?: string;
+          generated_at?: string;
+          id?: string;
+          questions?: Json;
+          source?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "session_prep_questions_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: true;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       sessions: {
         Row: {
           amount_inr: number;
@@ -413,13 +608,7 @@ export type Database = {
         Relationships: [];
       };
       student_schools: {
-        Row: {
-          category: string;
-          created_at: string;
-          id: string;
-          name: string;
-          student_id: string;
-        };
+        Row: { category: string; created_at: string; id: string; name: string; student_id: string };
         Insert: {
           category: string;
           created_at?: string;
@@ -438,41 +627,57 @@ export type Database = {
       };
       students: {
         Row: {
+          code_of_conduct_accepted_at: string | null;
           countries: string[];
           created_at: string;
+          date_of_birth: string | null;
           email: string;
+          first_session_used: boolean;
           full_name: string;
           grade: string;
           id: string;
+          parental_consent_at: string | null;
+          parental_consent_email: string | null;
+          parental_consent_token: string | null;
           phone: string;
           school: string;
         };
         Insert: {
+          code_of_conduct_accepted_at?: string | null;
           countries?: string[];
           created_at?: string;
+          date_of_birth?: string | null;
           email: string;
+          first_session_used?: boolean;
           full_name: string;
           grade: string;
           id: string;
+          parental_consent_at?: string | null;
+          parental_consent_email?: string | null;
+          parental_consent_token?: string | null;
           phone: string;
           school: string;
         };
         Update: {
+          code_of_conduct_accepted_at?: string | null;
           countries?: string[];
           created_at?: string;
+          date_of_birth?: string | null;
           email?: string;
+          first_session_used?: boolean;
           full_name?: string;
           grade?: string;
           id?: string;
+          parental_consent_at?: string | null;
+          parental_consent_email?: string | null;
+          parental_consent_token?: string | null;
           phone?: string;
           school?: string;
         };
         Relationships: [];
       };
     };
-    Views: {
-      [_ in never]: never;
-    };
+    Views: { [_ in never]: never };
     Functions: {
       admin_list_bookings: {
         Args: never;
@@ -534,19 +739,11 @@ export type Database = {
       };
       get_mentor_booking_names: {
         Args: { _ids: string[] };
-        Returns: {
-          full_name: string;
-          id: string;
-          university: string;
-        }[];
+        Returns: { full_name: string; id: string; university: string }[];
       };
       get_mentor_calendar: {
         Args: { _days_ahead?: number; _from_date?: string; _mentor_id: string };
-        Returns: {
-          date: string;
-          state: string;
-          time_slot: string;
-        }[];
+        Returns: { date: string; state: string; time_slot: string }[];
       };
       get_mentor_public_profile: {
         Args: { _mentor_id: string };
@@ -565,19 +762,11 @@ export type Database = {
       };
       get_review_student_names: {
         Args: { _ids: string[] };
-        Returns: {
-          full_name: string;
-          id: string;
-        }[];
+        Returns: { full_name: string; id: string }[];
       };
       get_student_booking_names: {
         Args: { _ids: string[] };
-        Returns: {
-          full_name: string;
-          grade: string;
-          id: string;
-          school: string;
-        }[];
+        Returns: { full_name: string; grade: string; id: string; school: string }[];
       };
       get_student_overview_for_mentor: {
         Args: { _student_id: string };
@@ -606,6 +795,10 @@ export type Database = {
           year: string;
         }[];
       };
+      mark_consent_revoked: { Args: { _student_id: string }; Returns: undefined };
+      mentor_training_complete: { Args: { _mentor_id: string }; Returns: boolean };
+      notify_event_email: { Args: { _payload: Json }; Returns: undefined };
+      record_parental_consent: { Args: { _token: string }; Returns: string };
       update_booking_status_as_mentor: {
         Args: { _booking_id: string; _new_status: string };
         Returns: undefined;
@@ -615,14 +808,11 @@ export type Database = {
       mentor_status: "pending" | "approved" | "rejected";
       session_status: "upcoming" | "completed" | "cancelled";
     };
-    CompositeTypes: {
-      [_ in never]: never;
-    };
+    CompositeTypes: { [_ in never]: never };
   };
 };
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
-
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
@@ -635,9 +825,7 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R;
@@ -661,18 +849,14 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
-      }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Insert: infer I }
       ? I
       : never
     : never;
@@ -686,18 +870,14 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
-      }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Update: infer U }
       ? U
       : never
     : never;
@@ -706,14 +886,10 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
-  }
+  EnumName extends DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -728,9 +904,7 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
-}
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
