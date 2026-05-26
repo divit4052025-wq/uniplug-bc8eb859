@@ -30,7 +30,12 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
   const [busyIds, setBusyIds] = useState<Set<string>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data: docs = [], isLoading, isError, refetch } = useQuery<Doc[]>({
+  const {
+    data: docs = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<Doc[]>({
     queryKey,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -53,7 +58,10 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
       setBusyIds((s) => new Set(s).add(doc.id));
       await qc.cancelQueries({ queryKey });
       const prev = qc.getQueryData<Doc[]>(queryKey) ?? [];
-      qc.setQueryData<Doc[]>(queryKey, prev.filter((x) => x.id !== doc.id));
+      qc.setQueryData<Doc[]>(
+        queryKey,
+        prev.filter((x) => x.id !== doc.id),
+      );
       return { prev };
     },
     onError: (_err, _vars, ctx) => {
@@ -82,7 +90,7 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
           setUploadError(`${file.name}: max 10 MB`);
           continue;
         }
-        const path = `${userId}/${Date.now()}-${file.name.replace(/[^\w.\-]+/g, "_")}`;
+        const path = `${userId}/${Date.now()}-${file.name.replace(/[^\w.-]+/g, "_")}`;
         const { error: upErr } = await supabase.storage
           .from("student-documents")
           .upload(path, file, { contentType: file.type, upsert: false });
@@ -177,11 +185,10 @@ export function MyDocumentsSection({ userId }: { userId: string }) {
                   <FileText className="h-4 w-4 text-[#C4907F]" />
                 </span>
                 <div className="min-w-0">
-                  <p className="truncate text-[13px] font-medium text-[#1A1A1A]">
-                    {doc.file_name}
-                  </p>
+                  <p className="truncate text-[13px] font-medium text-[#1A1A1A]">{doc.file_name}</p>
                   <p className="text-[11px] font-light text-[#1A1A1A]/50">
-                    Uploaded {new Date(doc.created_at).toLocaleDateString(undefined, {
+                    Uploaded{" "}
+                    {new Date(doc.created_at).toLocaleDateString(undefined, {
                       day: "numeric",
                       month: "short",
                       year: "numeric",

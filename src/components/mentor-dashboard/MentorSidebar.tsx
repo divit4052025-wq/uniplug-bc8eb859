@@ -3,12 +3,7 @@ import { Home, CalendarClock, Users, Wallet, Settings, LogOut } from "lucide-rea
 import { Logo } from "@/components/site/Logo";
 import { supabase } from "@/integrations/supabase/client";
 
-export type MentorSectionKey =
-  | "home"
-  | "schedule"
-  | "students"
-  | "earnings"
-  | "settings";
+export type MentorSectionKey = "home" | "schedule" | "students" | "earnings" | "settings";
 
 interface Props {
   active: MentorSectionKey;

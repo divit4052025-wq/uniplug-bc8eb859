@@ -17,14 +17,11 @@ import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/mentor-dashboard")({
-  beforeLoad: () =>
-    clientAuthGuard({ signedOutTo: "/mentor-signup", requireRole: "mentor" }),
+  beforeLoad: () => clientAuthGuard({ signedOutTo: "/mentor-signup", requireRole: "mentor" }),
   head: () => ({
     meta: [{ title: "Mentor Dashboard — UniPlug" }],
   }),
-  validateSearch: (
-    search: Record<string, unknown>,
-  ): { edit?: string } => {
+  validateSearch: (search: Record<string, unknown>): { edit?: string } => {
     const edit = typeof search.edit === "string" ? (search.edit as string) : undefined;
     return edit ? { edit } : {};
   },

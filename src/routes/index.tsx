@@ -26,11 +26,7 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const stats = [
-  "500+ Verified Plugs",
-  "12 Countries",
-  "4.9 Average Rating",
-];
+const stats = ["500+ Verified Plugs", "12 Countries", "4.9 Average Rating"];
 
 type HomeMentor = {
   id: string;
@@ -76,15 +72,19 @@ function HomePage() {
   const [mentorsReady, setMentorsReady] = useState(false);
 
   useEffect(() => {
-    supabase.rpc("list_approved_mentor_profiles" as any).then(({ data, error }) => {
+    supabase.rpc("list_approved_mentor_profiles").then(({ data, error }) => {
       if (!error && data && data.length > 0) {
-        const mapped: HomeMentor[] = (data as any[]).slice(0, 4).map((m) => ({
+        const mapped: HomeMentor[] = data.slice(0, 4).map((m) => ({
           id: m.id,
           name: m.full_name,
           university: m.university,
           course: `${m.course} · ${m.year}`,
           tags: [m.course, ...(m.countries ?? []).slice(0, 1)].filter(Boolean),
-          initials: m.full_name.split(" ").map((p: string) => p[0]).slice(0, 2).join(""),
+          initials: m.full_name
+            .split(" ")
+            .map((p) => p[0])
+            .slice(0, 2)
+            .join(""),
         }));
         setMentors(mapped);
       }
@@ -97,8 +97,14 @@ function HomePage() {
       <Nav />
 
       {/* SECTION 1 — HERO */}
-      <section className="relative bg-[#1A1A1A] text-white" style={{ minHeight: "calc(100vh - 73px)" }}>
-        <div className="relative mx-auto flex max-w-7xl flex-col items-center justify-center px-6 md:px-10" style={{ minHeight: "calc(100vh - 73px)" }}>
+      <section
+        className="relative bg-[#1A1A1A] text-white"
+        style={{ minHeight: "calc(100vh - 73px)" }}
+      >
+        <div
+          className="relative mx-auto flex max-w-7xl flex-col items-center justify-center px-6 md:px-10"
+          style={{ minHeight: "calc(100vh - 73px)" }}
+        >
           {/* Centered hero content */}
           <div className="flex flex-col items-center text-center animate-hero-rise">
             <h1 className="sr-only">UniPlug</h1>
@@ -114,7 +120,10 @@ function HomePage() {
       {mentorsReady && mentors.length > 0 && (
         <section className="bg-[#FFFCFB] py-20 md:py-28">
           <div className="mx-auto max-w-7xl px-6 md:px-10">
-            <p className="text-[12px] font-medium uppercase text-[#C4907F]" style={{ letterSpacing: "4px" }}>
+            <p
+              className="text-[12px] font-medium uppercase text-[#C4907F]"
+              style={{ letterSpacing: "4px" }}
+            >
               Meet Your Plugs
             </p>
           </div>
@@ -129,7 +138,10 @@ function HomePage() {
                   <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1A1A1A] text-[16px] font-medium text-[#FFFCFB]">
                     {m.initials}
                   </div>
-                  <h3 className="mt-4 font-display text-[20px] font-bold text-[#1A1A1A]" style={{ letterSpacing: "-0.01em" }}>
+                  <h3
+                    className="mt-4 font-display text-[20px] font-bold text-[#1A1A1A]"
+                    style={{ letterSpacing: "-0.01em" }}
+                  >
                     {m.name}
                   </h3>
                   <p className="mt-1 text-[14px] font-medium text-[#C4907F]">{m.university}</p>
@@ -176,10 +188,15 @@ function HomePage() {
             <div className="grid gap-12 md:grid-cols-3 md:gap-10">
               {steps.map((s) => (
                 <div key={s.n} className="md:border-l-0 md:pl-0">
-                  <div className="font-display font-bold text-[#E8C4B8]" style={{ fontSize: "80px", lineHeight: 1 }}>
+                  <div
+                    className="font-display font-bold text-[#E8C4B8]"
+                    style={{ fontSize: "80px", lineHeight: 1 }}
+                  >
                     {s.n}
                   </div>
-                  <h3 className="mt-4 font-display text-[24px] font-semibold text-white">{s.title}</h3>
+                  <h3 className="mt-4 font-display text-[24px] font-semibold text-white">
+                    {s.title}
+                  </h3>
                   <p className="mt-3 max-w-xs text-[15px] font-light text-[#EDE0DB]">{s.body}</p>
                 </div>
               ))}
@@ -234,7 +251,11 @@ function HomePage() {
               </p>
               <h2
                 className="mt-4 font-display font-bold text-white"
-                style={{ fontSize: "clamp(40px, 5vw, 56px)", lineHeight: 1.05, letterSpacing: "-0.02em" }}
+                style={{
+                  fontSize: "clamp(40px, 5vw, 56px)",
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.02em",
+                }}
               >
                 Find Your Plug
               </h2>
@@ -257,7 +278,11 @@ function HomePage() {
               </p>
               <h2
                 className="mt-4 font-display font-bold text-white"
-                style={{ fontSize: "clamp(40px, 5vw, 56px)", lineHeight: 1.05, letterSpacing: "-0.02em" }}
+                style={{
+                  fontSize: "clamp(40px, 5vw, 56px)",
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.02em",
+                }}
               >
                 Become a Plug
               </h2>

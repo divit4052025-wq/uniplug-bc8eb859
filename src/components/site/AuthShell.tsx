@@ -23,9 +23,7 @@ export function AuthShell({
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
               {eyebrow}
             </p>
-            <h1 className="mt-3 font-display text-4xl text-foreground sm:text-6xl">
-              {title}
-            </h1>
+            <h1 className="mt-3 font-display text-4xl text-foreground sm:text-6xl">{title}</h1>
             <p className="mt-4 max-w-[85%] text-sm font-light text-muted-foreground sm:max-w-md sm:text-base">
               {subtitle}
             </p>
@@ -40,13 +38,7 @@ export function AuthShell({
   );
 }
 
-export function Field({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
+export function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
       <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-foreground/70">
@@ -69,9 +61,7 @@ export function Confirmation({ heading, body }: { heading: string; body: string 
           <div className="mx-auto inline-flex items-center justify-center">
             <Logo variant="wordmark-sand" className="h-10 w-auto" />
           </div>
-          <h2 className="mt-6 font-display text-3xl text-foreground sm:text-4xl">
-            {heading}
-          </h2>
+          <h2 className="mt-6 font-display text-3xl text-foreground sm:text-4xl">{heading}</h2>
           <p className="mt-3 text-base font-light text-muted-foreground">{body}</p>
         </div>
       </main>

@@ -48,9 +48,7 @@ function MentorNoteView() {
     let cancelled = false;
     void (async () => {
       if (!ctx.userId) {
-        const { data: sessRes, error: sessErr } = await withRetry(() =>
-          supabase.auth.getSession(),
-        );
+        const { data: sessRes, error: sessErr } = await withRetry(() => supabase.auth.getSession());
         if (cancelled) return;
         const session = sessRes?.session;
         if (sessErr || !session) {
@@ -79,7 +77,12 @@ function MentorNoteView() {
     };
   }, [navigate, ctx.userId, ctx.userMetadata]);
 
-  const { data: note, isLoading, isError, refetch } = useQuery<Loaded | null>({
+  const {
+    data: note,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery<Loaded | null>({
     queryKey: ["session-note", noteId],
     enabled: authReady,
     queryFn: async () => {
@@ -100,7 +103,10 @@ function MentorNoteView() {
               .select("date, time_slot")
               .eq("id", row.booking_id)
               .maybeSingle()
-          : Promise.resolve({ data: null as { date: string; time_slot: string } | null, error: null }),
+          : Promise.resolve({
+              data: null as { date: string; time_slot: string } | null,
+              error: null,
+            }),
         supabase
           .from("action_point_completions")
           .select("action_point_index, completed")
@@ -125,9 +131,7 @@ function MentorNoteView() {
         date: bookingRes.data?.date ?? null,
         time_slot: bookingRes.data?.time_slot ?? null,
         summary: row.summary ?? "",
-        action_points: Array.isArray(row.action_points)
-          ? (row.action_points as string[])
-          : [],
+        action_points: Array.isArray(row.action_points) ? (row.action_points as string[]) : [],
         completions: compMap,
         updated_at: row.updated_at,
         created_at: row.created_at,
@@ -167,9 +171,7 @@ function MentorNoteView() {
           >
             <ArrowLeft className="h-4 w-4" /> Back to dashboard
           </button>
-          <p className="mt-8 text-[14px] text-[#1A1A1A]/70">
-            This note is unavailable.
-          </p>
+          <p className="mt-8 text-[14px] text-[#1A1A1A]/70">This note is unavailable.</p>
         </div>
       </div>
     );
@@ -190,13 +192,13 @@ function MentorNoteView() {
             <ArrowLeft className="h-4 w-4" /> Back to dashboard
           </button>
           {canEdit && (
-          <Link
-            to="/mentor-dashboard"
-            search={{ edit: note.id }}
-            className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#C4907F] px-4 text-[13px] font-medium text-white hover:opacity-90"
-          >
-            <Pencil className="h-3.5 w-3.5" /> Edit note
-          </Link>
+            <Link
+              to="/mentor-dashboard"
+              search={{ edit: note.id }}
+              className="inline-flex h-9 items-center gap-1.5 rounded-full bg-[#C4907F] px-4 text-[13px] font-medium text-white hover:opacity-90"
+            >
+              <Pencil className="h-3.5 w-3.5" /> Edit note
+            </Link>
           )}
         </div>
 
