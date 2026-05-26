@@ -39,7 +39,9 @@ export async function resolveUserRole(
   return "unknown";
 }
 
-export function dashboardPathForRole(role: UserRole): "/dashboard" | "/mentor-dashboard" | "/admin" {
+export function dashboardPathForRole(
+  role: UserRole,
+): "/dashboard" | "/mentor-dashboard" | "/admin" {
   if (role === "mentor") return "/mentor-dashboard";
   if (role === "admin") return "/admin";
   return "/dashboard";
