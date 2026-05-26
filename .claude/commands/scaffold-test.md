@@ -1,0 +1,1 @@
+../plugins/uniplug-flo/commands/scaffold-test.md

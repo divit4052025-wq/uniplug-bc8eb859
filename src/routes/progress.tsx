@@ -9,8 +9,7 @@ import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 
 export const Route = createFileRoute("/progress")({
-  beforeLoad: () =>
-    clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
+  beforeLoad: () => clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
   head: () => ({
     meta: [{ title: "My Progress — UniPlug" }],
   }),
@@ -59,7 +58,11 @@ function ProgressPage() {
     };
   }, [navigate, ctx.userId]);
 
-  const { data: notes = [], isError, refetch } = useQuery<Note[]>({
+  const {
+    data: notes = [],
+    isError,
+    refetch,
+  } = useQuery<Note[]>({
     queryKey: notesKey,
     enabled: !!studentId,
     queryFn: async () => {
@@ -71,7 +74,9 @@ function ProgressPage() {
       if (error) throw error;
       const list = rows ?? [];
       if (list.length === 0) return [];
-      const mentorIds = Array.from(new Set(list.map((n) => n.mentor_id).filter((v): v is string => !!v)));
+      const mentorIds = Array.from(
+        new Set(list.map((n) => n.mentor_id).filter((v): v is string => !!v)),
+      );
       const bookingIds = Array.from(
         new Set(list.map((n) => n.booking_id).filter((v): v is string => !!v)),
       );
@@ -100,11 +105,13 @@ function ProgressPage() {
         bookingDate.set(b.id, b.date),
       );
       const compMap = new Map<string, Record<number, boolean>>();
-      ((completionsRes.data ?? []) as {
-        session_note_id: string;
-        action_point_index: number;
-        completed: boolean;
-      }[]).forEach((c) => {
+      (
+        (completionsRes.data ?? []) as {
+          session_note_id: string;
+          action_point_index: number;
+          completed: boolean;
+        }[]
+      ).forEach((c) => {
         const cur = compMap.get(c.session_note_id) ?? {};
         cur[c.action_point_index] = c.completed;
         compMap.set(c.session_note_id, cur);
@@ -123,7 +130,15 @@ function ProgressPage() {
   });
 
   const toggleMutation = useMutation({
-    mutationFn: async ({ noteId, index, next }: { noteId: string; index: number; next: boolean }) => {
+    mutationFn: async ({
+      noteId,
+      index,
+      next,
+    }: {
+      noteId: string;
+      index: number;
+      next: boolean;
+    }) => {
       if (!studentId) return;
       const { error } = await supabase.from("action_point_completions").upsert(
         {
@@ -224,7 +239,8 @@ function ProgressPage() {
           {notes.length === 0 ? (
             <div className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-8 text-center">
               <p className="text-[14px] font-light text-[#1A1A1A]/70">
-                No session notes yet. After your first session, your mentor's notes will appear here.
+                No session notes yet. After your first session, your mentor's notes will appear
+                here.
               </p>
             </div>
           ) : (
