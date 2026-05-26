@@ -2,12 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { studentReminderEmail, mentorReminderEmail } from "@/lib/email/templates";
 import { bearerOk } from "@/lib/auth/bearer";
+import { FROM } from "@/lib/email/from";
 
-const FROM = "UniPlug <onboarding@resend.dev>";
-
-// Windows supported by this endpoint. Phase A3 (2026-05-23) wires '24h'
-// behind the existing tomorrowISTDate() logic. Phase C2 will add '1h'.
-const ALLOWED_WINDOWS = new Set(["24h"]);
+// Windows supported by this endpoint. Phase A3 (2026-05-23) wired '24h'
+// behind tomorrowISTDate(); Phase C2 added '1h' which uses a time-range
+// filter on (date + time_slot) IST instead of just date.
+const ALLOWED_WINDOWS = new Set(["24h", "1h"]);
 
 async function sendViaResend(apiKey: string, to: string, subject: string, html: string) {
   const res = await fetch("https://api.resend.com/emails", {
@@ -19,7 +19,7 @@ async function sendViaResend(apiKey: string, to: string, subject: string, html: 
   return res.json();
 }
 
-// Returns the YYYY-MM-DD for "tomorrow" in IST (UTC+5:30) since bookings are India-facing.
+// Returns the YYYY-MM-DD for "tomorrow" in IST (UTC+5:30).
 function tomorrowISTDate(): string {
   const now = new Date();
   const istNow = new Date(now.getTime() + 5.5 * 60 * 60 * 1000);
@@ -27,15 +27,26 @@ function tomorrowISTDate(): string {
   return istNow.toISOString().slice(0, 10);
 }
 
+// Epoch ms for the start of a YYYY-MM-DD + HH:00 booking, interpreted IST.
+function bookingStartMsIST(dateISO: string, timeSlot: string): number {
+  return new Date(`${dateISO}T${timeSlot}:00+05:30`).getTime();
+}
+
+type BookingRow = {
+  id: string;
+  mentor_id: string | null;
+  student_id: string | null;
+  date: string;
+  time_slot: string;
+  status: string;
+};
+
 export const Route = createFileRoute("/api/public/hooks/send-reminders")({
   server: {
     handlers: {
       POST: async ({ request }: { request: Request }) => {
-        // Phase A3: Bearer-token auth. Without this guard the endpoint
-        // was POSTable by anyone and would scan all confirmed bookings
-        // for tomorrow IST + send two Resend emails each — cost + spam.
-        // CRON_SECRET must match the pg_cron job's bearer (the migration
-        // reads from vault.decrypted_secrets to inject it).
+        // Phase A3: Bearer-token auth. Endpoint was previously unauth'd
+        // under /api/public/ — anyone POST → mass Resend dispatch.
         const expectedSecret = process.env.CRON_SECRET;
         if (!expectedSecret) {
           console.error("[reminders] CRON_SECRET not set in worker env");
@@ -55,9 +66,6 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
           });
         }
 
-        // Window param. Today only '24h'; C2 will add '1h'. Default
-        // preserves prior caller-less behavior for any operator who
-        // POSTs the endpoint manually for an ad-hoc next-day send.
         const window = new URL(request.url).searchParams.get("window") ?? "24h";
         if (!ALLOWED_WINDOWS.has(window)) {
           return new Response(
@@ -78,30 +86,57 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
             headers: { "Content-Type": "application/json" },
           });
         }
+
+        // Pull candidate bookings. For 24h we fetch by date=tomorrow IST.
+        // For 1h we fetch today+tomorrow and JS-filter by start time
+        // (Supabase REST can't easily express date+time_slot composition).
+        let bookings: BookingRow[];
         const targetDate = tomorrowISTDate();
-
-        const { data: bookings, error } = await supabaseAdmin
-          .from("bookings")
-          .select("id, mentor_id, student_id, date, time_slot, status")
-          .eq("date", targetDate)
-          .eq("status", "confirmed");
-
-        if (error) {
-          console.error("[reminders] failed to load bookings", error);
-          return new Response(JSON.stringify({ ok: false, error: error.message }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
+        if (window === "24h") {
+          const { data, error } = await supabaseAdmin
+            .from("bookings")
+            .select("id, mentor_id, student_id, date, time_slot, status")
+            .eq("date", targetDate)
+            .eq("status", "confirmed");
+          if (error) {
+            console.error("[reminders] failed to load bookings", error);
+            return new Response(JSON.stringify({ ok: false, error: error.message }), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          bookings = data ?? [];
+        } else {
+          // window === "1h": ±15-minute tolerance around now+60min IST.
+          const now = Date.now();
+          const windowStart = now + 45 * 60_000;
+          const windowEnd = now + 75 * 60_000;
+          const istNow = new Date(now + 5.5 * 60 * 60_000);
+          const today = istNow.toISOString().slice(0, 10);
+          const tomorrow = new Date(istNow.getTime() + 24 * 60 * 60_000).toISOString().slice(0, 10);
+          const { data, error } = await supabaseAdmin
+            .from("bookings")
+            .select("id, mentor_id, student_id, date, time_slot, status")
+            .in("date", [today, tomorrow])
+            .eq("status", "confirmed");
+          if (error) {
+            console.error("[reminders] failed to load bookings", error);
+            return new Response(JSON.stringify({ ok: false, error: error.message }), {
+              status: 500,
+              headers: { "Content-Type": "application/json" },
+            });
+          }
+          bookings = (data ?? []).filter((b) => {
+            const ts = bookingStartMsIST(b.date, b.time_slot);
+            return ts >= windowStart && ts <= windowEnd;
           });
         }
 
         let sent = 0;
         let failed = 0;
         let skipped = 0;
-        for (const b of bookings ?? []) {
+        for (const b of bookings) {
           try {
-            // Bookings have ON DELETE SET NULL on mentor_id and student_id,
-            // so an orphan can have either field null. Skip the reminder
-            // (nobody to send to) and log enough context to investigate.
             if (!b.mentor_id || !b.student_id) {
               skipped++;
               console.warn("[reminders] orphan booking — skipping", {
@@ -161,15 +196,14 @@ export const Route = createFileRoute("/api/public/hooks/send-reminders")({
         return new Response(
           JSON.stringify({
             ok: true,
-            date: targetDate,
-            processed: bookings?.length ?? 0,
+            window,
+            target_date: window === "24h" ? targetDate : null,
+            processed: bookings.length,
             sent,
             failed,
             skipped,
           }),
-          {
-            headers: { "Content-Type": "application/json" },
-          },
+          { headers: { "Content-Type": "application/json" } },
         );
       },
     },
