@@ -60,7 +60,11 @@ export function EmptyState({
         className,
       )}
     >
-      {icon && <div className="text-brand-brown" aria-hidden="true">{icon}</div>}
+      {icon && (
+        <div className="text-brand-brown" aria-hidden="true">
+          {icon}
+        </div>
+      )}
       <p className="font-display text-[16px] font-semibold text-brand-dark">{title}</p>
       {description && (
         <p className="max-w-md text-[13px] font-light text-brand-dark/70">{description}</p>
