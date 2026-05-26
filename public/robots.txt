@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /mentor-dashboard
+Disallow: /admin
+Disallow: /api/
+Disallow: /notifications
+Disallow: /progress
+Disallow: /session-notes
+# Trailing slash on /mentor/ is load-bearing — without it the prefix
+# would also block the legitimately public /mentor-signup.
+Disallow: /mentor/
+# /browse is currently auth-gated via clientAuthGuard so anonymous
+# crawlers hit a signup wall. Mirror sitemap.xml's exclusion.
+Disallow: /browse
+
+Sitemap: https://uniplug.app/sitemap.xml

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://uniplug.app/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <!--
+    /browse is currently auth-gated via clientAuthGuard (src/routes/browse.tsx)
+    so anonymous crawlers hit a signup wall. Removed from the sitemap until
+    the gate is lifted or a public landing variant ships. robots.txt also
+    Disallows /mentor/{id} for the same reason.
+  -->
+  <url>
+    <loc>https://uniplug.app/about</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <!--
+    /privacy and /terms intentionally excluded: src/routes/privacy.tsx and
+    src/routes/terms.tsx currently render placeholder "being drafted" copy.
+    For a minors-PII service (per Phase G4 safeguarding) the canonical
+    Privacy/Terms URL must not advertise stub copy to crawlers. Add the
+    <url> entries once Divit fills the legal copy.
+  -->
+
+  <url>
+    <loc>https://uniplug.app/how-it-works</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://uniplug.app/student-signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://uniplug.app/mentor-signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://uniplug.app/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>
