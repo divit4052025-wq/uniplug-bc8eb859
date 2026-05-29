@@ -52,7 +52,15 @@ export function Field({ label, children }: { label: string; children: React.Reac
 export const inputClass =
   "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-light text-foreground placeholder:text-muted-foreground/60 transition focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15";
 
-export function Confirmation({ heading, body }: { heading: string; body: string }) {
+export function Confirmation({
+  heading,
+  body,
+  children,
+}: {
+  heading: string;
+  body: string;
+  children?: React.ReactNode;
+}) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Nav />
@@ -63,6 +71,7 @@ export function Confirmation({ heading, body }: { heading: string; body: string 
           </div>
           <h2 className="mt-6 font-display text-3xl text-foreground sm:text-4xl">{heading}</h2>
           <p className="mt-3 text-base font-light text-muted-foreground">{body}</p>
+          {children && <div className="mt-6">{children}</div>}
         </div>
       </main>
       <Footer />
