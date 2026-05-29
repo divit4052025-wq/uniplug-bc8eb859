@@ -106,6 +106,15 @@ function LoginPage() {
           />
         </Field>
 
+        <div className="-mt-2 text-right">
+          <Link
+            to="/forgot-password"
+            className="text-[13px] font-medium text-primary hover:underline"
+          >
+            Forgot password?
+          </Link>
+        </div>
+
         {error && <p className="text-sm text-destructive">{error}</p>}
 
         <button
