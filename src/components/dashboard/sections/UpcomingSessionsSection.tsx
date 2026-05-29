@@ -123,7 +123,7 @@ function PrepQuestions({ bookingId }: { bookingId: string }) {
   const failed = prep.isError || (result && !result.ok);
 
   return (
-    <div className="mt-3 border-t border-[#EDE0DB] pt-3">
+    <div className="mt-3 border-t border-border pt-3">
       {prep.isIdle && (
         <button
           type="button"
