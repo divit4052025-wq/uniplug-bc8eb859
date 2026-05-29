@@ -13,6 +13,7 @@ import { PastSessionsSection } from "@/components/dashboard/sections/PastSession
 import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSection";
 import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
 import { SessionNotesSection } from "@/components/dashboard/sections/SessionNotesSection";
+import { AccountDataSection } from "@/components/settings/AccountDataSection";
 import { resolveUserRole } from "@/lib/auth/role";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
@@ -40,7 +41,6 @@ function Dashboard() {
     ctx.userMetadata ?? null,
   );
   const [active, setActive] = useState<SectionKey>("home");
-  const [comingSoon, setComingSoon] = useState<string | null>(null);
   const [ready, setReady] = useState(!!ctx.userId);
 
   // SSR / hard-refresh fallback: when beforeLoad was skipped on the server
@@ -104,11 +104,9 @@ function Dashboard() {
   const select = (key: SectionKey) => {
     setActive(key);
     if (key === "settings") {
-      setComingSoon("Settings");
-      setTimeout(() => setComingSoon(null), 2200);
+      window.scrollTo({ top: 0, behavior: "smooth" });
       return;
     }
-    setComingSoon(null);
     const anchor = SECTION_TO_ANCHOR[key];
     if (anchor) {
       const el = document.getElementById(anchor);
@@ -127,25 +125,29 @@ function Dashboard() {
       <main className="md:ml-[240px]">
         <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
           <DashboardTopbar firstName={firstName} role="student" />
-          <div className="mt-8 space-y-12 animate-hero-rise">
-            <MyPlugsSection studentId={userId} />
-            <TopPicksSection studentId={userId} />
-            <UpcomingSessionsSection studentId={userId} />
-            <PastSessionsSection studentId={userId} />
-            <SessionNotesSection studentId={userId} />
-            <MySchoolsSection userId={userId} />
-            <MyDocumentsSection userId={userId} />
-          </div>
+          {active === "settings" ? (
+            <div className="mt-8 animate-hero-rise">
+              <h2 className="font-display text-[24px] font-semibold text-[#1A1A1A]">Settings</h2>
+              <p className="mt-1 text-[13px] text-[#1A1A1A]/60">Manage your data and account.</p>
+              <div className="mt-8">
+                <AccountDataSection />
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 space-y-12 animate-hero-rise">
+              <MyPlugsSection studentId={userId} />
+              <TopPicksSection studentId={userId} />
+              <UpcomingSessionsSection studentId={userId} />
+              <PastSessionsSection studentId={userId} />
+              <SessionNotesSection studentId={userId} />
+              <MySchoolsSection userId={userId} />
+              <MyDocumentsSection userId={userId} />
+            </div>
+          )}
         </div>
       </main>
 
       <MobileBottomNav active={active} onSelect={select} />
-
-      {comingSoon && (
-        <div className="fixed bottom-20 left-1/2 z-50 -translate-x-1/2 rounded-full bg-[#1A1A1A] px-5 py-2.5 text-[13px] font-medium text-white shadow-lg md:bottom-8">
-          {comingSoon} — coming soon
-        </div>
-      )}
     </div>
   );
 }
