@@ -7,6 +7,7 @@ import { DashboardSidebar, type SectionKey } from "@/components/dashboard/Dashbo
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 import { MyPlugsSection } from "@/components/dashboard/sections/MyPlugsSection";
+import { TopPicksSection } from "@/components/dashboard/sections/TopPicksSection";
 import { UpcomingSessionsSection } from "@/components/dashboard/sections/UpcomingSessionsSection";
 import { PastSessionsSection } from "@/components/dashboard/sections/PastSessionsSection";
 import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSection";
@@ -128,6 +129,7 @@ function Dashboard() {
           <DashboardTopbar firstName={firstName} role="student" />
           <div className="mt-8 space-y-12 animate-hero-rise">
             <MyPlugsSection studentId={userId} />
+            <TopPicksSection studentId={userId} />
             <UpcomingSessionsSection studentId={userId} />
             <PastSessionsSection studentId={userId} />
             <SessionNotesSection studentId={userId} />
