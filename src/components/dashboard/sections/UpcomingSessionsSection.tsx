@@ -1,7 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Sparkles } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { generatePrepQuestions } from "@/lib/ai/prep-questions.functions";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { LoadingSkeleton } from "@/components/ui/state-views";
 import { formatBookingDate, isBookingEnded, todayInIST } from "@/lib/time";
 
 type BookingRow = {
@@ -77,22 +80,22 @@ export function UpcomingSessionsSection({ studentId }: { studentId: string }) {
           ) : (
             <ul className="divide-y divide-[#EDE0DB]">
               {rows.map((r) => (
-                <li
-                  key={r.id}
-                  className="flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="text-[15px] font-medium text-[#1A1A1A]">{r.mentorName}</p>
-                    <p className="mt-1 text-[12px] text-[#1A1A1A]/60">
-                      {formatBookingDate(r.date)} · {r.time_slot}
-                    </p>
+                <li key={r.id} className="px-4 py-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-[15px] font-medium text-[#1A1A1A]">{r.mentorName}</p>
+                      <p className="mt-1 text-[12px] text-[#1A1A1A]/60">
+                        {formatBookingDate(r.date)} · {r.time_slot}
+                      </p>
+                    </div>
+                    <a
+                      href="#"
+                      className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
+                    >
+                      Join Call
+                    </a>
                   </div>
-                  <a
-                    href="#"
-                    className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
-                  >
-                    Join Call
-                  </a>
+                  <PrepQuestions bookingId={r.id} />
                 </li>
               ))}
             </ul>
@@ -100,5 +103,78 @@ export function UpcomingSessionsSection({ studentId }: { studentId: string }) {
         </div>
       )}
     </section>
+  );
+}
+
+/**
+ * Phase D1 UI: "Prepare for this session" — calls generatePrepQuestions on
+ * demand (button-triggered, not auto-loaded: auto-loading would generate +
+ * rate-limit-charge AI questions for every upcoming booking a student never
+ * opens). A cache hit returns instantly; a miss generates and caches. The
+ * server-fn returns { ok: false, reason } for business failures rather than
+ * throwing, so we branch on the result, never crash, never hang.
+ */
+function PrepQuestions({ bookingId }: { bookingId: string }) {
+  const prep = useMutation({
+    mutationFn: async () => generatePrepQuestions({ data: { bookingId } }),
+  });
+
+  const result = prep.data;
+  const failed = prep.isError || (result && !result.ok);
+
+  return (
+    <div className="mt-3 border-t border-border pt-3">
+      {prep.isIdle && (
+        <button
+          type="button"
+          onClick={() => prep.mutate()}
+          className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3.5 text-[12px] font-medium text-foreground transition hover:border-primary hover:text-primary"
+        >
+          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+          Prepare for this session
+        </button>
+      )}
+
+      {prep.isPending && (
+        <div>
+          <p className="mb-2 text-[12px] font-medium text-muted-foreground">
+            Generating prep questions…
+          </p>
+          <LoadingSkeleton rows={3} ariaLabel="Generating prep questions" />
+        </div>
+      )}
+
+      {!prep.isPending && failed && (
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-[12px] font-light text-muted-foreground">
+            Couldn&apos;t generate prep questions right now — try again later.
+          </p>
+          <button
+            type="button"
+            onClick={() => prep.mutate()}
+            className="text-[12px] font-semibold text-primary underline underline-offset-2 hover:opacity-80"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+
+      {!prep.isPending && result?.ok && (
+        <div>
+          <p className="mb-2 flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide text-primary">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+            Prepare for this session
+          </p>
+          <ul className="space-y-1.5">
+            {result.questions.map((q, i) => (
+              <li key={i} className="flex gap-2 text-[13px] font-light text-foreground/85">
+                <span className="select-none text-primary">{i + 1}.</span>
+                <span>{q}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
