@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { AccountDataSection } from "@/components/settings/AccountDataSection";
 
 const BIO_MAX = 500;
 const ACCEPTED_IMAGE = ["image/jpeg", "image/png", "image/webp", "image/gif"];
@@ -286,6 +287,10 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
           "Save Changes"
         )}
       </button>
+
+      <div className="border-t border-border pt-10">
+        <AccountDataSection />
+      </div>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { AuthShell, Field, inputClass } from "@/components/site/AuthShell";
+import { AuthShell, Confirmation, Field, inputClass } from "@/components/site/AuthShell";
 import { MultiSelect } from "@/components/site/MultiSelect";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -54,6 +54,19 @@ function StudentSignup() {
   const [picked, setPicked] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent">("idle");
+
+  const onResend = async () => {
+    if (!pendingEmail || resendState !== "idle") return;
+    setResendState("sending");
+    await supabase.auth.resend({
+      type: "signup",
+      email: pendingEmail,
+      options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+    });
+    setResendState("sent");
+  };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -78,7 +91,7 @@ function StudentSignup() {
     setErrors({});
     setSubmitting(true);
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
         options: {
@@ -95,7 +108,15 @@ function StudentSignup() {
       });
       if (signUpError) throw signUpError;
 
-      navigate({ to: "/dashboard" });
+      // Email confirmation is required: signUp returns the user but no session.
+      // Show a "check your email" state instead of redirecting to a route the
+      // unconfirmed account can't reach (it would bounce back to signup).
+      if (signUpData.session) {
+        navigate({ to: "/dashboard" });
+      } else {
+        setPendingEmail(data.email);
+        setSubmitting(false);
+      }
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Something went wrong";
       // Supabase wraps trigger-raised exceptions; show a friendly fallback in that case.
@@ -106,6 +127,28 @@ function StudentSignup() {
       setSubmitting(false);
     }
   };
+
+  if (pendingEmail) {
+    return (
+      <Confirmation
+        heading="Check your email to confirm your account"
+        body={`We sent a confirmation link to ${pendingEmail}. Click the link to activate your account and start finding mentors.`}
+      >
+        <button
+          type="button"
+          onClick={onResend}
+          disabled={resendState !== "idle"}
+          className="text-sm font-semibold text-primary underline-offset-4 transition hover:underline disabled:opacity-60"
+        >
+          {resendState === "sent"
+            ? "Confirmation email resent"
+            : resendState === "sending"
+              ? "Resending…"
+              : "Didn't receive it? Resend confirmation email"}
+        </button>
+      </Confirmation>
+    );
+  }
 
   return (
     <AuthShell
