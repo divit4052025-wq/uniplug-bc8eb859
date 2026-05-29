@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { BadgeCheck, Filter, Search, Star, X } from "lucide-react";
+import { BadgeCheck, Filter, Search, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 
@@ -62,6 +63,7 @@ type Mentor = {
   year: string;
   topics: [string, string];
   price: number;
+  verified: boolean;
 };
 
 type MentorProfile = {
@@ -72,6 +74,7 @@ type MentorProfile = {
   course: string;
   year: string;
   price_inr: number;
+  verified_at: string | null;
 };
 
 function BrowsePage() {
@@ -127,6 +130,7 @@ function BrowsePage() {
         year: m.year,
         topics: [m.course, m.year] as [string, string],
         price: m.price_inr,
+        verified: m.verified_at != null,
       }));
     },
   });
@@ -450,10 +454,7 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
       </div>
 
       <div className="mt-4 flex items-center justify-between text-[13px] text-[#1A1A1A]/70">
-        <span className="inline-flex items-center gap-1">
-          <Star className="h-3.5 w-3.5 fill-[#C4907F] text-[#C4907F]" />
-          <span className="font-medium text-[#1A1A1A]">Verified</span>
-        </span>
+        {mentor.verified ? <VerifiedBadge /> : <span aria-hidden="true" />}
         <span>₹{mentor.price.toLocaleString("en-IN")}</span>
       </div>
 
@@ -474,9 +475,11 @@ function CardHeader({ mentor, initials }: { mentor: Mentor; initials: string }) 
         <div className="grid h-16 w-16 place-content-center rounded-full bg-[#FFFCFB] font-display text-[20px] font-semibold text-[#1A1A1A]">
           {initials}
         </div>
-        <span className="absolute -bottom-0.5 -right-0.5 grid h-6 w-6 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#EDE0DB]">
-          <BadgeCheck className="h-3.5 w-3.5 text-[#FFFCFB]" />
-        </span>
+        {mentor.verified && (
+          <span className="absolute -bottom-0.5 -right-0.5 grid h-6 w-6 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#EDE0DB]">
+            <BadgeCheck className="h-3.5 w-3.5 text-[#FFFCFB]" />
+          </span>
+        )}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">

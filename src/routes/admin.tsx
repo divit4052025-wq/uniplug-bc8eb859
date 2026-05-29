@@ -9,10 +9,14 @@ import {
   TrendingUp,
   LogOut,
   Search,
+  FileText,
+  ExternalLink,
+  Loader2,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { getMentorVerificationDocs } from "@/lib/admin/mentor-verification.functions";
 import { Logo } from "@/components/site/Logo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,6 +29,17 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
@@ -280,8 +295,11 @@ function ApprovalsSection() {
   if (isLoading) return <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>;
   if (rows.length === 0)
     return (
-      <div className="rounded-xl border border-[#EDE0DB] bg-white p-8 text-center text-[14px] text-[#1A1A1A]/60">
-        No pending applications.
+      <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+        <p className="text-[15px] font-medium text-foreground">No mentors awaiting review</p>
+        <p className="mt-1 text-[13px] font-light text-muted-foreground">
+          New mentor applications will appear here for you to verify and approve.
+        </p>
       </div>
     );
 
@@ -295,40 +313,177 @@ function ApprovalsSection() {
             <TableHead>Course</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Applied</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-right">Documents &amp; decision</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {rows.map((m) => (
-            <TableRow key={m.id}>
-              <TableCell className="font-medium">{m.full_name}</TableCell>
-              <TableCell>{m.university}</TableCell>
-              <TableCell>{m.course}</TableCell>
-              <TableCell className="text-[#1A1A1A]/70">{m.email}</TableCell>
-              <TableCell>{new Date(m.created_at).toLocaleDateString()}</TableCell>
-              <TableCell className="text-right">
-                <div className="inline-flex gap-2">
-                  <Button
-                    size="sm"
-                    onClick={() => setStatusMutation.mutate({ id: m.id, status: "approved" })}
-                    className="bg-[#C4907F] text-white hover:bg-[#b3806f]"
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => setStatusMutation.mutate({ id: m.id, status: "rejected" })}
-                    className="bg-[#991B1B] text-white hover:bg-[#7f1616]"
-                  >
-                    Reject
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
+            <PendingMentorRow
+              key={m.id}
+              mentor={m}
+              busy={setStatusMutation.isPending}
+              onApprove={() => setStatusMutation.mutate({ id: m.id, status: "approved" })}
+              onReject={() => setStatusMutation.mutate({ id: m.id, status: "rejected" })}
+            />
           ))}
         </TableBody>
       </Table>
     </div>
+  );
+}
+
+function PendingMentorRow({
+  mentor,
+  onApprove,
+  onReject,
+  busy,
+}: {
+  mentor: MentorRow;
+  onApprove: () => void;
+  onReject: () => void;
+  busy: boolean;
+}) {
+  // Lazy, read-only fetch of short-lived signed URLs for this mentor's private
+  // verification documents. Reviewing the docs is the natural step before
+  // approving — the Approve dialog reminds the admin to do so.
+  const docs = useMutation({
+    mutationFn: async () => {
+      const res = await getMentorVerificationDocs({ data: { mentorId: mentor.id } });
+      if (!res.ok) throw new Error(res.reason);
+      return res;
+    },
+  });
+
+  const result = docs.data;
+  const noneUploaded = result?.ok && !result.idDocumentUrl && !result.enrollmentLetterUrl;
+
+  return (
+    <TableRow>
+      <TableCell className="font-medium">{mentor.full_name}</TableCell>
+      <TableCell>{mentor.university}</TableCell>
+      <TableCell>{mentor.course}</TableCell>
+      <TableCell className="text-[#1A1A1A]/70">{mentor.email}</TableCell>
+      <TableCell>{new Date(mentor.created_at).toLocaleDateString()}</TableCell>
+      <TableCell className="text-right align-top">
+        <div className="inline-flex flex-col items-end gap-2">
+          <div className="inline-flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => docs.mutate()}
+              disabled={docs.isPending}
+              className="gap-1.5"
+            >
+              {docs.isPending ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <FileText className="h-3.5 w-3.5" />
+              )}
+              View documents
+            </Button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button size="sm" disabled={busy} className="bg-primary text-primary-foreground">
+                  Approve
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-card">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-foreground">
+                    Approve {mentor.full_name}?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Review their ID and enrollment documents first. Approving marks this mentor
+                    verified — recording that you verified them, and when — and makes them bookable
+                    by students. You can revert this later.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onApprove}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Approve &amp; verify
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  className="border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  Reject
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-card">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-destructive">
+                    Reject {mentor.full_name}?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This rejects the application and clears any recorded verification. The mentor
+                    will not be bookable or shown as verified. You can change this later.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={onReject}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    Reject application
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+
+          {/* Document review panel */}
+          {docs.isError && (
+            <p className="text-[12px] font-light text-destructive">
+              Couldn&apos;t load documents right now — please try again.
+            </p>
+          )}
+          {result?.ok && noneUploaded && (
+            <p className="text-[12px] font-light text-muted-foreground">No documents uploaded.</p>
+          )}
+          {result?.ok && !noneUploaded && (
+            <div className="flex flex-col items-end gap-1">
+              {result.idDocumentUrl && (
+                <a
+                  href={result.idDocumentUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" /> ID document
+                </a>
+              )}
+              {result.enrollmentLetterUrl && (
+                <a
+                  href={result.enrollmentLetterUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-[12px] font-medium text-primary hover:underline"
+                >
+                  <ExternalLink className="h-3 w-3" /> Enrollment letter
+                </a>
+              )}
+              <span className="text-[11px] font-light text-muted-foreground">
+                Links expire in ~5 min.
+              </span>
+            </div>
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
   );
 }
 
