@@ -8,6 +8,7 @@ import { DashboardSidebar, type SectionKey } from "@/components/dashboard/Dashbo
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import MentorCalendar from "@/components/calendar/MentorCalendar";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
@@ -38,6 +39,7 @@ type MentorProfile = {
   bio: string | null;
   topics: string[] | null;
   photo_url: string | null;
+  verified_at: string | null;
 };
 
 type Review = {
@@ -255,9 +257,11 @@ function MentorProfilePage() {
                     {initials}
                   </div>
                 )}
-                <span className="absolute -bottom-1 -right-1 grid h-9 w-9 place-content-center rounded-full bg-[#C4907F] ring-4 ring-[#1A1A1A]">
-                  <BadgeCheck className="h-5 w-5 text-[#FFFCFB]" />
-                </span>
+                {mentor.verified_at && (
+                  <span className="absolute -bottom-1 -right-1 grid h-9 w-9 place-content-center rounded-full bg-[#C4907F] ring-4 ring-[#1A1A1A]">
+                    <BadgeCheck className="h-5 w-5 text-[#FFFCFB]" />
+                  </span>
+                )}
               </div>
               <div className="min-w-0">
                 <h1 className="font-display text-[28px] font-semibold leading-tight text-[#FFFCFB] sm:text-[36px]">
@@ -269,9 +273,12 @@ function MentorProfilePage() {
                 <p className="mt-0.5 text-[14px] text-[#EDE0DB]/70 sm:text-[16px]">
                   {mentor.course} · {mentor.year}
                 </p>
-                <span className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#C4907F] px-3 py-1 text-[12px] font-medium text-[#FFFCFB]">
-                  <BadgeCheck className="h-3.5 w-3.5" /> Verified Plug
-                </span>
+                {mentor.verified_at && (
+                  <VerifiedBadge
+                    label="Verified Plug"
+                    className="mt-3 bg-primary px-3 py-1 text-[12px] text-primary-foreground"
+                  />
+                )}
               </div>
             </div>
 

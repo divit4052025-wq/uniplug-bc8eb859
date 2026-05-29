@@ -1,7 +1,11 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  __InternalSupabase: { PostgrestVersion: "14.5" };
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5";
+  };
   public: {
     Tables: {
       action_point_completions: {
@@ -40,9 +44,24 @@ export type Database = {
         ];
       };
       ai_rate_limit_events: {
-        Row: { created_at: string; feature: string; id: string; user_id: string };
-        Insert: { created_at?: string; feature: string; id?: string; user_id: string };
-        Update: { created_at?: string; feature?: string; id?: string; user_id?: string };
+        Row: {
+          created_at: string;
+          feature: string;
+          id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          feature: string;
+          id?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          feature?: string;
+          id?: string;
+          user_id?: string;
+        };
         Relationships: [];
       };
       bookings: {
@@ -229,9 +248,21 @@ export type Database = {
         Relationships: [];
       };
       mentor_training_completions: {
-        Row: { completed_at: string; mentor_id: string; section_key: string };
-        Insert: { completed_at?: string; mentor_id: string; section_key: string };
-        Update: { completed_at?: string; mentor_id?: string; section_key?: string };
+        Row: {
+          completed_at: string;
+          mentor_id: string;
+          section_key: string;
+        };
+        Insert: {
+          completed_at?: string;
+          mentor_id: string;
+          section_key: string;
+        };
+        Update: {
+          completed_at?: string;
+          mentor_id?: string;
+          section_key?: string;
+        };
         Relationships: [
           {
             foreignKeyName: "mentor_training_completions_mentor_id_fkey";
@@ -356,9 +387,24 @@ export type Database = {
         ];
       };
       referral_codes: {
-        Row: { code: string; created_at: string; id: string; owner_id: string };
-        Insert: { code: string; created_at?: string; id?: string; owner_id: string };
-        Update: { code?: string; created_at?: string; id?: string; owner_id?: string };
+        Row: {
+          code: string;
+          created_at: string;
+          id: string;
+          owner_id: string;
+        };
+        Insert: {
+          code: string;
+          created_at?: string;
+          id?: string;
+          owner_id: string;
+        };
+        Update: {
+          code?: string;
+          created_at?: string;
+          id?: string;
+          owner_id?: string;
+        };
         Relationships: [
           {
             foreignKeyName: "referral_codes_owner_id_fkey";
@@ -608,7 +654,13 @@ export type Database = {
         Relationships: [];
       };
       student_schools: {
-        Row: { category: string; created_at: string; id: string; name: string; student_id: string };
+        Row: {
+          category: string;
+          created_at: string;
+          id: string;
+          name: string;
+          student_id: string;
+        };
         Insert: {
           category: string;
           created_at?: string;
@@ -677,7 +729,9 @@ export type Database = {
         Relationships: [];
       };
     };
-    Views: { [_ in never]: never };
+    Views: {
+      [_ in never]: never;
+    };
     Functions: {
       admin_list_bookings: {
         Args: never;
@@ -739,11 +793,19 @@ export type Database = {
       };
       get_mentor_booking_names: {
         Args: { _ids: string[] };
-        Returns: { full_name: string; id: string; university: string }[];
+        Returns: {
+          full_name: string;
+          id: string;
+          university: string;
+        }[];
       };
       get_mentor_calendar: {
         Args: { _days_ahead?: number; _from_date?: string; _mentor_id: string };
-        Returns: { date: string; state: string; time_slot: string }[];
+        Returns: {
+          date: string;
+          state: string;
+          time_slot: string;
+        }[];
       };
       get_mentor_public_profile: {
         Args: { _mentor_id: string };
@@ -757,16 +819,25 @@ export type Database = {
           price_inr: number;
           topics: string[];
           university: string;
+          verified_at: string;
           year: string;
         }[];
       };
       get_review_student_names: {
         Args: { _ids: string[] };
-        Returns: { full_name: string; id: string }[];
+        Returns: {
+          full_name: string;
+          id: string;
+        }[];
       };
       get_student_booking_names: {
         Args: { _ids: string[] };
-        Returns: { full_name: string; grade: string; id: string; school: string }[];
+        Returns: {
+          full_name: string;
+          grade: string;
+          id: string;
+          school: string;
+        }[];
       };
       get_student_overview_for_mentor: {
         Args: { _student_id: string };
@@ -792,11 +863,18 @@ export type Database = {
           id: string;
           price_inr: number;
           university: string;
+          verified_at: string;
           year: string;
         }[];
       };
-      mark_consent_revoked: { Args: { _student_id: string }; Returns: undefined };
-      mentor_training_complete: { Args: { _mentor_id: string }; Returns: boolean };
+      mark_consent_revoked: {
+        Args: { _student_id: string };
+        Returns: undefined;
+      };
+      mentor_training_complete: {
+        Args: { _mentor_id: string };
+        Returns: boolean;
+      };
       notify_event_email: { Args: { _payload: Json }; Returns: undefined };
       record_parental_consent: { Args: { _token: string }; Returns: string };
       update_booking_status_as_mentor: {
@@ -808,11 +886,14 @@ export type Database = {
       mentor_status: "pending" | "approved" | "rejected";
       session_status: "upcoming" | "completed" | "cancelled";
     };
-    CompositeTypes: { [_ in never]: never };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
 };
 
 type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
 type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
@@ -825,7 +906,9 @@ export type Tables<
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R;
@@ -849,14 +932,18 @@ export type TablesInsert<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Insert: infer I }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
       ? I
       : never
     : never;
@@ -870,14 +957,18 @@ export type TablesUpdate<
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends { Update: infer U }
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
       ? U
       : never
     : never;
@@ -886,10 +977,14 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
@@ -904,7 +999,9 @@ export type CompositeTypes<
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof DatabaseWithoutInternals }
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
