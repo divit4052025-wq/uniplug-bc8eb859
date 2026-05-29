@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Pencil, Eye } from "lucide-react";
+import { Plus, Trash2, Pencil, Eye, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { expandSessionNote } from "@/lib/ai/note-expansion.functions";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { isBookingEnded } from "@/lib/time";
 
@@ -232,6 +233,30 @@ export function PostSessionNotesSection({
     },
   });
 
+  // Phase D2 UI: expand the mentor's action-point bullets into a 2-3
+  // paragraph student-facing summary draft. The server-fn does NOT persist —
+  // it returns a draft that drops into the summary textarea for the mentor to
+  // review and edit before saving via saveMutation above.
+  const expandMutation = useMutation({
+    mutationFn: async () => {
+      const bullets = points.map((p) => p.trim()).filter(Boolean);
+      return expandSessionNote({ data: { bullets } });
+    },
+    onSuccess: (result) => {
+      if (result.ok) {
+        setSummary(result.expanded);
+        toast.success("Draft generated — review and edit before saving.");
+      } else {
+        toast.error("Couldn't expand notes right now — try again later.");
+      }
+    },
+    onError: () => {
+      toast.error("Couldn't expand notes right now — try again later.");
+    },
+  });
+
+  const hasBullets = points.some((p) => p.trim().length > 0);
+
   const clearForm = () => {
     setSelected("");
     setSummary("");
@@ -345,6 +370,31 @@ export function PostSessionNotesSection({
             </li>
           ))}
         </ul>
+
+        <div className="mt-5 rounded-xl border border-dashed border-border bg-brand-cream/40 p-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-[12px] font-light text-muted-foreground">
+              Turn your action points into a student-ready summary.
+            </p>
+            <button
+              type="button"
+              onClick={() => expandMutation.mutate()}
+              disabled={!hasBullets || expandMutation.isPending}
+              className="inline-flex h-8 items-center gap-1.5 rounded-full border border-border px-3.5 text-[12px] font-medium text-foreground transition hover:border-primary hover:text-primary disabled:opacity-50"
+            >
+              <Sparkles
+                className={`h-3.5 w-3.5 text-primary ${expandMutation.isPending ? "animate-pulse" : ""}`}
+                aria-hidden="true"
+              />
+              {expandMutation.isPending ? "Expanding…" : "Expand notes"}
+            </button>
+          </div>
+          {!hasBullets && (
+            <p className="mt-2 text-[11px] font-light text-muted-foreground/80">
+              Add at least one action point above to expand.
+            </p>
+          )}
+        </div>
 
         <div className="mt-6 flex items-center gap-3">
           <button
