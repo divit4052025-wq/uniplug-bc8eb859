@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { bearerOk } from "@/lib/auth/bearer";
 import { FROM } from "@/lib/email/from";
+import { log } from "@/lib/log";
 import {
   studentBookingCancelledEmail,
   mentorBookingCancelledEmail,
@@ -113,7 +114,13 @@ export const Route = createFileRoute("/api/public/hooks/send-event-email")({
             }
           }
         } catch (err) {
-          console.error("[event-email] dispatch threw", { type: body.type, err });
+          log.error({
+            surface: "worker",
+            event: "event_email_dispatch_failed",
+            alert: true,
+            type: body.type,
+            error: err instanceof Error ? err.message : String(err),
+          });
           return new Response(
             JSON.stringify({
               ok: false,
@@ -206,10 +213,15 @@ async function dispatchBookingEvent(
   const failed = results.length - sent;
   results.forEach((r, i) => {
     if (r.status === "rejected") {
-      console.error(
-        `[event-email] ${body.type}: send ${i === 0 ? "student" : "mentor"} failed`,
-        r.reason,
-      );
+      log.error({
+        surface: "worker",
+        event: "transactional_email_send_failed",
+        alert: true,
+        type: body.type,
+        recipient: i === 0 ? "student" : "mentor",
+        booking_id: booking.id,
+        error: r.reason instanceof Error ? r.reason.message : String(r.reason),
+      });
     }
   });
   return new Response(JSON.stringify({ ok: true, type: body.type, sent, failed }), {
@@ -260,7 +272,13 @@ async function dispatchReviewReceived(
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error("[event-email] review_received send failed", err);
+    log.error({
+      surface: "worker",
+      event: "review_email_send_failed",
+      alert: true,
+      review_id: body.review_id,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return new Response(JSON.stringify({ ok: false, reason: "send_failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -294,7 +312,14 @@ async function dispatchMentorStatus(
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    console.error(`[event-email] ${body.type} send failed`, err);
+    log.error({
+      surface: "worker",
+      event: "mentor_status_email_send_failed",
+      alert: true,
+      type: body.type,
+      mentor_id: body.mentor_id,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return new Response(JSON.stringify({ ok: false, reason: "send_failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
@@ -344,10 +369,17 @@ async function dispatchParentalConsentRequest(
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
-    // Logged, not retried — same posture as the other event types (Phase H3 /
-    // Sentry will surface persistent failures). Launch-prep dependency:
+    // Non-fatal + not retried (pg_net doesn't retry), but flagged for alerting:
+    // a failed consent email silently leaves a minor gate-blocked, so this is
+    // the highest-value alert in this route. Launch-prep dependency:
     // RESEND_API_KEY + CRON_SECRET Worker secrets must be set for delivery.
-    console.error("[event-email] parental_consent_request send failed", err);
+    log.error({
+      surface: "worker",
+      event: "consent_email_send_failed",
+      alert: true,
+      student_id: body.student_id,
+      error: err instanceof Error ? err.message : String(err),
+    });
     return new Response(JSON.stringify({ ok: false, reason: "send_failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
