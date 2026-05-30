@@ -386,6 +386,41 @@ export type Database = {
           },
         ];
       };
+      parental_consent_records: {
+        Row: {
+          consent_scope: string[];
+          consent_version: string;
+          consented_at: string;
+          id: string;
+          parent_email: string | null;
+          student_id: string;
+        };
+        Insert: {
+          consent_scope: string[];
+          consent_version: string;
+          consented_at?: string;
+          id?: string;
+          parent_email?: string | null;
+          student_id: string;
+        };
+        Update: {
+          consent_scope?: string[];
+          consent_version?: string;
+          consented_at?: string;
+          id?: string;
+          parent_email?: string | null;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "parental_consent_records_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       referral_codes: {
         Row: {
           code: string;
@@ -688,6 +723,7 @@ export type Database = {
           full_name: string;
           grade: string;
           id: string;
+          parent_phone: string | null;
           parental_consent_at: string | null;
           parental_consent_email: string | null;
           parental_consent_token: string | null;
@@ -704,6 +740,7 @@ export type Database = {
           full_name: string;
           grade: string;
           id: string;
+          parent_phone?: string | null;
           parental_consent_at?: string | null;
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
@@ -720,6 +757,7 @@ export type Database = {
           full_name?: string;
           grade?: string;
           id?: string;
+          parent_phone?: string | null;
           parental_consent_at?: string | null;
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
@@ -877,6 +915,14 @@ export type Database = {
       };
       notify_event_email: { Args: { _payload: Json }; Returns: undefined };
       record_parental_consent: { Args: { _token: string }; Returns: string };
+      request_parental_consent: {
+        Args: { _student_id: string };
+        Returns: undefined;
+      };
+      requires_consent_base: {
+        Args: { _dob: string; _grade: string };
+        Returns: boolean;
+      };
       update_booking_status_as_mentor: {
         Args: { _booking_id: string; _new_status: string };
         Returns: undefined;

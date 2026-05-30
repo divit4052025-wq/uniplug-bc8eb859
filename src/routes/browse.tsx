@@ -8,6 +8,8 @@ import { DashboardSidebar, type SectionKey } from "@/components/dashboard/Dashbo
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
+import { AwaitingConsentNotice } from "@/components/consent/AwaitingConsentNotice";
+import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 
@@ -81,6 +83,7 @@ function BrowsePage() {
   const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
   const [authReady, setAuthReady] = useState(!!ctx.userId);
+  const [userId, setUserId] = useState<string | null>(ctx.userId ?? null);
   const [active, setActive] = useState<SectionKey>("browse");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -104,6 +107,7 @@ function BrowsePage() {
         navigate({ to: "/student-signup" });
         return;
       }
+      setUserId(sessionData.session.user.id);
       setAuthReady(true);
     })();
     return () => {
@@ -134,6 +138,8 @@ function BrowsePage() {
       }));
     },
   });
+
+  const { data: consent } = useConsentStatus(userId);
 
   const onSelectSection = (key: SectionKey) => {
     setActive(key);
@@ -229,6 +235,14 @@ function BrowsePage() {
               />
             ) : (
               <>
+                {consent?.awaiting && userId && (
+                  <AwaitingConsentNotice
+                    studentId={userId}
+                    parentEmail={consent.parentEmail}
+                    compact
+                    className="mb-5"
+                  />
+                )}
                 <p className="mb-4 text-[13px] text-[#1A1A1A]/60">
                   {filtered.length} mentor{filtered.length === 1 ? "" : "s"}
                 </p>

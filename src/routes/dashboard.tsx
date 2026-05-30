@@ -14,6 +14,8 @@ import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSecti
 import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
 import { SessionNotesSection } from "@/components/dashboard/sections/SessionNotesSection";
 import { AccountDataSection } from "@/components/settings/AccountDataSection";
+import { AwaitingConsentNotice } from "@/components/consent/AwaitingConsentNotice";
+import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { resolveUserRole } from "@/lib/auth/role";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
@@ -98,6 +100,8 @@ function Dashboard() {
     },
   });
 
+  const { data: consent } = useConsentStatus(userId);
+
   const fullName = profile?.full_name ?? userMetadata?.full_name ?? "";
   const firstName = fullName.split(" ")[0] ?? "";
 
@@ -135,6 +139,9 @@ function Dashboard() {
             </div>
           ) : (
             <div className="mt-8 space-y-12 animate-hero-rise">
+              {consent?.awaiting && (
+                <AwaitingConsentNotice studentId={userId} parentEmail={consent.parentEmail} />
+              )}
               <MyPlugsSection studentId={userId} />
               <TopPicksSection studentId={userId} />
               <UpcomingSessionsSection studentId={userId} />

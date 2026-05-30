@@ -27,6 +27,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
+import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
@@ -121,6 +122,11 @@ const SessionNotesNoteIdRoute = SessionNotesNoteIdRouteImport.update({
   path: '/$noteId',
   getParentRoute: () => SessionNotesRoute,
 } as any)
+const ParentalConsentTokenRoute = ParentalConsentTokenRouteImport.update({
+  id: '/parental-consent/$token',
+  path: '/parental-consent/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MentorIdRoute = MentorIdRouteImport.update({
   id: '/mentor/$id',
   path: '/mentor/$id',
@@ -158,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
+  '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -181,6 +188,7 @@ export interface FileRoutesByTo {
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
+  '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
+  '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -230,6 +239,7 @@ export interface FileRouteTypes {
     | '/student-signup'
     | '/terms'
     | '/mentor/$id'
+    | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -253,6 +263,7 @@ export interface FileRouteTypes {
     | '/student-signup'
     | '/terms'
     | '/mentor/$id'
+    | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -276,6 +287,7 @@ export interface FileRouteTypes {
     | '/student-signup'
     | '/terms'
     | '/mentor/$id'
+    | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -300,6 +312,7 @@ export interface RootRouteChildren {
   StudentSignupRoute: typeof StudentSignupRoute
   TermsRoute: typeof TermsRoute
   MentorIdRoute: typeof MentorIdRoute
+  ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
   ApiPublicHooksSendEventEmailRoute: typeof ApiPublicHooksSendEventEmailRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
 }
@@ -432,6 +445,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SessionNotesNoteIdRouteImport
       parentRoute: typeof SessionNotesRoute
     }
+    '/parental-consent/$token': {
+      id: '/parental-consent/$token'
+      path: '/parental-consent/$token'
+      fullPath: '/parental-consent/$token'
+      preLoaderRoute: typeof ParentalConsentTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mentor/$id': {
       id: '/mentor/$id'
       path: '/mentor/$id'
@@ -487,6 +507,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudentSignupRoute: StudentSignupRoute,
   TermsRoute: TermsRoute,
   MentorIdRoute: MentorIdRoute,
+  ParentalConsentTokenRoute: ParentalConsentTokenRoute,
   ApiPublicHooksSendEventEmailRoute: ApiPublicHooksSendEventEmailRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
 }
