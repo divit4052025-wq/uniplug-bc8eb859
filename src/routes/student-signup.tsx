@@ -137,6 +137,9 @@ function StudentSignup() {
         kind: "signup_confirmation_resend",
         error: resendError.message,
       });
+      // Don't claim success on a failed send — return to idle so the user can retry.
+      setResendState("idle");
+      return;
     }
     setResendState("sent");
   };
