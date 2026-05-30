@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AuthShell, Confirmation, Field, inputClass } from "@/components/site/AuthShell";
 import { MultiSelect } from "@/components/site/MultiSelect";
 import { supabase } from "@/integrations/supabase/client";
+import { log, looksLikeEmailSendFailure } from "@/lib/log";
 
 export const Route = createFileRoute("/mentor-signup")({
   head: () => ({
@@ -59,11 +60,23 @@ function MentorSignup() {
   const onResend = async () => {
     if (!pendingEmail || resendState !== "idle") return;
     setResendState("sending");
-    await supabase.auth.resend({
+    const { error: resendError } = await supabase.auth.resend({
       type: "signup",
       email: pendingEmail,
       options: { emailRedirectTo: `${window.location.origin}/mentor-dashboard` },
     });
+    if (resendError) {
+      log.error({
+        surface: "web",
+        event: "auth_email_send_failed",
+        alert: looksLikeEmailSendFailure(resendError.message),
+        kind: "signup_confirmation_resend",
+        error: resendError.message,
+      });
+      // Don't claim success on a failed send — return to idle so the user can retry.
+      setResendState("idle");
+      return;
+    }
     setResendState("sent");
   };
 
@@ -118,6 +131,13 @@ function MentorSignup() {
       }
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Something went wrong";
+      log.error({
+        surface: "web",
+        event: "auth_signup_failed",
+        alert: looksLikeEmailSendFailure(raw),
+        kind: "mentor_signup",
+        error: raw,
+      });
       // Supabase wraps trigger-raised exceptions; show a friendly fallback in that case.
       const friendly = /database error saving new user/i.test(raw)
         ? "We couldn't create your account. Please check your details and try again."

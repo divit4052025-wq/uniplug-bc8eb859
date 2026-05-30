@@ -3,6 +3,7 @@ import { useState } from "react";
 import { z } from "zod";
 import { AuthShell, Confirmation, Field, inputClass } from "@/components/site/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
+import { log, looksLikeEmailSendFailure } from "@/lib/log";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -46,7 +47,16 @@ function ForgotPasswordPage() {
       });
       if (resetError) throw resetError;
       setSentTo(email);
-    } catch {
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : "reset email send failed";
+      // Auth password-reset email send failure surfaced to monitoring — non-fatal.
+      log.error({
+        surface: "web",
+        event: "auth_email_send_failed",
+        alert: looksLikeEmailSendFailure(raw),
+        kind: "password_reset",
+        error: raw,
+      });
       setError("We couldn't send the reset email right now. Please try again in a moment.");
     } finally {
       setSubmitting(false);

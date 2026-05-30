@@ -4,6 +4,7 @@ import { z } from "zod";
 import { AuthShell, Confirmation, Field, inputClass } from "@/components/site/AuthShell";
 import { MultiSelect } from "@/components/site/MultiSelect";
 import { supabase } from "@/integrations/supabase/client";
+import { log, looksLikeEmailSendFailure } from "@/lib/log";
 
 export const Route = createFileRoute("/student-signup")({
   head: () => ({
@@ -122,11 +123,24 @@ function StudentSignup() {
   const onResend = async () => {
     if (!pendingEmail || resendState !== "idle") return;
     setResendState("sending");
-    await supabase.auth.resend({
+    const { error: resendError } = await supabase.auth.resend({
       type: "signup",
       email: pendingEmail,
       options: { emailRedirectTo: `${window.location.origin}/dashboard` },
     });
+    if (resendError) {
+      // Auth-email (confirmation) send failure surfaced to monitoring — non-fatal.
+      log.error({
+        surface: "web",
+        event: "auth_email_send_failed",
+        alert: looksLikeEmailSendFailure(resendError.message),
+        kind: "signup_confirmation_resend",
+        error: resendError.message,
+      });
+      // Don't claim success on a failed send — return to idle so the user can retry.
+      setResendState("idle");
+      return;
+    }
     setResendState("sent");
   };
 
@@ -187,6 +201,16 @@ function StudentSignup() {
       }
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Something went wrong";
+      // Surface auth failures to monitoring — non-fatal (the calm UX below is
+      // unchanged). alert:true only when it looks like an email-SEND failure
+      // (the class that strands a user with no confirmation email — the May-27 P0).
+      log.error({
+        surface: "web",
+        event: "auth_signup_failed",
+        alert: looksLikeEmailSendFailure(raw),
+        kind: "student_signup",
+        error: raw,
+      });
       const friendly = /database error saving new user/i.test(raw)
         ? "We couldn't create your account. Please check your details and try again."
         : raw;
