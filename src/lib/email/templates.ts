@@ -322,3 +322,35 @@ export function mentorRejectedEmail(p: { mentorName: string; reason: string }) {
     }),
   };
 }
+
+// Phase G4-follow-up Stage 3: parental-consent verification email — addressed
+// to the PARENT of an under-18 / gated-grade student. The consentUrl carries
+// the unique consent token; the parent page (anon, token-scoped) records
+// consent via record_parental_consent(token).
+//
+// TODO-LEGAL: the consent description below is placeholder copy. Replace with
+// counsel-approved wording (what is being consented to, data handling, the
+// guardian's authority to bind a minor) before public launch. consent_version
+// in the DB pins which terms a given consent was recorded against.
+export function parentalConsentEmail(p: { studentName: string; consentUrl: string }) {
+  const name = p.studentName ? p.studentName : "your child";
+  return {
+    subject: "Parental consent needed for your child's UniPlug account",
+    html: shell({
+      preheader: "Your consent is required before your child can use UniPlug",
+      heading: "Parental consent required",
+      bodyHtml: `
+        <p style="margin:0;">Hello,</p>
+        <p style="margin:14px 0 0 0;">${name} has signed up for <strong>UniPlug</strong>, a peer-mentorship platform that connects school students with current university students for one-on-one guidance.</p>
+        <p style="margin:14px 0 0 0;">Because your child is under 18, we need a parent or guardian to review and confirm consent before they can book sessions.</p>
+        <!-- TODO-LEGAL: replace with counsel-approved summary of what consent covers
+             (data processing, mentorship sessions, messaging, session recording) and
+             the guardian's authority to agree on the minor's behalf. -->
+        <p style="margin:14px 0 0 0;">Tap the button below to review what your consent covers and confirm. The link is unique to your child's account.</p>
+        <p style="margin:14px 0 0 0;font-size:13px;color:${BRAND_SOFT};">If you weren't expecting this, you can ignore this email and no account access will be granted.</p>
+      `,
+      ctaLabel: "Review & give consent",
+      ctaUrl: p.consentUrl,
+    }),
+  };
+}

@@ -10,6 +10,7 @@ import {
   mentorReviewReceivedEmail,
   mentorApprovedEmail,
   mentorRejectedEmail,
+  parentalConsentEmail,
 } from "@/lib/email/templates";
 
 /**
@@ -24,6 +25,7 @@ import {
  *  - "review_received"        payload: { review_id }
  *  - "mentor_approved"        payload: { mentor_id }
  *  - "mentor_rejected"        payload: { mentor_id, reason? }
+ *  - "parental_consent_request" payload: { student_id }  (Phase G4-follow-up)
  *
  * Triggers in migration 20260523000004 POST to this endpoint after the
  * relevant DB write lands. Failures are logged but do not retry — pg_net
@@ -46,7 +48,8 @@ type EventBody =
   | { type: "session_completed"; booking_id: string }
   | { type: "review_received"; review_id: string }
   | { type: "mentor_approved"; mentor_id: string }
-  | { type: "mentor_rejected"; mentor_id: string; reason?: string };
+  | { type: "mentor_rejected"; mentor_id: string; reason?: string }
+  | { type: "parental_consent_request"; student_id: string };
 
 export const Route = createFileRoute("/api/public/hooks/send-event-email")({
   server: {
@@ -99,6 +102,8 @@ export const Route = createFileRoute("/api/public/hooks/send-event-email")({
             case "mentor_approved":
             case "mentor_rejected":
               return await dispatchMentorStatus(apiKey, body);
+            case "parental_consent_request":
+              return await dispatchParentalConsentRequest(apiKey, body);
             default: {
               const exhaustive: never = body;
               return new Response(
@@ -290,6 +295,59 @@ async function dispatchMentorStatus(
     });
   } catch (err) {
     console.error(`[event-email] ${body.type} send failed`, err);
+    return new Response(JSON.stringify({ ok: false, reason: "send_failed" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+}
+
+async function dispatchParentalConsentRequest(
+  apiKey: string,
+  body: { type: "parental_consent_request"; student_id: string },
+) {
+  // Load the parent contact + the unique consent token (admin: the token is
+  // private and never exposed to the student client).
+  const { data: student, error } = await supabaseAdmin
+    .from("students")
+    .select("full_name, parental_consent_email, parental_consent_token, parental_consent_at")
+    .eq("id", body.student_id)
+    .maybeSingle();
+  if (error || !student) {
+    return new Response(
+      JSON.stringify({ ok: false, reason: "student_not_found", student_id: body.student_id }),
+      { status: 404, headers: { "Content-Type": "application/json" } },
+    );
+  }
+  // Nothing to send if there's no parent address, no token, or consent already
+  // recorded (e.g. a stale resend after the parent already confirmed).
+  if (!student.parental_consent_email || !student.parental_consent_token) {
+    return new Response(JSON.stringify({ ok: true, skipped: "no_parent_or_token" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  if (student.parental_consent_at) {
+    return new Response(JSON.stringify({ ok: true, skipped: "already_consented" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const email = parentalConsentEmail({
+    studentName: student.full_name,
+    consentUrl: `https://uniplug.app/parental-consent/${student.parental_consent_token}`,
+  });
+  try {
+    await sendViaResend(apiKey, student.parental_consent_email, email.subject, email.html);
+    return new Response(JSON.stringify({ ok: true, type: body.type, sent: 1 }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    // Logged, not retried — same posture as the other event types (Phase H3 /
+    // Sentry will surface persistent failures). Launch-prep dependency:
+    // RESEND_API_KEY + CRON_SECRET Worker secrets must be set for delivery.
+    console.error("[event-email] parental_consent_request send failed", err);
     return new Response(JSON.stringify({ ok: false, reason: "send_failed" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

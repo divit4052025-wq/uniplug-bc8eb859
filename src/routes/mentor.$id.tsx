@@ -9,6 +9,8 @@ import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import MentorCalendar from "@/components/calendar/MentorCalendar";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
+import { AwaitingConsentNotice } from "@/components/consent/AwaitingConsentNotice";
+import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
@@ -171,6 +173,8 @@ function MentorProfilePage() {
   });
   const canReview = !!eligibility?.hasCompleted && !eligibility?.hasReviewed;
   const alreadyReviewed = !!eligibility?.hasReviewed;
+
+  const { data: consent } = useConsentStatus(viewerId);
 
   const onSelectSection = (key: SectionKey) => {
     setActive(key);
@@ -345,11 +349,15 @@ function MentorProfilePage() {
             </div>
 
             <div id="booking-widget">
-              <MentorCalendar
-                mentorId={mentor.id}
-                mentorName={mentor.full_name ?? "this mentor"}
-                pricePerSessionInr={mentor.price_inr}
-              />
+              {consent?.awaiting && viewerId ? (
+                <AwaitingConsentNotice studentId={viewerId} parentEmail={consent.parentEmail} />
+              ) : (
+                <MentorCalendar
+                  mentorId={mentor.id}
+                  mentorName={mentor.full_name ?? "this mentor"}
+                  pricePerSessionInr={mentor.price_inr}
+                />
+              )}
             </div>
           </div>
         </section>
