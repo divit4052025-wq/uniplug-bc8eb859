@@ -132,26 +132,30 @@ BEGIN
   INSERT INTO _g4_results VALUES ('G4.3_adult_no_consent_needed', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
 END $$;
 
--- G4.4: grandfathered (DOB NULL) → book_session succeeds (the UI gate will catch this)
+-- G4.4: NULL-DOB student → book_session BLOCKED [P0001] (fail-closed).
+--       SUPERSEDED ASSUMPTION: G4 originally grandfathered NULL-DOB rows
+--       (booking allowed, "the UI gate will catch this"). The 2026-05-30
+--       parental-consent migration changed the gate to FAIL CLOSED on unknown
+--       age — a NULL DOB now requires consent and cannot book. This case is
+--       inverted accordingly (s_grandfathered is DOB NULL, Grade 11).
 DO $$
 DECLARE v_pass boolean := false; v_msg text := '';
   v_future_21 date := ((CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')::date + 21);
-  v_id uuid;
 BEGIN
   INSERT INTO public.mentor_availability (mentor_id, day_of_week, start_hour)
   VALUES ('11111111-1111-1111-1111-1111111104a4'::uuid, EXTRACT(ISODOW FROM v_future_21)::smallint, 14) ON CONFLICT DO NOTHING;
   PERFORM set_config('request.jwt.claims','{"sub":"22222222-2222-2222-2222-222222220407","role":"authenticated"}', true);
   EXECUTE 'SET LOCAL ROLE authenticated';
   BEGIN
-    v_id := public.book_session('11111111-1111-1111-1111-1111111104a4'::uuid, v_future_21, '14:00');
-    IF v_id IS NOT NULL THEN v_pass := true; v_msg := 'grandfathered booking succeeded (DOB NULL slips through trigger as designed)';
-    ELSE v_msg := 'returned NULL'; END IF;
+    PERFORM public.book_session('11111111-1111-1111-1111-1111111104a4'::uuid, v_future_21, '14:00');
+    v_msg := 'NULL-DOB booking ACCEPTED — fail-closed regression';
   EXCEPTION WHEN OTHERS THEN
-    v_msg := 'unexpected denial ['||SQLSTATE||']: '||SQLERRM;
+    IF SQLERRM ILIKE '%parental consent required%' THEN v_pass := true; v_msg := 'rejected ['||SQLSTATE||']: '||SQLERRM;
+    ELSE v_msg := 'wrong reject ['||SQLSTATE||']: '||SQLERRM; END IF;
   END;
   EXECUTE 'RESET ROLE';
   PERFORM set_config('request.jwt.claims', '{"role":"service_role"}', true);
-  INSERT INTO _g4_results VALUES ('G4.4_grandfathered_dob_null', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
+  INSERT INTO _g4_results VALUES ('G4.4_null_dob_fails_closed', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
 END $$;
 
 -- G4.5: record_parental_consent with valid token → returns student id + sets timestamp
