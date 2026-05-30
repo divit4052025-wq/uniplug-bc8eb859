@@ -32,6 +32,20 @@ function emit(level: Level, fields: LogFields): void {
   else console.log(line);
 }
 
+/**
+ * Heuristic: does a Supabase Auth error look like an email-SEND (SMTP) failure
+ * rather than a validation error (bad password, user exists, etc.)? Used to set
+ * `alert: true` only on genuine auth email-delivery failures — the class that
+ * silently strands a user mid-signup/reset. Errs toward matching the known
+ * GoTrue phrasings ("Error sending confirmation email", recovery email, SMTP).
+ */
+export function looksLikeEmailSendFailure(message: string | undefined | null): boolean {
+  if (!message) return false;
+  return /error sending|sending (a )?(confirmation|recovery|magic|invite|reset)|failed to send|smtp/i.test(
+    message,
+  );
+}
+
 export const log = {
   debug: (fields: LogFields) => emit("debug", fields),
   info: (fields: LogFields) => emit("info", fields),
