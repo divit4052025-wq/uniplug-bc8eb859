@@ -31,6 +31,7 @@ import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$
 import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
 import { Route as MessagesConversationIdRouteImport } from './routes/messages_.$conversationId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
+import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 
@@ -144,6 +145,11 @@ const MentorIdRoute = MentorIdRouteImport.update({
   path: '/mentor/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CallBookingIdRoute = CallBookingIdRouteImport.update({
+  id: '/call/$bookingId',
+  path: '/call/$bookingId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksSendRemindersRoute =
   ApiPublicHooksSendRemindersRouteImport.update({
     id: '/api/public/hooks/send-reminders',
@@ -176,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/call/$bookingId': typeof CallBookingIdRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByTo {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/call/$bookingId': typeof CallBookingIdRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -229,6 +237,7 @@ export interface FileRoutesById {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/call/$bookingId': typeof CallBookingIdRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages_/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/call/$bookingId'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/call/$bookingId'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/call/$bookingId'
     | '/mentor/$id'
     | '/messages_/$conversationId'
     | '/parental-consent/$token'
@@ -336,6 +348,7 @@ export interface RootRouteChildren {
   SessionNotesRoute: typeof SessionNotesRouteWithChildren
   StudentSignupRoute: typeof StudentSignupRoute
   TermsRoute: typeof TermsRoute
+  CallBookingIdRoute: typeof CallBookingIdRoute
   MentorIdRoute: typeof MentorIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
@@ -499,6 +512,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/call/$bookingId': {
+      id: '/call/$bookingId'
+      path: '/call/$bookingId'
+      fullPath: '/call/$bookingId'
+      preLoaderRoute: typeof CallBookingIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/send-reminders': {
       id: '/api/public/hooks/send-reminders'
       path: '/api/public/hooks/send-reminders'
@@ -547,6 +567,7 @@ const rootRouteChildren: RootRouteChildren = {
   SessionNotesRoute: SessionNotesRouteWithChildren,
   StudentSignupRoute: StudentSignupRoute,
   TermsRoute: TermsRoute,
+  CallBookingIdRoute: CallBookingIdRoute,
   MentorIdRoute: MentorIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ParentalConsentTokenRoute: ParentalConsentTokenRoute,
