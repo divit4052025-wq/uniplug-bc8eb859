@@ -919,6 +919,10 @@ export type Database = {
         Args: { _student_id: string };
         Returns: undefined;
       };
+      requires_consent_base: {
+        Args: { _dob: string; _grade: string };
+        Returns: boolean;
+      };
       update_booking_status_as_mentor: {
         Args: { _booking_id: string; _new_status: string };
         Returns: undefined;
