@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import type { Json } from "@/integrations/supabase/types";
 import { sendBookingEmails } from "@/lib/email/booking.functions";
 import { hmacOk } from "@/lib/auth/hmac";
 
@@ -25,6 +26,7 @@ import { hmacOk } from "@/lib/auth/hmac";
 type RazorpayEntity = {
   id?: string;
   order_id?: string;
+  amount?: number; // paise (Razorpay reports money in the smallest currency unit)
   notes?: { booking_id?: string };
 };
 
@@ -82,12 +84,18 @@ export const Route = createFileRoute("/api/public/hooks/razorpay-webhook")({
               return json({ ok: false, reason: "missing_capture_fields" }, 400);
             }
 
+            // Razorpay reports the captured amount in paise; the RPC stores INR.
+            // This is only a FALLBACK: mark_booking_paid records
+            // coalesce(booking.price, _amount_inr) — the server-stored price wins,
+            // so this value is used only if a booking somehow has no price.
+            const capturedAmountInr = Math.round((ent.amount ?? 0) / 100);
+
             const { data, error } = await supabaseAdmin.rpc("mark_booking_paid", {
               _booking_id: bookingId,
               _order_id: orderId,
               _payment_id: paymentId,
-              _amount_inr: null,
-              _payload: body as unknown as Record<string, unknown>,
+              _amount_inr: capturedAmountInr,
+              _payload: body as unknown as Json,
             });
             if (error) {
               console.error("[razorpay-webhook] mark_booking_paid failed", error);
@@ -110,13 +118,16 @@ export const Route = createFileRoute("/api/public/hooks/razorpay-webhook")({
               // Orphan capture: money taken for a slot that is gone (expired /
               // payment_failed). The captured ledger row is already recorded by
               // the RPC; alert + enqueue the Stage-6 auto-refund.
-              console.error("[razorpay-webhook] ORPHAN CAPTURE — payment for non-confirmed booking", {
-                surface: "payments",
-                alert: true,
-                booking_id: bookingId,
-                payment_id: paymentId,
-                booking_status: bookingStatus,
-              });
+              console.error(
+                "[razorpay-webhook] ORPHAN CAPTURE — payment for non-confirmed booking",
+                {
+                  surface: "payments",
+                  alert: true,
+                  booking_id: bookingId,
+                  payment_id: paymentId,
+                  booking_status: bookingStatus,
+                },
+              );
               // (Auto-refund enqueue is handled by the admin/refund path; the
               // ledger + alert guarantee money is never silently kept.)
             }
@@ -134,7 +145,7 @@ export const Route = createFileRoute("/api/public/hooks/razorpay-webhook")({
             const { error } = await supabaseAdmin.rpc("mark_booking_failed", {
               _booking_id: bookingId,
               _payment_id: paymentId,
-              _payload: body as unknown as Record<string, unknown>,
+              _payload: body as unknown as Json,
             });
             if (error) {
               console.error("[razorpay-webhook] mark_booking_failed failed", error);
@@ -154,7 +165,7 @@ export const Route = createFileRoute("/api/public/hooks/razorpay-webhook")({
             const { error } = await supabaseAdmin.rpc("confirm_refund_processed", {
               _booking_id: bookingId,
               _refund_id: refundId,
-              _payload: body as unknown as Record<string, unknown>,
+              _payload: body as unknown as Json,
             });
             if (error) {
               console.error("[razorpay-webhook] confirm_refund_processed failed", error);
