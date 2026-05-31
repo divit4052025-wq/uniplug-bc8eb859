@@ -37,7 +37,7 @@ function MessagesPage() {
               peerName={peerName ?? "Conversation"}
             />
           ) : (
-            <ConversationList userId={userId} />
+            <ConversationList userId={userId} role={role} />
           )}
         </section>
       )}
@@ -65,6 +65,10 @@ function ComposeGate({
   const { data, isLoading } = useQuery({
     queryKey: conversationsKey(userId),
     queryFn: getMyConversations,
+    // Match ConversationList's fallback so an existing conversation is found
+    // even if the realtime invalidation hasn't fired yet.
+    refetchInterval: 20_000,
+    refetchOnWindowFocus: true,
   });
 
   const existing = data?.find((c) => c.peer_id === peerId);
