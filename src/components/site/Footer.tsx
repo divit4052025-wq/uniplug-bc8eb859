@@ -8,6 +8,10 @@ const links = [
   { label: "For Mentors", to: "/mentor-signup" },
   { label: "Terms", to: "/terms" },
   { label: "Privacy", to: "/privacy" },
+  { label: "Mentor Terms", to: "/mentor-terms" },
+  { label: "Refund Policy", to: "/refund-policy" },
+  { label: "Community Guidelines", to: "/community-guidelines" },
+  { label: "Cookie Policy", to: "/cookie-policy" },
 ];
 
 export function Footer() {

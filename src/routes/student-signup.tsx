@@ -110,6 +110,7 @@ function StudentSignup() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [picked, setPicked] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [consentSent, setConsentSent] = useState(false);
@@ -147,6 +148,8 @@ function StudentSignup() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setServerError(null);
+    // Required agreement gate — also enforced by the disabled submit button.
+    if (!agreed) return;
     const fd = new FormData(e.currentTarget);
     const data = {
       fullName: String(fd.get("fullName") || ""),
@@ -350,9 +353,40 @@ function StudentSignup() {
           />
           {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password}</p>}
         </Field>
+        <label htmlFor="agree-terms" className="flex items-start gap-2.5">
+          <input
+            id="agree-terms"
+            type="checkbox"
+            checked={agreed}
+            onChange={(e) => setAgreed(e.target.checked)}
+            aria-required="true"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-border text-primary focus:ring-2 focus:ring-primary"
+          />
+          <span className="text-[13px] font-light text-muted-foreground">
+            I agree to the{" "}
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline underline-offset-2"
+            >
+              Terms
+            </a>{" "}
+            and{" "}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary underline underline-offset-2"
+            >
+              Privacy Policy
+            </a>
+            .
+          </span>
+        </label>
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || !agreed}
           className="mt-2 w-full rounded-full bg-primary py-4 text-sm font-semibold text-primary-foreground shadow-card transition hover:-translate-y-0.5 hover:opacity-95 disabled:opacity-60"
         >
           {submitting ? "Creating account…" : "Get Started"}

@@ -41,3 +41,6 @@ dist-ssr
 !.claude/plugins/uniplug-flo/**
 stocktake/
 scratch/
+
+# one-time legal source bundle — do not commit
+/files.zip
