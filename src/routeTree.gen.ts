@@ -29,7 +29,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
-import { Route as MessagesConversationIdRouteImport } from './routes/messages.$conversationId'
+import { Route as MessagesConversationIdRouteImport } from './routes/messages_.$conversationId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
@@ -135,9 +135,9 @@ const ParentalConsentTokenRoute = ParentalConsentTokenRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesConversationIdRoute = MessagesConversationIdRouteImport.update({
-  id: '/$conversationId',
-  path: '/$conversationId',
-  getParentRoute: () => MessagesRoute,
+  id: '/messages_/$conversationId',
+  path: '/messages/$conversationId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const MentorIdRoute = MentorIdRouteImport.update({
   id: '/mentor/$id',
@@ -168,7 +168,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
-  '/messages': typeof MessagesRouteWithChildren
+  '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
@@ -194,7 +194,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
-  '/messages': typeof MessagesRouteWithChildren
+  '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
@@ -221,7 +221,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
-  '/messages': typeof MessagesRouteWithChildren
+  '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
   '/progress': typeof ProgressRoute
@@ -230,7 +230,7 @@ export interface FileRoutesById {
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
   '/mentor/$id': typeof MentorIdRoute
-  '/messages/$conversationId': typeof MessagesConversationIdRoute
+  '/messages_/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
@@ -310,7 +310,7 @@ export interface FileRouteTypes {
     | '/student-signup'
     | '/terms'
     | '/mentor/$id'
-    | '/messages/$conversationId'
+    | '/messages_/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/api/public/hooks/send-event-email'
@@ -328,7 +328,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   MentorDashboardRoute: typeof MentorDashboardRoute
   MentorSignupRoute: typeof MentorSignupRoute
-  MessagesRoute: typeof MessagesRouteWithChildren
+  MessagesRoute: typeof MessagesRoute
   NotificationsRoute: typeof NotificationsRoute
   PrivacyRoute: typeof PrivacyRoute
   ProgressRoute: typeof ProgressRoute
@@ -337,6 +337,7 @@ export interface RootRouteChildren {
   StudentSignupRoute: typeof StudentSignupRoute
   TermsRoute: typeof TermsRoute
   MentorIdRoute: typeof MentorIdRoute
+  MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
   ApiPublicHooksSendEventEmailRoute: typeof ApiPublicHooksSendEventEmailRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
@@ -484,12 +485,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ParentalConsentTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/messages/$conversationId': {
-      id: '/messages/$conversationId'
-      path: '/$conversationId'
+    '/messages_/$conversationId': {
+      id: '/messages_/$conversationId'
+      path: '/messages/$conversationId'
       fullPath: '/messages/$conversationId'
       preLoaderRoute: typeof MessagesConversationIdRouteImport
-      parentRoute: typeof MessagesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/mentor/$id': {
       id: '/mentor/$id'
@@ -515,18 +516,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface MessagesRouteChildren {
-  MessagesConversationIdRoute: typeof MessagesConversationIdRoute
-}
-
-const MessagesRouteChildren: MessagesRouteChildren = {
-  MessagesConversationIdRoute: MessagesConversationIdRoute,
-}
-
-const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
-  MessagesRouteChildren,
-)
-
 interface SessionNotesRouteChildren {
   SessionNotesNoteIdRoute: typeof SessionNotesNoteIdRoute
 }
@@ -550,7 +539,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   MentorDashboardRoute: MentorDashboardRoute,
   MentorSignupRoute: MentorSignupRoute,
-  MessagesRoute: MessagesRouteWithChildren,
+  MessagesRoute: MessagesRoute,
   NotificationsRoute: NotificationsRoute,
   PrivacyRoute: PrivacyRoute,
   ProgressRoute: ProgressRoute,
@@ -559,6 +548,7 @@ const rootRouteChildren: RootRouteChildren = {
   StudentSignupRoute: StudentSignupRoute,
   TermsRoute: TermsRoute,
   MentorIdRoute: MentorIdRoute,
+  MessagesConversationIdRoute: MessagesConversationIdRoute,
   ParentalConsentTokenRoute: ParentalConsentTokenRoute,
   ApiPublicHooksSendEventEmailRoute: ApiPublicHooksSendEventEmailRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
