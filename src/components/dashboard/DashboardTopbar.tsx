@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { istGreeting } from "@/lib/time";
+import { useIncomingMessageRefresh } from "@/lib/chat/useIncomingMessageRefresh";
 
 export function DashboardTopbar({
   firstName,
@@ -13,6 +14,10 @@ export function DashboardTopbar({
   role: "student" | "mentor";
 }) {
   const greeting = istGreeting();
+
+  // Live-refresh the bell badge (and the conversation list on /messages) when a
+  // message lands while the user is outside that thread. See the hook's doc.
+  useIncomingMessageRefresh();
 
   // Both mentors and students see notifications — students receive
   // 'session_completed' rows when a booking auto-completes.

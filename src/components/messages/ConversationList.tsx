@@ -7,7 +7,15 @@ import { EmptyState, LoadingSkeleton } from "@/components/ui/state-views";
 import { formatMessageTime } from "@/lib/time";
 import { conversationsKey, getMyConversations } from "@/lib/chat/api";
 
-export function ConversationList({ userId, activeId }: { userId: string; activeId?: string }) {
+export function ConversationList({
+  userId,
+  role,
+  activeId,
+}: {
+  userId: string;
+  role: "student" | "mentor";
+  activeId?: string;
+}) {
   const {
     data: rows = [],
     isLoading,
@@ -16,13 +24,25 @@ export function ConversationList({ userId, activeId }: { userId: string; activeI
   } = useQuery({
     queryKey: conversationsKey(userId),
     queryFn: getMyConversations,
+    // Realtime (useIncomingMessageRefresh) is the primary refresh path; this is
+    // the fallback so a new conversation still surfaces if the socket drops.
+    refetchInterval: 20_000,
+    refetchOnWindowFocus: true,
   });
 
   if (isLoading) return <LoadingSkeleton rows={4} ariaLabel="Loading conversations" />;
   if (isError)
     return <ErrorBanner message="Couldn't load your messages." onRetry={() => void refetch()} />;
   if (rows.length === 0)
-    return (
+    return role === "mentor" ? (
+      // Mentors can't initiate — a conversation only exists once a student
+      // messages them, so there's no "find someone" action here.
+      <EmptyState
+        icon={<MessageCircle className="h-8 w-8" />}
+        title="No messages yet"
+        description="When a student messages you, the conversation will show up here."
+      />
+    ) : (
       <EmptyState
         icon={<MessageCircle className="h-8 w-8" />}
         title="No messages yet"
