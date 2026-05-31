@@ -71,7 +71,11 @@ export type Database = {
           duration: number;
           id: string;
           mentor_id: string | null;
+          paid_at: string | null;
+          payout_id: string | null;
           price: number;
+          razorpay_order_id: string | null;
+          razorpay_payment_id: string | null;
           status: string;
           student_id: string | null;
           time_slot: string;
@@ -82,7 +86,11 @@ export type Database = {
           duration?: number;
           id?: string;
           mentor_id?: string | null;
+          paid_at?: string | null;
+          payout_id?: string | null;
           price?: number;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
           status?: string;
           student_id?: string | null;
           time_slot: string;
@@ -93,7 +101,11 @@ export type Database = {
           duration?: number;
           id?: string;
           mentor_id?: string | null;
+          paid_at?: string | null;
+          payout_id?: string | null;
           price?: number;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
           status?: string;
           student_id?: string | null;
           time_slot?: string;
@@ -104,6 +116,13 @@ export type Database = {
             columns: ["mentor_id"];
             isOneToOne: false;
             referencedRelation: "mentors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookings_payout_id_fkey";
+            columns: ["payout_id"];
+            isOneToOne: false;
+            referencedRelation: "mentor_payouts";
             referencedColumns: ["id"];
           },
           {
@@ -253,29 +272,43 @@ export type Database = {
       mentor_payouts: {
         Row: {
           amount_inr: number;
+          batch_id: string | null;
           created_at: string;
           id: string;
           mentor_id: string;
           payout_date: string;
+          period_end: string | null;
           status: string;
         };
         Insert: {
           amount_inr: number;
+          batch_id?: string | null;
           created_at?: string;
           id?: string;
           mentor_id: string;
           payout_date: string;
+          period_end?: string | null;
           status?: string;
         };
         Update: {
           amount_inr?: number;
+          batch_id?: string | null;
           created_at?: string;
           id?: string;
           mentor_id?: string;
           payout_date?: string;
+          period_end?: string | null;
           status?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "mentor_payouts_batch_id_fkey";
+            columns: ["batch_id"];
+            isOneToOne: false;
+            referencedRelation: "payout_batches";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       mentor_training_completions: {
         Row: {
@@ -534,6 +567,80 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      payment_ledger: {
+        Row: {
+          amount_inr: number | null;
+          booking_id: string | null;
+          created_at: string;
+          event_type: string;
+          id: string;
+          idempotency_key: string;
+          mentor_share_inr: number | null;
+          payload: Json | null;
+          platform_fee_inr: number | null;
+          razorpay_order_id: string | null;
+          razorpay_payment_id: string | null;
+          razorpay_refund_id: string | null;
+        };
+        Insert: {
+          amount_inr?: number | null;
+          booking_id?: string | null;
+          created_at?: string;
+          event_type: string;
+          id?: string;
+          idempotency_key: string;
+          mentor_share_inr?: number | null;
+          payload?: Json | null;
+          platform_fee_inr?: number | null;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_refund_id?: string | null;
+        };
+        Update: {
+          amount_inr?: number | null;
+          booking_id?: string | null;
+          created_at?: string;
+          event_type?: string;
+          id?: string;
+          idempotency_key?: string;
+          mentor_share_inr?: number | null;
+          payload?: Json | null;
+          platform_fee_inr?: number | null;
+          razorpay_order_id?: string | null;
+          razorpay_payment_id?: string | null;
+          razorpay_refund_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_ledger_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: false;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      payout_batches: {
+        Row: {
+          cutoff_at: string;
+          id: string;
+          run_at: string;
+          status: string;
+        };
+        Insert: {
+          cutoff_at: string;
+          id?: string;
+          run_at?: string;
+          status?: string;
+        };
+        Update: {
+          cutoff_at?: string;
+          id?: string;
+          run_at?: string;
+          status?: string;
+        };
+        Relationships: [];
       };
       referral_codes: {
         Row: {
@@ -907,6 +1014,65 @@ export type Database = {
         };
         Relationships: [];
       };
+      video_join_audit: {
+        Row: {
+          booking_id: string;
+          id: string;
+          issued_at: string;
+          role: string;
+          token_exp: string;
+          user_id: string;
+        };
+        Insert: {
+          booking_id: string;
+          id?: string;
+          issued_at?: string;
+          role: string;
+          token_exp: string;
+          user_id: string;
+        };
+        Update: {
+          booking_id?: string;
+          id?: string;
+          issued_at?: string;
+          role?: string;
+          token_exp?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      video_rooms: {
+        Row: {
+          booking_id: string;
+          created_at: string;
+          created_by: string | null;
+          daily_room_name: string;
+          daily_room_url: string;
+        };
+        Insert: {
+          booking_id: string;
+          created_at?: string;
+          created_by?: string | null;
+          daily_room_name: string;
+          daily_room_url: string;
+        };
+        Update: {
+          booking_id?: string;
+          created_at?: string;
+          created_by?: string | null;
+          daily_room_name?: string;
+          daily_room_url?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "video_rooms_booking_id_fkey";
+            columns: ["booking_id"];
+            isOneToOne: true;
+            referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -966,6 +1132,17 @@ export type Database = {
           total_students: number;
         }[];
       };
+      apply_refund: {
+        Args: { _booking_id: string; _payload?: Json; _refund_id?: string };
+        Returns: Json;
+      };
+      authorize_video_join: {
+        Args: { _booking_id: string };
+        Returns: {
+          role: string;
+          window_end: string;
+        }[];
+      };
       block_conversation: {
         Args: { _conversation_id: string };
         Returns: undefined;
@@ -975,6 +1152,14 @@ export type Database = {
         Returns: string;
       };
       chat_contains_pii: { Args: { _body: string }; Returns: boolean };
+      confirm_refund_processed: {
+        Args: { _booking_id: string; _payload?: Json; _refund_id: string };
+        Returns: boolean;
+      };
+      fail_booking_order: {
+        Args: { _booking_id: string };
+        Returns: boolean;
+      };
       get_conversation: {
         Args: { _conversation_id: string };
         Returns: {
@@ -1080,6 +1265,20 @@ export type Database = {
           year: string;
         }[];
       };
+      mark_booking_failed: {
+        Args: { _booking_id: string; _payload?: Json; _payment_id: string };
+        Returns: boolean;
+      };
+      mark_booking_paid: {
+        Args: {
+          _amount_inr: number;
+          _booking_id: string;
+          _order_id: string;
+          _payment_id: string;
+          _payload?: Json;
+        };
+        Returns: { booking_status: string; newly_confirmed: boolean }[];
+      };
       mark_consent_revoked: {
         Args: { _student_id: string };
         Returns: undefined;
@@ -1101,6 +1300,10 @@ export type Database = {
       requires_consent_base: {
         Args: { _dob: string; _grade: string };
         Returns: boolean;
+      };
+      run_weekly_payout_batch: {
+        Args: { _buffer_hours?: number };
+        Returns: string;
       };
       send_message: {
         Args: { _body: string; _recipient_id: string };

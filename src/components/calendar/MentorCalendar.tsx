@@ -3,8 +3,11 @@ import { Link } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { toast } from "sonner";
+
 import { supabase } from "@/integrations/supabase/client";
-import { sendBookingEmails } from "@/lib/email/booking.functions";
+import { createBookingOrder } from "@/lib/payments/order.functions";
+import { openRazorpayCheckout } from "@/lib/payments/checkout";
 import { formatBookingDate } from "@/lib/time";
 
 // Hand-written shape of the get_mentor_calendar RPC response. Stays in sync
@@ -92,30 +95,51 @@ export default function MentorCalendar({
       if (!studentId) {
         return { needsAuth: true as const };
       }
-      // Phase A1: book_session is the only INSERT path into bookings.
-      // Server-side validates mentor approval, price (no client-controlled
-      // price), availability, IST past-slot, and double-book. Returns the
-      // new booking's uuid which sendBookingEmails consumes below.
-      const { data: bookingId, error: rpcErr } = await supabase.rpc("book_session", {
-        _mentor_id: mentorId,
-        _date: slot.date,
-        _time_slot: slot.time_slot,
+
+      // Payments Stage 2: createBookingOrder books the slot as pending_payment
+      // (server-side book_session, all gates apply) and creates a Razorpay order.
+      // The booking is NOT confirmed here — the payment.captured webhook confirms
+      // it and dispatches the emails. We only open Checkout.
+      const result = await createBookingOrder({
+        data: { mentorId, date: slot.date, timeSlot: slot.time_slot },
       });
-      if (rpcErr) throw rpcErr;
-      if (bookingId) {
-        try {
-          await sendBookingEmails({ data: { bookingId } });
-        } catch (e) {
-          // Email dispatch failure is non-fatal — booking is already saved.
-          console.error("[booking-emails] dispatch failed", e);
-        }
+      if (!result.ok) {
+        throw new Error(result.reason ?? "Could not start payment.");
       }
-      return { needsAuth: false as const };
+
+      // Zero / sub-₹1 price: server already confirmed + emailed; no Checkout.
+      if (result.confirmed) {
+        return { needsAuth: false as const, confirmed: true as const };
+      }
+
+      await openRazorpayCheckout({
+        keyId: result.keyId,
+        orderId: result.orderId,
+        amount: result.amount,
+        prefill: { email: sessionData.session?.user.email ?? undefined },
+        onProcessing: () => {
+          // Browser thinks payment succeeded; the webhook is the source of truth.
+          toast.success("Payment received — you'll get a confirmation email shortly.");
+          setSelected(null);
+          void qc.invalidateQueries({ queryKey: calendarKey });
+        },
+        onDismiss: () => {
+          // Student closed Checkout; the held slot will expire in ~30 min (cron)
+          // or be re-bookable once payment.failed/expiry lands. Just refresh.
+          void qc.invalidateQueries({ queryKey: calendarKey });
+        },
+      });
+
+      return { needsAuth: false as const, confirmed: false as const };
     },
     onSuccess: (result) => {
       if (result?.needsAuth) {
         setNeedsAuth(true);
         return;
+      }
+      if (result?.confirmed) {
+        // Zero-price path: already confirmed server-side.
+        toast.success("Session booked.");
       }
       setSelected(null);
       void qc.invalidateQueries({ queryKey: calendarKey });

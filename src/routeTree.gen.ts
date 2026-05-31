@@ -37,6 +37,7 @@ import { Route as MessagesConversationIdRouteImport } from './routes/messages_.$
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
+import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -180,6 +181,12 @@ const ApiPublicHooksSendEventEmailRoute =
     path: '/api/public/hooks/send-event-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksRazorpayWebhookRoute =
+  ApiPublicHooksRazorpayWebhookRouteImport.update({
+    id: '/api/public/hooks/razorpay-webhook',
+    path: '/api/public/hooks/razorpay-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -208,6 +215,7 @@ export interface FileRoutesByFullPath {
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
@@ -238,6 +246,7 @@ export interface FileRoutesByTo {
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
@@ -269,6 +278,7 @@ export interface FileRoutesById {
   '/messages_/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
 }
@@ -301,6 +311,7 @@ export interface FileRouteTypes {
     | '/messages/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
+    | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
   fileRoutesByTo: FileRoutesByTo
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/messages/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
+    | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
   id:
@@ -361,6 +373,7 @@ export interface FileRouteTypes {
     | '/messages_/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
+    | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
   fileRoutesById: FileRoutesById
@@ -391,6 +404,7 @@ export interface RootRouteChildren {
   MentorIdRoute: typeof MentorIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
+  ApiPublicHooksRazorpayWebhookRoute: typeof ApiPublicHooksRazorpayWebhookRoute
   ApiPublicHooksSendEventEmailRoute: typeof ApiPublicHooksSendEventEmailRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
 }
@@ -593,6 +607,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSendEventEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/razorpay-webhook': {
+      id: '/api/public/hooks/razorpay-webhook'
+      path: '/api/public/hooks/razorpay-webhook'
+      fullPath: '/api/public/hooks/razorpay-webhook'
+      preLoaderRoute: typeof ApiPublicHooksRazorpayWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -634,6 +655,7 @@ const rootRouteChildren: RootRouteChildren = {
   MentorIdRoute: MentorIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ParentalConsentTokenRoute: ParentalConsentTokenRoute,
+  ApiPublicHooksRazorpayWebhookRoute: ApiPublicHooksRazorpayWebhookRoute,
   ApiPublicHooksSendEventEmailRoute: ApiPublicHooksSendEventEmailRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
 }
