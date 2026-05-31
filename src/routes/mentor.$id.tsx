@@ -296,12 +296,21 @@ function MentorProfilePage() {
                 <StatPill label={String(sessionCount)} sub="Sessions" />
                 <StatPill label={String(mentor.countries?.length || 1)} sub="Countries" />
               </div>
-              <button
-                onClick={scrollToBooking}
-                className="inline-flex h-12 items-center justify-center rounded-full bg-[#C4907F] px-6 text-[14px] font-medium text-[#FFFCFB] transition hover:opacity-90"
-              >
-                Book a Session
-              </button>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={scrollToBooking}
+                  className="inline-flex h-12 items-center justify-center rounded-full bg-[#C4907F] px-6 text-[14px] font-medium text-[#FFFCFB] transition hover:opacity-90"
+                >
+                  Book a Session
+                </button>
+                <Link
+                  to="/messages"
+                  search={{ peer: mentor.id, peerName: mentor.full_name }}
+                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-6 text-[14px] font-medium text-white transition hover:bg-white/10"
+                >
+                  Message
+                </Link>
+              </div>
             </div>
           </div>
         </section>

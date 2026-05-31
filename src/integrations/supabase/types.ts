@@ -115,6 +115,36 @@ export type Database = {
           },
         ];
       };
+      conversations: {
+        Row: {
+          blocked_at: string | null;
+          blocked_by: string | null;
+          created_at: string;
+          id: string;
+          last_message_at: string | null;
+          mentor_id: string;
+          student_id: string;
+        };
+        Insert: {
+          blocked_at?: string | null;
+          blocked_by?: string | null;
+          created_at?: string;
+          id?: string;
+          last_message_at?: string | null;
+          mentor_id: string;
+          student_id: string;
+        };
+        Update: {
+          blocked_at?: string | null;
+          blocked_by?: string | null;
+          created_at?: string;
+          id?: string;
+          last_message_at?: string | null;
+          mentor_id?: string;
+          student_id?: string;
+        };
+        Relationships: [];
+      };
       disputes: {
         Row: {
           admin_notes: string | null;
@@ -339,42 +369,119 @@ export type Database = {
         };
         Relationships: [];
       };
+      message_reports: {
+        Row: {
+          conversation_id: string;
+          created_at: string;
+          id: string;
+          reason: string;
+          reported_message_id: string | null;
+          reported_user_id: string;
+          reporter_id: string;
+        };
+        Insert: {
+          conversation_id: string;
+          created_at?: string;
+          id?: string;
+          reason: string;
+          reported_message_id?: string | null;
+          reported_user_id: string;
+          reporter_id: string;
+        };
+        Update: {
+          conversation_id?: string;
+          created_at?: string;
+          id?: string;
+          reason?: string;
+          reported_message_id?: string | null;
+          reported_user_id?: string;
+          reporter_id?: string;
+        };
+        Relationships: [];
+      };
+      messages: {
+        Row: {
+          body: string;
+          conversation_id: string;
+          created_at: string;
+          id: string;
+          recipient_id: string;
+          reported: boolean;
+          sender_id: string;
+          soft_deleted: boolean;
+        };
+        Insert: {
+          body: string;
+          conversation_id: string;
+          created_at?: string;
+          id?: string;
+          recipient_id: string;
+          reported?: boolean;
+          sender_id: string;
+          soft_deleted?: boolean;
+        };
+        Update: {
+          body?: string;
+          conversation_id?: string;
+          created_at?: string;
+          id?: string;
+          recipient_id?: string;
+          reported?: boolean;
+          sender_id?: string;
+          soft_deleted?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       notifications: {
         Row: {
-          booking_date: string;
+          booking_date: string | null;
           booking_id: string | null;
-          booking_time_slot: string;
+          booking_time_slot: string | null;
+          conversation_id: string | null;
           created_at: string;
           id: string;
           kind: string;
           mentor_name: string | null;
           read_at: string | null;
           recipient_id: string;
-          student_name: string;
+          sender_name: string | null;
+          student_name: string | null;
         };
         Insert: {
-          booking_date: string;
+          booking_date?: string | null;
           booking_id?: string | null;
-          booking_time_slot: string;
+          booking_time_slot?: string | null;
+          conversation_id?: string | null;
           created_at?: string;
           id?: string;
           kind?: string;
           mentor_name?: string | null;
           read_at?: string | null;
           recipient_id: string;
-          student_name: string;
+          sender_name?: string | null;
+          student_name?: string | null;
         };
         Update: {
-          booking_date?: string;
+          booking_date?: string | null;
           booking_id?: string | null;
-          booking_time_slot?: string;
+          booking_time_slot?: string | null;
+          conversation_id?: string | null;
           created_at?: string;
           id?: string;
           kind?: string;
           mentor_name?: string | null;
           read_at?: string | null;
           recipient_id?: string;
-          student_name?: string;
+          sender_name?: string | null;
+          student_name?: string | null;
         };
         Relationships: [
           {
@@ -382,6 +489,13 @@ export type Database = {
             columns: ["booking_id"];
             isOneToOne: false;
             referencedRelation: "bookings";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "notifications_conversation_id_fkey";
+            columns: ["conversation_id"];
+            isOneToOne: false;
+            referencedRelation: "conversations";
             referencedColumns: ["id"];
           },
         ];
@@ -516,6 +630,33 @@ export type Database = {
           rating?: number;
           review?: string;
           student_id?: string;
+        };
+        Relationships: [];
+      };
+      safeguarding_events: {
+        Row: {
+          actor_id: string;
+          conversation_id: string | null;
+          created_at: string;
+          detail: string | null;
+          event_type: string;
+          id: string;
+        };
+        Insert: {
+          actor_id: string;
+          conversation_id?: string | null;
+          created_at?: string;
+          detail?: string | null;
+          event_type: string;
+          id?: string;
+        };
+        Update: {
+          actor_id?: string;
+          conversation_id?: string | null;
+          created_at?: string;
+          detail?: string | null;
+          event_type?: string;
+          id?: string;
         };
         Relationships: [];
       };
@@ -825,9 +966,27 @@ export type Database = {
           total_students: number;
         }[];
       };
+      block_conversation: {
+        Args: { _conversation_id: string };
+        Returns: undefined;
+      };
       book_session: {
         Args: { _date: string; _mentor_id: string; _time_slot: string };
         Returns: string;
+      };
+      chat_contains_pii: { Args: { _body: string }; Returns: boolean };
+      get_conversation: {
+        Args: { _conversation_id: string };
+        Returns: {
+          conversation_id: string;
+          has_session: boolean;
+          i_blocked: boolean;
+          is_blocked: boolean;
+          peer_id: string;
+          peer_name: string;
+          peer_photo_url: string;
+          peer_subtitle: string;
+        }[];
       };
       get_mentor_booking_names: {
         Args: { _ids: string[] };
@@ -859,6 +1018,22 @@ export type Database = {
           university: string;
           verified_at: string;
           year: string;
+        }[];
+      };
+      get_my_conversations: {
+        Args: never;
+        Returns: {
+          conversation_id: string;
+          has_session: boolean;
+          i_blocked: boolean;
+          is_blocked: boolean;
+          last_message: string;
+          last_message_at: string;
+          peer_id: string;
+          peer_name: string;
+          peer_photo_url: string;
+          peer_subtitle: string;
+          unread_count: number;
         }[];
       };
       get_review_student_names: {
@@ -909,6 +1084,10 @@ export type Database = {
         Args: { _student_id: string };
         Returns: undefined;
       };
+      mark_conversation_read: {
+        Args: { _conversation_id: string };
+        Returns: undefined;
+      };
       mentor_training_complete: {
         Args: { _mentor_id: string };
         Returns: boolean;
@@ -922,6 +1101,19 @@ export type Database = {
       requires_consent_base: {
         Args: { _dob: string; _grade: string };
         Returns: boolean;
+      };
+      send_message: {
+        Args: { _body: string; _recipient_id: string };
+        Returns: Json;
+      };
+      soft_delete_message: { Args: { _message_id: string }; Returns: undefined };
+      submit_report: {
+        Args: { _conversation_id: string; _message_id: string; _reason: string };
+        Returns: undefined;
+      };
+      unblock_conversation: {
+        Args: { _conversation_id: string };
+        Returns: undefined;
       };
       update_booking_status_as_mentor: {
         Args: { _booking_id: string; _new_status: string };

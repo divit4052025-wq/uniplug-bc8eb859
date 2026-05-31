@@ -1,9 +1,25 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Home, Search, CalendarClock, FileText, TrendingUp, Settings, LogOut } from "lucide-react";
+import {
+  Home,
+  Search,
+  CalendarClock,
+  FileText,
+  TrendingUp,
+  MessageCircle,
+  Settings,
+  LogOut,
+} from "lucide-react";
 import { Logo } from "@/components/site/Logo";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SectionKey = "home" | "browse" | "sessions" | "documents" | "progress" | "settings";
+export type SectionKey =
+  | "home"
+  | "browse"
+  | "sessions"
+  | "documents"
+  | "progress"
+  | "messages"
+  | "settings";
 
 interface Props {
   active: SectionKey;
@@ -16,6 +32,7 @@ const items: { key: SectionKey; label: string; icon: typeof Home }[] = [
   { key: "sessions", label: "My Sessions", icon: CalendarClock },
   { key: "documents", label: "My Documents", icon: FileText },
   { key: "progress", label: "My Progress", icon: TrendingUp },
+  { key: "messages", label: "Messages", icon: MessageCircle },
   { key: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -44,6 +61,10 @@ export function DashboardSidebar({ active, onSelect }: Props) {
                 }
                 if (it.key === "progress") {
                   navigate({ to: "/session-notes" });
+                  return;
+                }
+                if (it.key === "messages") {
+                  navigate({ to: "/messages" });
                   return;
                 }
                 onSelect(it.key);

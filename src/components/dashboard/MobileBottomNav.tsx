@@ -1,4 +1,12 @@
-import { Home, Search, CalendarClock, FileText, TrendingUp, Settings } from "lucide-react";
+import {
+  Home,
+  Search,
+  CalendarClock,
+  FileText,
+  TrendingUp,
+  MessageCircle,
+  Settings,
+} from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import type { SectionKey } from "./DashboardSidebar";
 
@@ -8,6 +16,7 @@ const items: { key: SectionKey; icon: typeof Home; label: string }[] = [
   { key: "sessions", icon: CalendarClock, label: "Sessions" },
   { key: "documents", icon: FileText, label: "Docs" },
   { key: "progress", icon: TrendingUp, label: "Progress" },
+  { key: "messages", icon: MessageCircle, label: "Messages" },
   { key: "settings", icon: Settings, label: "Settings" },
 ];
 
@@ -20,7 +29,7 @@ export function MobileBottomNav({
 }) {
   const navigate = useNavigate();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-white/10 bg-[#1A1A1A] md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-7 border-t border-white/10 bg-[#1A1A1A] md:hidden">
       {items.map((it) => {
         const Icon = it.icon;
         const isActive = it.key === active;
@@ -34,6 +43,10 @@ export function MobileBottomNav({
               }
               if (it.key === "progress") {
                 navigate({ to: "/session-notes" });
+                return;
+              }
+              if (it.key === "messages") {
+                navigate({ to: "/messages" });
                 return;
               }
               onSelect(it.key);

@@ -1,9 +1,15 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Home, CalendarClock, Users, Wallet, Settings, LogOut } from "lucide-react";
+import { Home, CalendarClock, Users, Wallet, MessageCircle, Settings, LogOut } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
 import { supabase } from "@/integrations/supabase/client";
 
-export type MentorSectionKey = "home" | "schedule" | "students" | "earnings" | "settings";
+export type MentorSectionKey =
+  | "home"
+  | "schedule"
+  | "students"
+  | "messages"
+  | "earnings"
+  | "settings";
 
 interface Props {
   active: MentorSectionKey;
@@ -14,6 +20,7 @@ const items: { key: MentorSectionKey; label: string; icon: typeof Home }[] = [
   { key: "home", label: "Home", icon: Home },
   { key: "schedule", label: "My Schedule", icon: CalendarClock },
   { key: "students", label: "My Students", icon: Users },
+  { key: "messages", label: "Messages", icon: MessageCircle },
   { key: "earnings", label: "Earnings", icon: Wallet },
   { key: "settings", label: "Settings", icon: Settings },
 ];
@@ -38,7 +45,13 @@ export function MentorSidebar({ active, onSelect }: Props) {
           return (
             <button
               key={it.key}
-              onClick={() => onSelect(it.key)}
+              onClick={() => {
+                if (it.key === "messages") {
+                  navigate({ to: "/messages" });
+                  return;
+                }
+                onSelect(it.key);
+              }}
               className={`relative flex items-center gap-3 px-6 py-3 text-left text-[14px] font-medium transition ${
                 isActive ? "text-white" : "text-white/60 hover:text-white"
               }`}

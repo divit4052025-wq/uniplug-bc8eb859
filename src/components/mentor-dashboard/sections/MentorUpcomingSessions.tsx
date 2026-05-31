@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { X, FileText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -135,6 +136,13 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                     >
                       View Profile
                     </button>
+                    <Link
+                      to="/messages"
+                      search={{ peer: r.student_id, peerName: r.student?.full_name ?? "Student" }}
+                      className="inline-flex h-9 items-center justify-center rounded-full border border-[#1A1A1A]/15 px-4 text-[12px] font-medium text-[#1A1A1A] hover:border-[#C4907F] hover:text-[#C4907F]"
+                    >
+                      Message
+                    </Link>
                     <a
                       href="#"
                       className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"

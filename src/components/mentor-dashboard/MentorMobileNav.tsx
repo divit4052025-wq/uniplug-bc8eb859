@@ -1,10 +1,12 @@
-import { Home, CalendarClock, Users, Wallet, Settings } from "lucide-react";
+import { Home, CalendarClock, Users, Wallet, MessageCircle, Settings } from "lucide-react";
+import { useNavigate } from "@tanstack/react-router";
 import type { MentorSectionKey } from "./MentorSidebar";
 
 const items: { key: MentorSectionKey; icon: typeof Home; label: string }[] = [
   { key: "home", icon: Home, label: "Home" },
   { key: "schedule", icon: CalendarClock, label: "Schedule" },
   { key: "students", icon: Users, label: "Students" },
+  { key: "messages", icon: MessageCircle, label: "Messages" },
   { key: "earnings", icon: Wallet, label: "Earnings" },
   { key: "settings", icon: Settings, label: "Settings" },
 ];
@@ -16,15 +18,22 @@ export function MentorMobileNav({
   active: MentorSectionKey;
   onSelect: (key: MentorSectionKey) => void;
 }) {
+  const navigate = useNavigate();
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-white/10 bg-[#1A1A1A] md:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-6 border-t border-white/10 bg-[#1A1A1A] md:hidden">
       {items.map((it) => {
         const Icon = it.icon;
         const isActive = it.key === active;
         return (
           <button
             key={it.key}
-            onClick={() => onSelect(it.key)}
+            onClick={() => {
+              if (it.key === "messages") {
+                navigate({ to: "/messages" });
+                return;
+              }
+              onSelect(it.key);
+            }}
             aria-label={it.label}
             className="flex h-14 items-center justify-center"
           >

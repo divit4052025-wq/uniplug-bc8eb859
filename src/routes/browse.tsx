@@ -478,6 +478,13 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
       >
         Book Now
       </button>
+      <Link
+        to="/messages"
+        search={{ peer: mentor.id, peerName: mentor.name }}
+        className="mt-2 block w-full rounded-full border border-[#1A1A1A]/15 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A] transition hover:border-[#C4907F] hover:text-[#C4907F]"
+      >
+        Message
+      </Link>
     </article>
   );
 }
