@@ -12,17 +12,18 @@
 -- This is SCHEMA ONLY. The batch RPC + cron + eligibility query land in Stage 5;
 -- nothing writes these tables/columns yet.
 --
--- NOTE on mentor_payouts.status: defined as free text DEFAULT 'scheduled' in
--- 20260425101339 with NO CHECK (verified). We pin it here. Existing live rows
--- (if any) must already be in {scheduled,paid,failed} for the CHECK to validate;
--- the pre-apply gate below confirms this.
+-- mentor_payouts.status: created as free text DEFAULT 'scheduled' in 20260425101339
+-- with NO CHECK. Re-verified live (ncfhmbugjeuerchleegq, 2026-05-31): the table has
+-- ONLY its primary key (no status CHECK), status DEFAULT 'scheduled', 0 rows.
 --
--- ⚠ PRE-APPLY GATE (run against live before applying):
---     SELECT DISTINCT status FROM public.mentor_payouts;          -- must ⊆ {scheduled,paid,failed}
---     SELECT conname FROM pg_constraint
---       WHERE conrelid='public.mentor_payouts'::regclass AND contype='c'; -- expect none
---   If a stray status value exists, reconcile it BEFORE applying (the ADD
---   CONSTRAINT will otherwise fail loud, which is the desired safe behaviour).
+-- SELF-CORRECTING constraint pin (defense-in-depth, identical to the Stage-1a
+-- pattern): section 2 discovers ANY existing status CHECK on mentor_payouts from
+-- the catalog and drops it by its real name before adding the canonical one — so a
+-- differently-named/legacy CHECK can never silently survive to shadow the new one.
+-- Canonical value set is EXACTLY ('scheduled','paid','failed'): the only status any
+-- write path emits is 'scheduled' (Stage 5 accrual INSERT); 'paid'/'failed' are
+-- reserved for the deferred RazorpayX disbursement seam. Stage 6 refund clawback
+-- adjusts amount_inr only — it never writes mentor_payouts.status.
 --
 -- Verification: supabase/dev-seeds/payments-1c-payouts-verification.sql
 -- ════════════════════════════════════════════════════════════════════════════
@@ -47,11 +48,27 @@ ALTER TABLE public.mentor_payouts
   ADD COLUMN IF NOT EXISTS batch_id   uuid REFERENCES public.payout_batches(id),
   ADD COLUMN IF NOT EXISTS period_end timestamptz;
 
--- Pin the previously free-text status to a known set.
-ALTER TABLE public.mentor_payouts DROP CONSTRAINT IF EXISTS mentor_payouts_status_valid;
-ALTER TABLE public.mentor_payouts
-  ADD CONSTRAINT mentor_payouts_status_valid
-  CHECK (status IN ('scheduled','paid','failed'));
+-- Pin the free-text status to the canonical set. SELF-CORRECTING (Stage-1a pattern):
+-- discover any existing status CHECK by its real catalog name, drop it, then add the
+-- canonical one — no stale/renamed CHECK can survive. (Live currently has none.)
+DO $$
+DECLARE
+  r record;
+BEGIN
+  FOR r IN
+    SELECT conname
+      FROM pg_constraint
+     WHERE conrelid = 'public.mentor_payouts'::regclass
+       AND contype  = 'c'
+       AND pg_get_constraintdef(oid) ILIKE '%status%'
+  LOOP
+    EXECUTE format('ALTER TABLE public.mentor_payouts DROP CONSTRAINT %I', r.conname);
+  END LOOP;
+
+  ALTER TABLE public.mentor_payouts
+    ADD CONSTRAINT mentor_payouts_status_valid
+    CHECK (status IN ('scheduled','paid','failed'));
+END $$;
 
 -- ─── 3. Per-booking double-pay stamp ─────────────────────────────────────────
 ALTER TABLE public.bookings
