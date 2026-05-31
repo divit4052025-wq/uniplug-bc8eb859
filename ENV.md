@@ -14,6 +14,9 @@ Single source of truth for every env var the app reads, where it lives, who sets
 | `RESEND_API_KEY` | yes (runtime, email features) | Cloudflare Worker secret | `src/lib/email/booking.functions.ts:28`, `src/routes/api/public/hooks/send-reminders.ts:29` | Resend API auth for outbound transactional email. Missing → endpoints return `{ok:false, reason:"missing_api_key"}` with 500. |
 | `CRON_SECRET` | yes (runtime, A3+) | Cloudflare Worker secret (`wrangler secret put CRON_SECRET`) | `src/routes/api/public/hooks/send-reminders.ts` via `src/lib/auth/bearer.ts` | Bearer token expected from the `send_reminders_24h` pg_cron caller. **MUST exactly match `vault.cron_secret`** (Supabase Vault entry). Missing → 500 `missing_cron_secret`. Mismatched → 401 `unauthorized` on every cron tick. Minimum length enforced in `bearer.ts` is 16 chars; current value is 64-char hex. |
 | `ANTHROPIC_API_KEY` | future (Phase D) | Cloudflare Worker secret | not yet wired | Server-side Claude API key for AI features (session prep, note expansion, matching). **Never expose to client.** Will land alongside Phase D AI features. |
+| `RAZORPAY_KEY_ID` | yes (runtime, payments) | Cloudflare Worker secret (`wrangler secret put RAZORPAY_KEY_ID`) | `src/lib/payments/order.functions.ts`, `src/lib/payments/refund.functions.ts` | Razorpay API key id (public-ish: returned to the browser per-order so Checkout can open — **never** a `VITE_` build var, so test→live is a server rotation, no rebuild). Basic-auth username for Orders/Refund API. Missing → order creation frees the slot + returns `{ok:false, reason:"missing_keys"}`. Use `rzp_test_…` in staging, `rzp_live_…` in prod. |
+| `RAZORPAY_KEY_SECRET` | yes (runtime, payments) | Cloudflare Worker secret | `src/lib/payments/order.functions.ts`, `src/lib/payments/refund.functions.ts` | Razorpay API secret (server-only). Basic-auth password for Orders/Refund API. **Never expose to client.** Missing → same fail-closed as above. |
+| `RAZORPAY_WEBHOOK_SECRET` | yes (runtime, payments) | Cloudflare Worker secret | `src/routes/api/public/hooks/razorpay-webhook.ts` via `src/lib/auth/hmac.ts` | HMAC-SHA256 secret Razorpay signs the webhook raw body with (`x-razorpay-signature`). **Server-only.** Missing → webhook returns 500 `missing_webhook_secret`; mismatched → 401 `bad_signature` (so payments never confirm). Min length 16 enforced in `hmac.ts`. Must equal the secret configured on the Razorpay dashboard webhook. |
 
 ## Supabase Vault secrets
 
@@ -83,7 +86,24 @@ Every server-side env read in this codebase uses `process.env.X`. This works bec
 
 ## What's NOT here
 
-- Razorpay (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`) — entire Stage 5 deferred from V1.
-- Daily.co (`DAILY_API_KEY`) — entire Stage 4 deferred from V1.
+- Daily.co (`DAILY_API_KEY`) — entire video stage deferred from V1.
 
-When either lands, extend this file in the same PR.
+When it lands, extend this file in the same PR.
+
+## Payments (Razorpay V1, 2026-05-31)
+
+- The three `RAZORPAY_*` Worker secrets are documented in the runtime table above.
+  All three are **runtime** secrets (`wrangler secret put …`), never build-scope —
+  `RAZORPAY_KEY_ID` is returned to the client per-order at request time, not inlined.
+- **Test mode first:** everything ships against `rzp_test_…` keys (no KYC, no
+  disbursement). Going live is a secret rotation to `rzp_live_…` plus pointing the
+  Razorpay dashboard webhook at the prod URL — no code change.
+- **Webhook config (operator):** in the Razorpay dashboard, add a webhook to
+  `https://uniplug.app/api/public/hooks/razorpay-webhook` subscribed to
+  `payment.captured`, `payment.failed`, and `refund.processed`, with the secret set
+  equal to `RAZORPAY_WEBHOOK_SECRET`.
+- **Data residency:** Razorpay processes/stores in India (RBI localization), which
+  aligns with our DPDP posture for minor users.
+- **Disbursement deferred:** Stage 5 accrues mentor payouts (`status='scheduled'`)
+  but does not pay out. Real RazorpayX disbursement is a later phase and will add a
+  RazorpayX key/secret here when wired.
