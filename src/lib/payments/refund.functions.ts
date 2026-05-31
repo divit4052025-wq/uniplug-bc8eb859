@@ -32,7 +32,9 @@ export const refundBooking = createServerFn({ method: "POST" })
     async ({
       data,
       context,
-    }): Promise<{ ok: true; refundId: string; clawback: string } | { ok: false; reason: string }> => {
+    }): Promise<
+      { ok: true; refundId: string; clawback: string } | { ok: false; reason: string }
+    > => {
       // 1. Admin gate (caller's JWT).
       const { data: isAdmin, error: adminErr } = await context.supabase.rpc("is_admin");
       if (adminErr || !isAdmin) {
@@ -66,17 +68,14 @@ export const refundBooking = createServerFn({ method: "POST" })
       const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
       let refundId: string;
       try {
-        const res = await fetch(
-          `${RAZORPAY_API}/payments/${booking.razorpay_payment_id}/refund`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
-            body: JSON.stringify({
-              amount: amountPaise,
-              notes: { booking_id: booking.id, reason: data.reason ?? "admin_refund" },
-            }),
-          },
-        );
+        const res = await fetch(`${RAZORPAY_API}/payments/${booking.razorpay_payment_id}/refund`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
+          body: JSON.stringify({
+            amount: amountPaise,
+            notes: { booking_id: booking.id, reason: data.reason ?? "admin_refund" },
+          }),
+        });
         const text = await res.text();
         if (!res.ok) {
           console.error("[payments-refund] Razorpay refund failed", res.status, text);
@@ -112,8 +111,7 @@ export const refundBooking = createServerFn({ method: "POST" })
         return { ok: false, reason: "apply_refund_failed" };
       }
 
-      const clawback =
-        (applied as { clawback?: string } | null)?.clawback ?? "unknown";
+      const clawback = (applied as { clawback?: string } | null)?.clawback ?? "unknown";
       return { ok: true, refundId, clawback };
     },
   );
