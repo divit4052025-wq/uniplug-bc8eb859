@@ -78,6 +78,20 @@ export function formatBookingDateTime(dateStr: string, timeSlot: string): string
   return `${formatBookingDate(dateStr)} · ${timeSlot} IST`;
 }
 
+const messageTimeFmt = new Intl.DateTimeFormat("en-GB", {
+  timeZone: IST_TIMEZONE,
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+  hour12: false,
+});
+
+/** Format a chat-message timestamptz for display in IST. Example: "31 May, 14:32". */
+export function formatMessageTime(iso: string): string {
+  return messageTimeFmt.format(new Date(iso));
+}
+
 /** Time-of-day greeting derived from current IST hour. */
 export function istGreeting(): "Good morning" | "Good afternoon" | "Good evening" {
   const hour = Number.parseInt(currentISTHour(), 10);

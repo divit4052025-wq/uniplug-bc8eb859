@@ -1,4 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -88,12 +89,21 @@ export function UpcomingSessionsSection({ studentId }: { studentId: string }) {
                         {formatBookingDate(r.date)} · {r.time_slot}
                       </p>
                     </div>
-                    <a
-                      href="#"
-                      className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
-                    >
-                      Join Call
-                    </a>
+                    <div className="flex gap-2">
+                      <Link
+                        to="/messages"
+                        search={{ peer: r.mentor_id, peerName: r.mentorName }}
+                        className="inline-flex h-9 items-center justify-center rounded-full border border-[#1A1A1A]/15 px-4 text-[12px] font-medium text-[#1A1A1A] hover:border-[#C4907F] hover:text-[#C4907F]"
+                      >
+                        Message
+                      </Link>
+                      <a
+                        href="#"
+                        className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
+                      >
+                        Join Call
+                      </a>
+                    </div>
                   </div>
                   <PrepQuestions bookingId={r.id} />
                 </li>

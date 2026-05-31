@@ -20,17 +20,19 @@ export const Route = createFileRoute("/notifications")({
   component: NotificationsPage,
 });
 
-type NotificationKind = "booking_confirmed" | "session_completed";
+type NotificationKind = "booking_confirmed" | "session_completed" | "new_message";
 
 type NotificationRow = {
   id: string;
   recipient_id: string;
   booking_id: string | null;
+  conversation_id: string | null;
   kind: NotificationKind | string;
-  student_name: string;
+  student_name: string | null;
   mentor_name: string | null;
-  booking_date: string;
-  booking_time_slot: string;
+  sender_name: string | null;
+  booking_date: string | null;
+  booking_time_slot: string | null;
   read_at: string | null;
   created_at: string;
 };
@@ -231,7 +233,15 @@ function NotificationsPage() {
               {rows.map((n) => (
                 <li
                   key={n.id}
-                  onClick={() => markAsRead(n.id)}
+                  onClick={() => {
+                    markAsRead(n.id);
+                    if (n.kind === "new_message" && n.conversation_id) {
+                      navigate({
+                        to: "/messages/$conversationId",
+                        params: { conversationId: n.conversation_id },
+                      });
+                    }
+                  }}
                   className={`flex cursor-pointer items-start justify-between gap-4 px-5 py-4 transition hover:bg-[#EDE0DB]/40 ${
                     n.read_at ? "opacity-60" : ""
                   }`}
@@ -247,9 +257,18 @@ function NotificationsPage() {
                     )}
                     <div className="min-w-0">
                       <p className="text-[15px] font-medium text-[#1A1A1A]">{renderHeadline(n)}</p>
-                      <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
-                        {formatBookingDateTime(n.booking_date, n.booking_time_slot)}
-                      </p>
+                      {n.kind === "new_message" ? (
+                        <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
+                          Tap to open the conversation
+                        </p>
+                      ) : (
+                        n.booking_date &&
+                        n.booking_time_slot && (
+                          <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
+                            {formatBookingDateTime(n.booking_date, n.booking_time_slot)}
+                          </p>
+                        )
+                      )}
                     </div>
                   </div>
                   <p className="shrink-0 text-[12px] text-[#1A1A1A]/50">
@@ -266,11 +285,14 @@ function NotificationsPage() {
 }
 
 function renderHeadline(n: NotificationRow): string {
+  if (n.kind === "new_message") {
+    return `New message from ${n.sender_name?.trim() || "someone"}`;
+  }
   if (n.kind === "session_completed") {
     const mentor = n.mentor_name?.trim() || "your mentor";
     return `Session completed with ${mentor}`;
   }
   // booking_confirmed (default — also catches any unknown future kinds with
   // sensible mentor-facing copy).
-  return `New booking from ${n.student_name}`;
+  return `New booking from ${n.student_name?.trim() || "a student"}`;
 }
