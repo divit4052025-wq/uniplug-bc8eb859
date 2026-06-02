@@ -653,3 +653,7 @@
    against the page (not the container) and box-sizing applies to the root. */
 #uniplug-welcome{box-sizing:border-box;overflow:visible}
 #uniplug-welcome *{box-sizing:border-box}
+
+/* Login button */
+#uniplug-welcome .hbtn-login{background:var(--rose);color:var(--ink);padding:11px 19px}
+#uniplug-welcome .hbtn-login:hover{background:var(--rose-deep);color:var(--ink)}

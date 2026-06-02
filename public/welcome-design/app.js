@@ -258,37 +258,8 @@ $$('[data-panel-link]').forEach(a=>{
   });
 });
 
-/* ============================================================
-   TWEAKS
-   ============================================================ */
-const ACCENTS=[
-  {n:'Rose',a:'#F4B5AA',d:'#C4907F'},
-  {n:'Coral',a:'#ED7E4A',d:'#BC4926'},
-  {n:'Sky',a:'#C2D9EA',d:'#6E9CC0'},
-  {n:'Teal',a:'#9AD6C6',d:'#5FA995'},
-  {n:'Sage',a:'#C5D9B0',d:'#7B9A63'},
-  {n:'Plum',a:'#B5A0D4',d:'#8E72C0'},
-];
-const root=document.documentElement, twAccent=$('#twAccent');
-ACCENTS.forEach((c,i)=>{
-  const b=document.createElement('button');
-  b.className='tw-sw'+(i===0?' on':''); b.style.background=c.a; b.title=c.n;
-  b.addEventListener('click',()=>{ root.style.setProperty('--rose',c.a); root.style.setProperty('--rose-deep',c.d); $$('#twAccent .tw-sw').forEach(s=>s.classList.remove('on')); b.classList.add('on'); });
-  twAccent.appendChild(b);
-});
-function toggle(el,on,fn){ el.classList.toggle('on',on); el.addEventListener('click',()=>{ const v=el.classList.toggle('on'); fn(v); }); }
-toggle($('#twCursor'), FINE&&!PR, v=>document.body.classList.toggle('cursor-on',v));
-toggle($('#twMotion'), true, v=>{
-  document.body.classList.toggle('no-motion',!v);
-  $$('.mascot [class*="ax-"], .m-float, .m-sway, .m-flicker').forEach(e=>e.style.animationPlayState=v?'running':'paused');
-});
-toggle($('#twEyes'), true, v=>{ eyesOn=v; if(!v){ const f=$('#heroFounder'); $$('.ax-blink circle',f).forEach(c=>c.style.transform=''); const s=f&&f.querySelector('svg'); if(s)s.style.transform=''; } });
-$('#twReplay').addEventListener('click',()=>{ $('#twPanel').classList.remove('open'); try{sessionStorage.removeItem(SEEN_KEY);}catch(e){} window.scrollTo({top:0,behavior:'auto'}); playIntro(); });
 
-const fab=$('#twFab'), panel=$('#twPanel');
-fab.addEventListener('click',()=>panel.classList.toggle('open'));
-document.addEventListener('click',e=>{ if(!panel.contains(e.target)&&!fab.contains(e.target)) panel.classList.remove('open'); });
-window.addEventListener('message',e=>{ const d=e.data; if(d&&(d.type==='tweaks:toggle'||d.type==='toggleTweaks')) panel.classList.toggle('open'); });
+
 
 onScroll();
 })();

@@ -59,6 +59,27 @@ body = body.replace(/<a\b([^>]*?)\sdata-panel-link="([23])"([^>]*)>/gi, (_m, pre
 const guard = body.match(/data-panel-link/);
 if (guard) throw new Error("CTA rewire incomplete — a data-panel-link survived");
 
+// TASK 1 — add a "Login" button as the FIRST item in the header actions cluster
+// (order: Login | Become the Plug you needed | Find your Plug →). Real anchor →
+// SPA nav + no-JS both work; no data-panel-link so app.js does not intercept it.
+// Styled by the appended .hbtn-login rule (rose fill, ink text — WCAG AA).
+const beforeLogin = body.length;
+body = body.replace(
+  /<div class="pill pill-actions">/,
+  '<div class="pill pill-actions"><a class="hbtn hbtn-login magnetic" href="/login">Login</a>',
+);
+if (body.length === beforeLogin) throw new Error("Login inject failed — .pill-actions not found");
+
+// TASK 2 — remove the dev "Tweaks" FAB + panel (must not ship to real visitors).
+// The tweaks markup is the last block before the (already-stripped) scripts, so
+// match the comment through the final </div>. app.js's tweaks code is stripped in
+// lockstep below (it dereferences these ids without null-guards).
+const beforeTw = body.length;
+body = body.replace(/<!--\s*=+\s*TWEAKS\s*=+\s*-->[\s\S]*<\/div>/i, "");
+if (body.length === beforeTw || /tw-fab|tw-panel/.test(body)) {
+  throw new Error("Tweaks markup not removed");
+}
+
 mkdirSync(join(REPO, "src/welcome-design"), { recursive: true });
 writeFileSync(join(REPO, "src/welcome-design/welcome-body.html"), body.trim() + "\n", "utf8");
 console.log("✓ markup → src/welcome-design/welcome-body.html");
@@ -96,9 +117,29 @@ const result = postcss([
 const scoped =
   result.css +
   `\n\n/* transplant overrides: keep the container a normal-flow, non-scrolling,\n   border-box block so the design's position:sticky pinned scroll resolves\n   against the page (not the container) and box-sizing applies to the root. */\n` +
-  `${PREFIX}{box-sizing:border-box;overflow:visible}\n${PREFIX} *{box-sizing:border-box}\n`;
+  `${PREFIX}{box-sizing:border-box;overflow:visible}\n${PREFIX} *{box-sizing:border-box}\n` +
+  // TASK 1 — Login button: same .hbtn shape/height/font as the others, same
+  // padding as .hbtn-solid; only colour differs (rose fill, ink text; hover
+  // darkens to rose-deep, consistent with the solid button). ink-on-rose ≥ AA.
+  `\n/* Login button */\n` +
+  `${PREFIX} .hbtn-login{background:var(--rose);color:var(--ink);padding:11px 19px}\n` +
+  `${PREFIX} .hbtn-login:hover{background:var(--rose-deep);color:var(--ink)}\n`;
 
 mkdirSync(join(REPO, "public/welcome-design"), { recursive: true });
 writeFileSync(join(REPO, "public/welcome-design/welcome.scoped.css"), scoped, "utf8");
 console.log("✓ scoped css → public/welcome-design/welcome.scoped.css");
+
+// ---------------------------------------------------------------------------
+// 3. app.js — copy with the dev "Tweaks" block stripped (TASK 2). The block runs
+//    from its banner comment to just before the final onScroll(); nothing after
+//    it depends on its locals, so removing it is clean.
+// ---------------------------------------------------------------------------
+let appjs = readFileSync(join(DESIGN, "app.js"), "utf8");
+const beforeApp = appjs.length;
+appjs = appjs.replace(/\/\*[\s=]*TWEAKS[\s=]*\*\/[\s\S]*?(?=\n\s*onScroll\(\);)/, "\n");
+if (appjs.length === beforeApp || /twFab|ACCENTS|twReplay/.test(appjs)) {
+  throw new Error("app.js TWEAKS block not stripped");
+}
+writeFileSync(join(REPO, "public/welcome-design/app.js"), appjs, "utf8");
+console.log("✓ app.js (tweaks stripped) → public/welcome-design/app.js");
 console.log("done.");
