@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
 import { Route as SessionNotesRouteImport } from './routes/session-notes'
@@ -39,6 +40,11 @@ import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/pu
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
 
+const WelcomeRoute = WelcomeRouteImport.update({
+  id: '/welcome',
+  path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -242,6 +249,7 @@ export interface FileRoutesByTo {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -274,6 +282,7 @@ export interface FileRoutesById {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/welcome': typeof WelcomeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages_/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -307,6 +316,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/welcome'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
@@ -338,6 +348,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/welcome'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
@@ -369,6 +380,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/welcome'
     | '/mentor/$id'
     | '/messages_/$conversationId'
     | '/parental-consent/$token'
@@ -401,6 +413,7 @@ export interface RootRouteChildren {
   SessionNotesRoute: typeof SessionNotesRouteWithChildren
   StudentSignupRoute: typeof StudentSignupRoute
   TermsRoute: typeof TermsRoute
+  WelcomeRoute: typeof WelcomeRoute
   MentorIdRoute: typeof MentorIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
@@ -411,6 +424,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/welcome': {
+      id: '/welcome'
+      path: '/welcome'
+      fullPath: '/welcome'
+      preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/terms': {
       id: '/terms'
       path: '/terms'
@@ -652,6 +672,7 @@ const rootRouteChildren: RootRouteChildren = {
   SessionNotesRoute: SessionNotesRouteWithChildren,
   StudentSignupRoute: StudentSignupRoute,
   TermsRoute: TermsRoute,
+  WelcomeRoute: WelcomeRoute,
   MentorIdRoute: MentorIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ParentalConsentTokenRoute: ParentalConsentTokenRoute,
