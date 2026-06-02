@@ -1,27 +1,23 @@
-// /welcome — the approved animated brand landing for UniPlug.
+// /welcome — the approved UniPlug landing, TRANSPLANTED from the design's own
+// files (not a reimplementation). The design's exact inner <body> markup is
+// server-rendered inside #uniplug-welcome; its CSS (scoped to that container by
+// scripts/build-welcome-transplant.mjs) and Google Fonts load via route-scoped
+// <link>s; and its own mascots.js + app.js run on the client after mount, so the
+// splash, mascots and pinned scroll are the design's, byte-for-byte.
 //
-// Faithful production port of the signed-off design (UniPlug_LandingPage_Final):
-// splash title sequence → floating pill header → hero → pinned scroll sequence
-// (Founder quote · The Gap · For Students · For Mentors · Closing). No FAQ, no
-// footer — the page ends on the Closing panel.
+// Pure frontend, isolated to /welcome. The only changes to the design are:
+// asset paths (→ /welcome-design/…), CSS scoping (→ #uniplug-welcome), SSR-safety
+// (its JS runs client-only), and the two CTAs rewired to the real signup routes.
 //
-// Scope: PURE frontend, isolated to /welcome. No backend/DB/auth/server-fn. Does
-// not touch index.tsx, the global Nav, or shared chrome. Gabarito + Quicksand are
-// loaded ONLY here (scoped <link> below) and applied only under .welcome-root, so
-// global typography/brand tokens are untouched. All motion is transform/opacity,
-// gated by prefers-reduced-motion + degrades to a plain stacked scroll with JS
-// off (see welcome.css + the components).
+// Source of the embedded artifacts (regenerate with the build script):
+//   src/welcome-design/welcome-body.html      ← design <body>, paths + CTAs rewritten
+//   public/welcome-design/welcome.scoped.css  ← base.css + components.css, prefixed
+//   public/welcome-design/{mascots.js,app.js,assets/…} ← raw design files
 
 import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
-import { SplashIntro } from "@/components/landing/SplashIntro";
-import { CustomCursor } from "@/components/landing/CustomCursor";
-import { LandingHeader } from "@/components/landing/LandingHeader";
-import { Hero } from "@/components/landing/Hero";
-import { PinnedSequence } from "@/components/landing/PinnedSequence";
-import { useRevealRoot } from "@/components/landing/useReveal";
-import "@/components/landing/welcome.css";
+import welcomeBodyHtml from "@/welcome-design/welcome-body.html?raw";
 
 export const Route = createFileRoute("/welcome")({
   head: () => ({
@@ -33,71 +29,106 @@ export const Route = createFileRoute("/welcome")({
           "Talk to someone who's already there. UniPlug connects school students with university students who've walked the exact road they're on.",
       },
       { property: "og:title", content: "Welcome to UniPlug — Plug into your future" },
-      {
-        property: "og:description",
-        content:
-          "Your Plug — your word for the person who's been there. Honest, 1:1 guidance for school students applying to university.",
-      },
     ],
-    // Gabarito + Quicksand, scoped to this route only (applied under .welcome-root).
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Gabarito:wght@500..900&family=Quicksand:wght@400..700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Gabarito:wght@500;600;700;800;900&family=Quicksand:wght@400;500;600;700&display=swap",
       },
+      // The design's own CSS, scoped to #uniplug-welcome. Route-scoped + prefixed,
+      // so it neither leaks to other routes nor needs the global stylesheet.
+      { rel: "stylesheet", href: "/welcome-design/welcome.scoped.css" },
     ],
   }),
   component: WelcomePage,
 });
 
-function WelcomePage() {
-  const revealRoot = useRevealRoot<HTMLElement>();
+// The state classes app.js toggles on <body>; the scoped CSS expects them on the
+// container, so we mirror them.
+const MIRROR_CLASSES = [
+  "intro-lock",
+  "cursor-on",
+  "scrolled",
+  "pin-on",
+  "panel-dark",
+  "no-motion",
+  "hovering",
+  "pressing",
+  "on-dark-cursor",
+];
 
-  // A landing page should always open on the splash/hero, not a restored scroll
-  // position from a previous visit. Disable scroll restoration while here.
+function WelcomePage() {
   useEffect(() => {
-    const prev = window.history.scrollRestoration;
+    if (typeof window === "undefined") return;
+    const container = document.getElementById("uniplug-welcome");
+    if (!container) return;
+
+    // The design's static <body> ships class="intro-lock cursor-on". app.js
+    // manages intro-lock itself but only ever REMOVES cursor-on, so seed it.
+    document.body.classList.add("cursor-on");
+
+    // Mirror app.js's <body> state classes onto the container so the prefixed
+    // (#uniplug-welcome.*) rules apply, and lock the real page scroll while the
+    // splash's intro-lock is active (the scoped overflow rule alone can't).
+    const sync = () => {
+      for (const c of MIRROR_CLASSES) {
+        container.classList.toggle(c, document.body.classList.contains(c));
+      }
+      document.body.style.overflow = document.body.classList.contains("intro-lock") ? "hidden" : "";
+    };
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+
+    // Always open on the splash, not a restored scroll position.
+    const prevRestore = window.history.scrollRestoration;
     try {
       window.history.scrollRestoration = "manual";
     } catch {
-      /* not supported — non-fatal */
+      /* unsupported — non-fatal */
     }
     window.scrollTo(0, 0);
+
+    // Run the design's own scripts as real classic scripts, mascots before app
+    // (app.js's mountMascots() needs window.UniPlugMascot). They init synchronously
+    // on load against the already-mounted markup.
+    const injected: HTMLScriptElement[] = [];
+    let cancelled = false;
+    const loadScript = (src: string) =>
+      new Promise<void>((resolve, reject) => {
+        const s = document.createElement("script");
+        s.src = src;
+        s.async = false;
+        s.dataset.welcomeDesign = "1";
+        s.onload = () => resolve();
+        s.onerror = () => reject(new Error(`failed to load ${src}`));
+        document.body.appendChild(s);
+        injected.push(s);
+      });
+    loadScript("/welcome-design/mascots.js")
+      .then(() => (cancelled ? undefined : loadScript("/welcome-design/app.js")))
+      .catch(() => {
+        /* network/script error — page still renders its server HTML */
+      });
+
     return () => {
+      cancelled = true;
+      mo.disconnect();
+      injected.forEach((s) => s.remove());
+      for (const c of MIRROR_CLASSES) document.body.classList.remove(c);
+      document.body.style.overflow = "";
       try {
-        window.history.scrollRestoration = prev;
+        window.history.scrollRestoration = prevRestore;
       } catch {
         /* non-fatal */
       }
     };
   }, []);
 
-  return (
-    <div className="welcome-root" id="welcome-top">
-      {/* Progressive enhancement: with JS off, hide the splash overlay entirely so
-          the page behind it is fully readable (no trap). With JS on this is ignored
-          and SplashIntro plays/dissolves it. */}
-      <noscript>
-        <style>{`.welcome-root .intro{display:none!important}.welcome-root [data-reveal]{opacity:1!important;transform:none!important}`}</style>
-      </noscript>
-
-      <a
-        href="#welcome-main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[6001] focus:rounded-lg focus:bg-[#1a1a1a] focus:px-4 focus:py-2 focus:text-[14px] focus:font-medium focus:text-[#faf5ef] focus:shadow"
-      >
-        Skip to content
-      </a>
-
-      <SplashIntro />
-      <CustomCursor />
-      <LandingHeader />
-
-      <main id="welcome-main" ref={revealRoot}>
-        <Hero />
-        <PinnedSequence />
-      </main>
-    </div>
-  );
+  // The design's exact <body> markup (server-rendered → crawlable, readable with
+  // JS off). React does not reconcile dangerouslySetInnerHTML content, so app.js
+  // is free to mutate the DOM inside it.
+  return <div id="uniplug-welcome" dangerouslySetInnerHTML={{ __html: welcomeBodyHtml }} />;
 }
