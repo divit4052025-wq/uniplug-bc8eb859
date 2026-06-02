@@ -129,6 +129,15 @@ function WelcomePage() {
 
   // The design's exact <body> markup (server-rendered → crawlable, readable with
   // JS off). React does not reconcile dangerouslySetInnerHTML content, so app.js
-  // is free to mutate the DOM inside it.
-  return <div id="uniplug-welcome" dangerouslySetInnerHTML={{ __html: welcomeBodyHtml }} />;
+  // is free to mutate the DOM inside it. The <noscript> hides the design's
+  // fixed splash overlay when JS is off (the splash only dissolves via app.js),
+  // so the content behind it stays visible — no effect on the JS-on rendering.
+  return (
+    <>
+      <noscript>
+        <style>{`#uniplug-welcome #intro,#uniplug-welcome .intro-skip{display:none!important}`}</style>
+      </noscript>
+      <div id="uniplug-welcome" dangerouslySetInnerHTML={{ __html: welcomeBodyHtml }} />
+    </>
+  );
 }
