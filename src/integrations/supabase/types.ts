@@ -68,6 +68,7 @@ export type Database = {
         Row: {
           created_at: string;
           date: string;
+          description: string | null;
           duration: number;
           id: string;
           mentor_id: string | null;
@@ -78,11 +79,13 @@ export type Database = {
           razorpay_payment_id: string | null;
           status: string;
           student_id: string | null;
+          subject_id: string | null;
           time_slot: string;
         };
         Insert: {
           created_at?: string;
           date: string;
+          description?: string | null;
           duration?: number;
           id?: string;
           mentor_id?: string | null;
@@ -93,11 +96,13 @@ export type Database = {
           razorpay_payment_id?: string | null;
           status?: string;
           student_id?: string | null;
+          subject_id?: string | null;
           time_slot: string;
         };
         Update: {
           created_at?: string;
           date?: string;
+          description?: string | null;
           duration?: number;
           id?: string;
           mentor_id?: string | null;
@@ -108,6 +113,7 @@ export type Database = {
           razorpay_payment_id?: string | null;
           status?: string;
           student_id?: string | null;
+          subject_id?: string | null;
           time_slot?: string;
         };
         Relationships: [
@@ -130,6 +136,13 @@ export type Database = {
             columns: ["student_id"];
             isOneToOne: false;
             referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bookings_subject_id_fkey";
+            columns: ["subject_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_subjects";
             referencedColumns: ["id"];
           },
         ];
@@ -369,6 +382,48 @@ export type Database = {
             columns: ["batch_id"];
             isOneToOne: false;
             referencedRelation: "payout_batches";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      mentor_private_notes: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          mentor_id: string;
+          student_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          mentor_id: string;
+          student_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          mentor_id?: string;
+          student_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mentor_private_notes_mentor_id_fkey";
+            columns: ["mentor_id"];
+            isOneToOne: false;
+            referencedRelation: "mentors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mentor_private_notes_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
             referencedColumns: ["id"];
           },
         ];
@@ -1693,7 +1748,13 @@ export type Database = {
         Returns: undefined;
       };
       book_session: {
-        Args: { _date: string; _mentor_id: string; _time_slot: string };
+        Args: {
+          _date: string;
+          _description?: string;
+          _mentor_id: string;
+          _subject_id?: string;
+          _time_slot: string;
+        };
         Returns: string;
       };
       chat_contains_pii: { Args: { _body: string }; Returns: boolean };
