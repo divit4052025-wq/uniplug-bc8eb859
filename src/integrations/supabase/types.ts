@@ -1786,10 +1786,8 @@ export type Database = {
         Args: { _student_id: string };
         Returns: {
           documents: Json;
-          email: string;
           full_name: string;
           grade: string;
-          phone: string;
           school: string;
           schools: Json;
           student_id: string;
