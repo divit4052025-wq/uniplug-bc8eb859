@@ -77,6 +77,7 @@ export type Database = {
           price: number;
           razorpay_order_id: string | null;
           razorpay_payment_id: string | null;
+          reschedule_count: number;
           status: string;
           student_id: string | null;
           subject_id: string | null;
@@ -94,6 +95,7 @@ export type Database = {
           price?: number;
           razorpay_order_id?: string | null;
           razorpay_payment_id?: string | null;
+          reschedule_count?: number;
           status?: string;
           student_id?: string | null;
           subject_id?: string | null;
@@ -111,6 +113,7 @@ export type Database = {
           price?: number;
           razorpay_order_id?: string | null;
           razorpay_payment_id?: string | null;
+          reschedule_count?: number;
           status?: string;
           student_id?: string | null;
           subject_id?: string | null;
@@ -1755,6 +1758,10 @@ export type Database = {
           _subject_id?: string;
           _time_slot: string;
         };
+        Returns: string;
+      };
+      reschedule_booking: {
+        Args: { _booking_id: string; _new_date: string; _new_time_slot: string };
         Returns: string;
       };
       chat_contains_pii: { Args: { _body: string }; Returns: boolean };
