@@ -1764,6 +1764,18 @@ export type Database = {
         Args: { _booking_id: string; _new_date: string; _new_time_slot: string };
         Returns: string;
       };
+      reserve_slot: {
+        Args: { _date: string; _student_id: string; _time_slot: string };
+        Returns: string;
+      };
+      claim_reserved_booking: {
+        Args: { _booking_id: string };
+        Returns: string;
+      };
+      release_reserved_booking: {
+        Args: { _booking_id: string };
+        Returns: string;
+      };
       chat_contains_pii: { Args: { _body: string }; Returns: boolean };
       confirm_refund_processed: {
         Args: { _booking_id: string; _payload?: Json; _refund_id: string };
