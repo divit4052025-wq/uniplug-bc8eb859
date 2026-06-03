@@ -247,6 +247,71 @@ BEGIN
     CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
 END $$;
 
+-- ─── P0.9 (HAPPY): an ANON (pre-login) caller can file a request, NULL-stamped, and it is admin-promotable ───
+DO $$
+DECLARE v_pass boolean := false; v_msg text := ''; v_id uuid; v_by uuid; v_status text; v_in_table int; v_acted boolean := false;
+BEGIN
+  -- Impersonate anon exactly as the signup wizard does before the account exists
+  -- (role anon, no sub → auth.uid() IS NULL).
+  PERFORM set_config('request.jwt.claims', '{"role":"anon"}', true);
+  EXECUTE 'SET LOCAL ROLE anon';
+  BEGIN
+    v_id := public.create_ref_add_request('university', 'Zzz Anon University');
+    v_acted := true;
+  EXCEPTION WHEN OTHERS THEN
+    v_msg := 'anon create_ref_add_request errored [' || SQLSTATE || ']: ' || SQLERRM;
+  END;
+  EXECUTE 'RESET ROLE';
+  PERFORM set_config('request.jwt.claims', '{"role":"service_role"}', true);
+  IF v_acted THEN
+    SELECT requested_by, status INTO v_by, v_status FROM public.ref_add_requests WHERE id = v_id;
+    IF v_by IS NOT NULL OR v_status <> 'pending' THEN
+      v_msg := 'anon row wrong: requested_by=' || coalesce(v_by::text,'<not-null!>')
+               || ' status=' || coalesce(v_status,'<null>');
+    ELSE
+      -- Promote the anon-filed request as admin; confirm it lands in ref_universities.
+      PERFORM set_config('request.jwt.claims',
+        '{"sub":"db74f8e5-5511-4aec-a9a4-79ae2b535b9f","role":"authenticated"}', true);
+      EXECUTE 'SET LOCAL ROLE authenticated';
+      BEGIN
+        PERFORM public.admin_promote_ref_add_request(v_id);
+      EXCEPTION WHEN OTHERS THEN
+        v_msg := 'promote of anon request errored [' || SQLSTATE || ']: ' || SQLERRM;
+      END;
+      EXECUTE 'RESET ROLE';
+      PERFORM set_config('request.jwt.claims', '{"role":"service_role"}', true);
+      SELECT count(*) INTO v_in_table FROM public.ref_universities WHERE name = 'Zzz Anon University';
+      SELECT status INTO v_status FROM public.ref_add_requests WHERE id = v_id;
+      v_pass := (v_in_table = 1 AND v_status = 'approved');
+      v_msg := 'anon requested_by=NULL ok; promoted into ref_universities=' || v_in_table
+               || ' request status=' || coalesce(v_status,'<null>');
+    END IF;
+  END IF;
+  INSERT INTO _p0 VALUES ('P0.9_anon_create_then_promote',
+    CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
+END $$;
+
+-- ─── P0.10 (HAPPY): anon (pre-login) typeahead works — search_reference is anon-callable ───
+DO $$
+DECLARE v_pass boolean := false; v_msg text := ''; v_cnt int;
+BEGIN
+  PERFORM set_config('request.jwt.claims', '{"role":"anon"}', true);
+  EXECUTE 'SET LOCAL ROLE anon';
+  BEGIN
+    SELECT count(*) INTO v_cnt
+    FROM public.search_reference('university', 'Zzz Sentinel') r
+    WHERE r.name = 'Zzz Sentinel University';
+    v_pass := (v_cnt >= 1);
+    v_msg := 'anon search_reference hits for sentinel = ' || v_cnt;
+  EXCEPTION WHEN OTHERS THEN
+    v_msg := 'anon search_reference errored [' || SQLSTATE || ']: ' || SQLERRM;
+  END;
+  EXECUTE 'RESET ROLE';
+  PERFORM set_config('request.jwt.claims', '{"role":"service_role"}', true);
+  INSERT INTO _p0 VALUES ('P0.10_anon_search_reference',
+    CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
+END $$;
+
 SELECT test_id, status, detail FROM _p0 ORDER BY test_id;
 
 ROLLBACK;
