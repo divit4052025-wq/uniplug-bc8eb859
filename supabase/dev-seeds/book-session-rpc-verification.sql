@@ -238,7 +238,11 @@ DECLARE
 BEGIN
   v_anon_can_exec := has_function_privilege(
     'anon',
-    'public.book_session(uuid, date, text)',
+    -- Phase 3 widened book_session to 5 args (added optional _subject_id/_description).
+    -- has_function_privilege resolves by EXACT signature, so this must name the
+    -- current 5-arg form (a positional 3-arg call resolves via defaults, but this
+    -- privilege check does not).
+    'public.book_session(uuid, date, text, uuid, text)',
     'execute'
   );
   IF v_anon_can_exec THEN
