@@ -143,12 +143,13 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                     >
                       Message
                     </Link>
-                    <a
-                      href="#"
+                    <Link
+                      to="/call/$bookingId"
+                      params={{ bookingId: r.id }}
                       className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
                     >
                       Join Call
-                    </a>
+                    </Link>
                   </div>
                 </li>
               ))}
