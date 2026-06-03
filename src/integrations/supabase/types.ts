@@ -205,6 +205,45 @@ export type Database = {
           },
         ];
       };
+      mentor_admits: {
+        Row: {
+          created_at: string;
+          id: string;
+          mentor_id: string;
+          proof_path: string | null;
+          ref_university_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          mentor_id: string;
+          proof_path?: string | null;
+          ref_university_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          mentor_id?: string;
+          proof_path?: string | null;
+          ref_university_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "mentor_admits_mentor_id_fkey";
+            columns: ["mentor_id"];
+            isOneToOne: false;
+            referencedRelation: "mentors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mentor_admits_ref_university_id_fkey";
+            columns: ["ref_university_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_universities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       mentor_availability: {
         Row: {
           created_at: string;
@@ -364,16 +403,24 @@ export type Database = {
         Row: {
           bio: string | null;
           code_of_conduct_accepted_at: string | null;
+          college_email: string | null;
           countries: string[];
           course: string;
           created_at: string;
+          date_of_birth: string | null;
           email: string;
           enrollment_letter_path: string | null;
           full_name: string;
           id: string;
           id_document_path: string | null;
+          max_active_mentees: number | null;
+          phone: string | null;
           photo_url: string | null;
           price_inr: number;
+          re_review_pending: boolean;
+          ref_course_id: string | null;
+          ref_university_id: string | null;
+          specialty_id: string | null;
           status: Database["public"]["Enums"]["mentor_status"];
           topics: string[];
           university: string;
@@ -385,16 +432,24 @@ export type Database = {
         Insert: {
           bio?: string | null;
           code_of_conduct_accepted_at?: string | null;
+          college_email?: string | null;
           countries?: string[];
           course: string;
           created_at?: string;
+          date_of_birth?: string | null;
           email: string;
           enrollment_letter_path?: string | null;
           full_name: string;
           id: string;
           id_document_path?: string | null;
+          max_active_mentees?: number | null;
+          phone?: string | null;
           photo_url?: string | null;
           price_inr?: number;
+          re_review_pending?: boolean;
+          ref_course_id?: string | null;
+          ref_university_id?: string | null;
+          specialty_id?: string | null;
           status?: Database["public"]["Enums"]["mentor_status"];
           topics?: string[];
           university: string;
@@ -406,16 +461,24 @@ export type Database = {
         Update: {
           bio?: string | null;
           code_of_conduct_accepted_at?: string | null;
+          college_email?: string | null;
           countries?: string[];
           course?: string;
           created_at?: string;
+          date_of_birth?: string | null;
           email?: string;
           enrollment_letter_path?: string | null;
           full_name?: string;
           id?: string;
           id_document_path?: string | null;
+          max_active_mentees?: number | null;
+          phone?: string | null;
           photo_url?: string | null;
           price_inr?: number;
+          re_review_pending?: boolean;
+          ref_course_id?: string | null;
+          ref_university_id?: string | null;
+          specialty_id?: string | null;
           status?: Database["public"]["Enums"]["mentor_status"];
           topics?: string[];
           university?: string;
@@ -424,7 +487,29 @@ export type Database = {
           verified_by?: string | null;
           year?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "mentors_ref_course_id_fkey";
+            columns: ["ref_course_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_courses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mentors_ref_university_id_fkey";
+            columns: ["ref_university_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_universities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "mentors_specialty_id_fkey";
+            columns: ["specialty_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_specialties";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       message_reports: {
         Row: {
