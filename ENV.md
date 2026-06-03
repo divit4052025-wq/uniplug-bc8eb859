@@ -14,6 +14,7 @@ Single source of truth for every env var the app reads, where it lives, who sets
 | `RESEND_API_KEY` | yes (runtime, email features) | Cloudflare Worker secret | `src/lib/email/booking.functions.ts:28`, `src/routes/api/public/hooks/send-reminders.ts:29` | Resend API auth for outbound transactional email. Missing → endpoints return `{ok:false, reason:"missing_api_key"}` with 500. |
 | `CRON_SECRET` | yes (runtime, A3+) | Cloudflare Worker secret (`wrangler secret put CRON_SECRET`) | `src/routes/api/public/hooks/send-reminders.ts` via `src/lib/auth/bearer.ts` | Bearer token expected from the `send_reminders_24h` pg_cron caller. **MUST exactly match `vault.cron_secret`** (Supabase Vault entry). Missing → 500 `missing_cron_secret`. Mismatched → 401 `unauthorized` on every cron tick. Minimum length enforced in `bearer.ts` is 16 chars; current value is 64-char hex. |
 | `ANTHROPIC_API_KEY` | future (Phase D) | Cloudflare Worker secret | not yet wired | Server-side Claude API key for AI features (session prep, note expansion, matching). **Never expose to client.** Will land alongside Phase D AI features. |
+| `DAILY_API_KEY` | yes (runtime, video calls) | Cloudflare Worker secret (`wrangler secret put DAILY_API_KEY`) | `src/lib/video/daily.server.ts` (`ensureRoom`, `mintToken`), called by `src/lib/video/access.functions.ts` | Daily.co REST API key for lazily creating private 1:1 call rooms + minting short-lived, per-participant meeting tokens. **RUNTIME secret only — never a `VITE_`/build var, never in the browser bundle.** Missing → `getVideoCallAccess` throws "DAILY_API_KEY is not set in Worker env" → 500 → Join Call fails. Read per-request via `process.env` (works via `nodejs_compat`). For local dev, add to `.dev.vars`. |
 | `RAZORPAY_KEY_ID` | yes (runtime, payments) | Cloudflare Worker secret (`wrangler secret put RAZORPAY_KEY_ID`) | `src/lib/payments/order.functions.ts`, `src/lib/payments/refund.functions.ts` | Razorpay API key id (public-ish: returned to the browser per-order so Checkout can open — **never** a `VITE_` build var, so test→live is a server rotation, no rebuild). Basic-auth username for Orders/Refund API. Missing → order creation frees the slot + returns `{ok:false, reason:"missing_keys"}`. Use `rzp_test_…` in staging, `rzp_live_…` in prod. |
 | `RAZORPAY_KEY_SECRET` | yes (runtime, payments) | Cloudflare Worker secret | `src/lib/payments/order.functions.ts`, `src/lib/payments/refund.functions.ts` | Razorpay API secret (server-only). Basic-auth password for Orders/Refund API. **Never expose to client.** Missing → same fail-closed as above. |
 | `RAZORPAY_WEBHOOK_SECRET` | yes (runtime, payments) | Cloudflare Worker secret | `src/routes/api/public/hooks/razorpay-webhook.ts` via `src/lib/auth/hmac.ts` | HMAC-SHA256 secret Razorpay signs the webhook raw body with (`x-razorpay-signature`). **Server-only.** Missing → webhook returns 500 `missing_webhook_secret`; mismatched → 401 `bad_signature` (so payments never confirm). Min length 16 enforced in `hmac.ts`. Must equal the secret configured on the Razorpay dashboard webhook. |
@@ -59,6 +60,9 @@ wrangler secret put CRON_SECRET
 # paste value when prompted
 
 wrangler secret put RESEND_API_KEY
+# paste value when prompted
+
+wrangler secret put DAILY_API_KEY
 # paste value when prompted
 ```
 
@@ -106,13 +110,14 @@ Every server-side env read in this codebase uses `process.env.X`. This works bec
 - **A3 (shipped 2026-05-23)** — `CRON_SECRET` introduced for `/api/public/hooks/send-reminders`; paired with `cron_secret` Vault entry. Documented in this file from inception.
 - **C1 (Phase C, pending)** — Supabase Auth → SMTP Settings will be swapped to Resend SMTP. SMTP credentials are configured **via the Supabase Dashboard** (Auth → SMTP Settings), not via app env vars. The plan mentions an optional `RESEND_SMTP_PASSWORD` Worker secret if a least-privilege SMTP key separate from `RESEND_API_KEY` is wanted; TBD with the C1 author.
 - **D0 (Phase D, pending)** — `ANTHROPIC_API_KEY` Worker secret for server-side Claude calls. Never client.
+- **Video calls V1 (2026-05-30)** — `DAILY_API_KEY` Worker RUNTIME secret for Daily.co room creation + meeting-token minting (`src/lib/video/daily.server.ts`). Set via `wrangler secret put DAILY_API_KEY`; confirm with `wrangler secret list` before the feature can work in prod. No recording/transcription is configured (separate, legally-gated stage).
 - **H3 (Phase H, pending)** — `SENTRY_DSN` once Sentry / observability is wired.
 
 ## What's NOT here
 
-- Daily.co (`DAILY_API_KEY`) — entire video stage deferred from V1.
+- Daily.co recording/transcription keys — not used. V1 video calls create rooms + tokens with no capture; any recording stage is separate and legally gated.
 
-When it lands, extend this file in the same PR.
+When a new env read lands, extend this file in the same PR.
 
 ## Payments (Razorpay V1, 2026-05-31)
 
