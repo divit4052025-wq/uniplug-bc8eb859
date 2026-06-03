@@ -269,6 +269,30 @@ export type Database = {
           },
         ];
       };
+      legal_acceptances: {
+        Row: {
+          accepted_at: string;
+          doc_type: string;
+          id: string;
+          user_id: string;
+          version: string;
+        };
+        Insert: {
+          accepted_at?: string;
+          doc_type: string;
+          id?: string;
+          user_id: string;
+          version: string;
+        };
+        Update: {
+          accepted_at?: string;
+          doc_type?: string;
+          id?: string;
+          user_id?: string;
+          version?: string;
+        };
+        Relationships: [];
+      };
       mentor_payouts: {
         Row: {
           amount_inr: number;
@@ -1122,6 +1146,189 @@ export type Database = {
         };
         Relationships: [];
       };
+      student_cocurriculars: {
+        Row: {
+          cocurricular_id: string;
+          created_at: string;
+          id: string;
+          student_id: string;
+        };
+        Insert: {
+          cocurricular_id: string;
+          created_at?: string;
+          id?: string;
+          student_id: string;
+        };
+        Update: {
+          cocurricular_id?: string;
+          created_at?: string;
+          id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_cocurriculars_cocurricular_id_fkey";
+            columns: ["cocurricular_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_cocurriculars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "student_cocurriculars_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      student_courses: {
+        Row: {
+          course_id: string;
+          created_at: string;
+          id: string;
+          student_id: string;
+        };
+        Insert: {
+          course_id: string;
+          created_at?: string;
+          id?: string;
+          student_id: string;
+        };
+        Update: {
+          course_id?: string;
+          created_at?: string;
+          id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_courses_course_id_fkey";
+            columns: ["course_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_courses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "student_courses_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      student_project_categories: {
+        Row: {
+          created_at: string;
+          detail: string | null;
+          id: string;
+          project_category_id: string;
+          student_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          detail?: string | null;
+          id?: string;
+          project_category_id: string;
+          student_id: string;
+        };
+        Update: {
+          created_at?: string;
+          detail?: string | null;
+          id?: string;
+          project_category_id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_project_categories_project_category_id_fkey";
+            columns: ["project_category_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_project_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "student_project_categories_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      student_sports: {
+        Row: {
+          created_at: string;
+          id: string;
+          sport_id: string;
+          student_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          sport_id: string;
+          student_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          sport_id?: string;
+          student_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_sports_sport_id_fkey";
+            columns: ["sport_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_sports";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "student_sports_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      student_subjects: {
+        Row: {
+          created_at: string;
+          id: string;
+          student_id: string;
+          subject_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          student_id: string;
+          subject_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          student_id?: string;
+          subject_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "student_subjects_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "student_subjects_subject_id_fkey";
+            columns: ["subject_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_subjects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       student_documents: {
         Row: {
           created_at: string;
@@ -1155,6 +1362,7 @@ export type Database = {
           created_at: string;
           id: string;
           name: string;
+          ref_university_id: string | null;
           student_id: string;
         };
         Insert: {
@@ -1162,6 +1370,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           name: string;
+          ref_university_id?: string | null;
           student_id: string;
         };
         Update: {
@@ -1169,12 +1378,23 @@ export type Database = {
           created_at?: string;
           id?: string;
           name?: string;
+          ref_university_id?: string | null;
           student_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "student_schools_ref_university_id_fkey";
+            columns: ["ref_university_id"];
+            isOneToOne: false;
+            referencedRelation: "ref_universities";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       students: {
         Row: {
+          bio: string | null;
+          board: string | null;
           code_of_conduct_accepted_at: string | null;
           countries: string[];
           created_at: string;
@@ -1189,9 +1409,12 @@ export type Database = {
           parental_consent_email: string | null;
           parental_consent_token: string | null;
           phone: string;
+          photo_url: string | null;
           school: string;
         };
         Insert: {
+          bio?: string | null;
+          board?: string | null;
           code_of_conduct_accepted_at?: string | null;
           countries?: string[];
           created_at?: string;
@@ -1206,9 +1429,12 @@ export type Database = {
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
           phone: string;
+          photo_url?: string | null;
           school: string;
         };
         Update: {
+          bio?: string | null;
+          board?: string | null;
           code_of_conduct_accepted_at?: string | null;
           countries?: string[];
           created_at?: string;
@@ -1223,6 +1449,7 @@ export type Database = {
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
           phone?: string;
+          photo_url?: string | null;
           school?: string;
         };
         Relationships: [];
