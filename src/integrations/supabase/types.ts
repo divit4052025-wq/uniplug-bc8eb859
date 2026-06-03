@@ -642,6 +642,219 @@ export type Database = {
         };
         Relationships: [];
       };
+      ref_academic_domains: {
+        Row: {
+          created_at: string;
+          domain: string;
+        };
+        Insert: {
+          created_at?: string;
+          domain: string;
+        };
+        Update: {
+          created_at?: string;
+          domain?: string;
+        };
+        Relationships: [];
+      };
+      ref_add_requests: {
+        Row: {
+          created_at: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          decision_reason: string | null;
+          id: string;
+          kind: string;
+          proposed_name: string;
+          requested_by: string | null;
+          status: string;
+        };
+        Insert: {
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_reason?: string | null;
+          id?: string;
+          kind: string;
+          proposed_name: string;
+          requested_by?: string | null;
+          status?: string;
+        };
+        Update: {
+          created_at?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          decision_reason?: string | null;
+          id?: string;
+          kind?: string;
+          proposed_name?: string;
+          requested_by?: string | null;
+          status?: string;
+        };
+        Relationships: [];
+      };
+      ref_cocurriculars: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      ref_courses: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      ref_project_categories: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      ref_schools: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      ref_specialties: {
+        Row: {
+          created_at: string;
+          id: string;
+          key: string;
+          label: string;
+          mascot_key: string;
+          sort_order: number;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          key: string;
+          label: string;
+          mascot_key: string;
+          sort_order?: number;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          key?: string;
+          label?: string;
+          mascot_key?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
+      ref_sports: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      ref_subjects: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
+      ref_universities: {
+        Row: {
+          aliases: string[];
+          country: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          source: string | null;
+        };
+        Insert: {
+          aliases?: string[];
+          country?: string | null;
+          created_at?: string;
+          id?: string;
+          name: string;
+          source?: string | null;
+        };
+        Update: {
+          aliases?: string[];
+          country?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          source?: string | null;
+        };
+        Relationships: [];
+      };
       referral_codes: {
         Row: {
           code: string;
@@ -1078,6 +1291,26 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      admin_promote_ref_add_request: {
+        Args: { _id: string };
+        Returns: undefined;
+      };
+      admin_reject_ref_add_request: {
+        Args: { _id: string; _reason: string };
+        Returns: undefined;
+      };
+      create_ref_add_request: {
+        Args: { _kind: string; _proposed_name: string };
+        Returns: string;
+      };
+      search_reference: {
+        Args: { _kind: string; _limit?: number; _q: string };
+        Returns: { id: string; name: string }[];
+      };
+      search_schools: {
+        Args: { _limit?: number; _q: string };
+        Returns: { id: string; name: string }[];
+      };
       admin_list_bookings: {
         Args: never;
         Returns: {
