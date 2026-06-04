@@ -264,11 +264,21 @@ function ApprovalsSection() {
   });
 
   const setStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: "approved" | "rejected" }) => {
-      const { error } = await supabase.rpc("admin_set_mentor_status", {
-        _mentor_id: id,
-        _status: status,
-      });
+    mutationFn: async ({
+      id,
+      status,
+      reason,
+    }: {
+      id: string;
+      status: "approved" | "rejected";
+      reason?: string;
+    }) => {
+      // C (2026-06-04): named approve/reject RPCs (reject carries a reason →
+      // stored + emailed). They emit the mentor decision email server-side.
+      const { error } =
+        status === "approved"
+          ? await supabase.rpc("approve_mentor", { _mentor_id: id })
+          : await supabase.rpc("reject_mentor", { _mentor_id: id, _reason: reason ?? null });
       if (error) throw error;
     },
     onMutate: async ({ id }) => {
@@ -290,20 +300,18 @@ function ApprovalsSection() {
     },
   });
 
-  if (isError)
-    return <ErrorBanner message="Couldn't load pending mentors." onRetry={() => void refetch()} />;
-  if (isLoading) return <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>;
-  if (rows.length === 0)
-    return (
-      <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
-        <p className="text-[15px] font-medium text-foreground">No mentors awaiting review</p>
-        <p className="mt-1 text-[13px] font-light text-muted-foreground">
-          New mentor applications will appear here for you to verify and approve.
-        </p>
-      </div>
-    );
-
-  return (
+  const mentorsBlock = isError ? (
+    <ErrorBanner message="Couldn't load pending mentors." onRetry={() => void refetch()} />
+  ) : isLoading ? (
+    <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>
+  ) : rows.length === 0 ? (
+    <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
+      <p className="text-[15px] font-medium text-foreground">No mentors awaiting review</p>
+      <p className="mt-1 text-[13px] font-light text-muted-foreground">
+        New mentor applications will appear here for you to verify and approve.
+      </p>
+    </div>
+  ) : (
     <div className="overflow-hidden rounded-xl border border-[#EDE0DB] bg-white">
       <Table>
         <TableHeader>
@@ -323,12 +331,121 @@ function ApprovalsSection() {
               mentor={m}
               busy={setStatusMutation.isPending}
               onApprove={() => setStatusMutation.mutate({ id: m.id, status: "approved" })}
-              onReject={() => setStatusMutation.mutate({ id: m.id, status: "rejected" })}
+              onReject={() => {
+                const reason =
+                  window.prompt("Reason for rejecting this mentor (emailed to them):") ?? "";
+                if (reason.trim() === "") return; // cancelled / empty → no-op
+                setStatusMutation.mutate({ id: m.id, status: "rejected", reason: reason.trim() });
+              }}
             />
           ))}
         </TableBody>
       </Table>
     </div>
+  );
+
+  return (
+    <div className="space-y-8">
+      {mentorsBlock}
+      <AddRequestsReviewPanel />
+    </div>
+  );
+}
+
+type AddRequestRow = {
+  id: string;
+  kind: string;
+  proposed_name: string;
+  status: string;
+  created_at: string;
+};
+
+// C (2026-06-04): admin review list for student-submitted ref add-requests
+// (new universities/courses/etc.). Reader admin_list_add_requests + the existing
+// admin_promote_ref_add_request / admin_reject_ref_add_request RPCs.
+function AddRequestsReviewPanel() {
+  const qc = useQueryClient();
+  const queryKey = ["admin-add-requests-pending"] as const;
+  const { data: rows = [], isLoading } = useQuery<AddRequestRow[]>({
+    queryKey,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_add_requests", { _status: "pending" });
+      if (error) throw error;
+      return (data as AddRequestRow[] | null) ?? [];
+    },
+  });
+
+  const decide = useMutation({
+    mutationFn: async ({ id, action }: { id: string; action: "promote" | "reject" }) => {
+      if (action === "promote") {
+        const { error } = await supabase.rpc("admin_promote_ref_add_request", { _id: id });
+        if (error) throw error;
+      } else {
+        const reason = window.prompt("Reason for rejecting this suggestion:") ?? "";
+        if (reason.trim() === "") throw new Error("cancelled");
+        const { error } = await supabase.rpc("admin_reject_ref_add_request", {
+          _id: id,
+          _reason: reason.trim(),
+        });
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => void qc.invalidateQueries({ queryKey }),
+    onError: (err) => {
+      if (err instanceof Error && err.message === "cancelled") return;
+      toast.error(err instanceof Error ? err.message : "Action failed.");
+    },
+  });
+
+  return (
+    <section>
+      <h3 className="mb-3 text-[15px] font-medium text-foreground">Suggested additions</h3>
+      {isLoading ? (
+        <div className="text-[14px] text-[#1A1A1A]/60">Loading…</div>
+      ) : rows.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border bg-card p-6 text-center text-[13px] font-light text-muted-foreground">
+          No pending suggestions to review.
+        </div>
+      ) : (
+        <div className="overflow-hidden rounded-xl border border-[#EDE0DB] bg-white">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Kind</TableHead>
+                <TableHead>Proposed name</TableHead>
+                <TableHead className="text-right">Decision</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((r) => (
+                <TableRow key={r.id}>
+                  <TableCell className="capitalize">{r.kind.replace(/_/g, " ")}</TableCell>
+                  <TableCell>{r.proposed_name}</TableCell>
+                  <TableCell className="space-x-2 text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={decide.isPending}
+                      onClick={() => decide.mutate({ id: r.id, action: "promote" })}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={decide.isPending}
+                      onClick={() => decide.mutate({ id: r.id, action: "reject" })}
+                    >
+                      Reject
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </section>
   );
 }
 

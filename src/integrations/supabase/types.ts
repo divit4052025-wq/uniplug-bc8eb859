@@ -1724,6 +1724,38 @@ export type Database = {
         Args: { _mentor_id: string; _status: string };
         Returns: undefined;
       };
+      approve_mentor: {
+        Args: { _mentor_id: string };
+        Returns: undefined;
+      };
+      reject_mentor: {
+        Args: { _mentor_id: string; _reason?: string | null };
+        Returns: undefined;
+      };
+      admin_clear_re_review: {
+        Args: { _mentor_id: string };
+        Returns: undefined;
+      };
+      admin_list_add_requests: {
+        Args: { _status?: string };
+        Returns: {
+          id: string;
+          kind: string;
+          proposed_name: string;
+          requested_by: string;
+          status: string;
+          decision_reason: string | null;
+          created_at: string;
+        }[];
+      };
+      cancel_booking_as_student: {
+        Args: { _booking_id: string };
+        Returns: Json;
+      };
+      cancel_booking_as_mentor: {
+        Args: { _booking_id: string };
+        Returns: Json;
+      };
       admin_stats: {
         Args: never;
         Returns: {
@@ -1818,13 +1850,21 @@ export type Database = {
       get_mentor_public_profile: {
         Args: { _mentor_id: string };
         Returns: {
+          // B (2026-06-04): full_name = first-name pre-booking, REAL full name
+          // only when an active booking links caller↔mentor; photo_url NULL
+          // until then. first_name/mascot_key/specialty_label/avg_rating added.
+          avg_rating: number | null;
           bio: string;
           countries: string[];
           course: string;
+          first_name: string;
           full_name: string;
           id: string;
-          photo_url: string;
+          mascot_key: string | null;
+          photo_url: string | null;
           price_inr: number;
+          review_count: number;
+          specialty_label: string | null;
           topics: string[];
           university: string;
           verified_at: string;
@@ -1877,13 +1917,19 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
-        Args: never;
+        // B (2026-06-04): optional specialty/university/min-rating filters.
+        Args: { _specialty_id?: string; _university?: string; _min_rating?: number };
         Returns: {
+          avg_rating: number | null;
           countries: string[];
           course: string;
-          full_name: string;
+          first_name: string;
+          full_name: string; // first-name only (browse is pre-booking)
           id: string;
+          mascot_key: string | null;
           price_inr: number;
+          review_count: number;
+          specialty_label: string | null;
           university: string;
           verified_at: string;
           year: string;

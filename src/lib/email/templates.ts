@@ -6,6 +6,18 @@ const BRAND_ACCENT = "#C4907F";
 const BRAND_LIGHT = "#FFFCFB";
 const BRAND_SOFT = "#EDE0DB";
 
+// Escape any dynamic/user-or-admin-sourced string before interpolating into
+// email HTML (folded from review C-1: the admin rejection reason was rendered
+// raw). Apply to every dynamic value, not just `reason`.
+function escapeHtml(s: string): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function formatDate(dateISO: string): string {
   try {
     return new Date(`${dateISO}T00:00:00`).toLocaleDateString("en-IN", {
@@ -295,7 +307,7 @@ export function mentorApprovedEmail(p: { mentorName: string }) {
       preheader: "Your mentor application was approved",
       heading: "You're in",
       bodyHtml: `
-        <p style="margin:0;">${p.mentorName ? `Hi ${p.mentorName},` : "Hi,"}</p>
+        <p style="margin:0;">${p.mentorName ? `Hi ${escapeHtml(p.mentorName)},` : "Hi,"}</p>
         <p style="margin:14px 0 0 0;">Your mentor application has been approved. Your profile is now live on UniPlug and students can book sessions with you.</p>
         <p style="margin:14px 0 0 0;">Next up: complete the safeguarding + code-of-conduct training (required before your first session), then head to your dashboard to set your availability.</p>
       `,
@@ -312,13 +324,31 @@ export function mentorRejectedEmail(p: { mentorName: string; reason: string }) {
       preheader: "An update on your UniPlug mentor application",
       heading: "About your application",
       bodyHtml: `
-        <p style="margin:0;">${p.mentorName ? `Hi ${p.mentorName},` : "Hi,"}</p>
+        <p style="margin:0;">${p.mentorName ? `Hi ${escapeHtml(p.mentorName)},` : "Hi,"}</p>
         <p style="margin:14px 0 0 0;">Thanks for applying to mentor on UniPlug. After reviewing your application, we're not able to approve it at this time.</p>
-        ${p.reason ? `<p style="margin:14px 0 0 0;"><strong>Reason:</strong> ${p.reason}</p>` : ""}
+        ${p.reason ? `<p style="margin:14px 0 0 0;"><strong>Reason:</strong> ${escapeHtml(p.reason)}</p>` : ""}
         <p style="margin:14px 0 0 0;">If you think this was a mistake or you've added new credentials since applying, reply to this email and we'll take another look.</p>
       `,
       ctaLabel: "Contact Support",
       ctaUrl: "mailto:support@uniplug.app",
+    }),
+  };
+}
+
+// Phase C (2026-06-04): a flagged re-review has been cleared by an admin — the
+// mentor's profile is good again. Sent only when the mentor is approved.
+export function mentorReReviewClearedEmail(p: { mentorName: string }) {
+  return {
+    subject: "Your UniPlug profile is all set",
+    html: shell({
+      preheader: "Your profile review is complete",
+      heading: "You're all set",
+      bodyHtml: `
+        <p style="margin:0;">${p.mentorName ? `Hi ${escapeHtml(p.mentorName)},` : "Hi,"}</p>
+        <p style="margin:14px 0 0 0;">We've finished reviewing the recent changes to your profile — everything checks out and your profile is fully live again. No action needed.</p>
+      `,
+      ctaLabel: "Open Dashboard",
+      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
     }),
   };
 }
