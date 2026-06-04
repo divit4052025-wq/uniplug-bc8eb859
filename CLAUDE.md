@@ -31,3 +31,12 @@ UniPlug: two-sided peer-mentorship marketplace (Indian school students ↔ verif
 ## Tooling
 - The uniplug-flo plugin (.claude/plugins/uniplug-flo) auto-invokes reviewers (db/payments/security/release/ux) + skills + /run-release-checks. Use dynamic-workflow agents for parallel READ/review only — never parallel write to the repo.
 - Model routing: Opus for design/architecture/security/DB; Sonnet for UI/execution/refactor.
+
+## Pointers
+- Live Supabase project ref: ncfhmbugjeuerchleegq.
+- Env vars + Supabase Vault secrets: ENV.md (single source of truth for what's set, where, and what breaks if missing).
+- Canonical optimistic-mutation pattern: src/routes/notifications.tsx (markAsRead).
+- Most recent security audit: audits/2026-05-14/rls-audit.md.
+
+## Deeper docs (uniplug-flo plugin)
+- Plugin overview + the full slash-command / subagent / skill / hook catalogue: .claude/plugins/uniplug-flo/README.md and AGENTS.md; per-skill detail in skills/<name>/SKILL.md; version history in CHANGELOG.md; the model split in model-routing.json.
