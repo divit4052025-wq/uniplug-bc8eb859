@@ -10,6 +10,7 @@ import {
   mentorSessionCompletedEmail,
   mentorReviewReceivedEmail,
   mentorApprovedEmail,
+  mentorReReviewClearedEmail,
   mentorRejectedEmail,
   parentalConsentEmail,
 } from "@/lib/email/templates";
@@ -50,6 +51,7 @@ type EventBody =
   | { type: "review_received"; review_id: string }
   | { type: "mentor_approved"; mentor_id: string }
   | { type: "mentor_rejected"; mentor_id: string; reason?: string }
+  | { type: "mentor_re_review_cleared"; mentor_id: string }
   | { type: "parental_consent_request"; student_id: string };
 
 export const Route = createFileRoute("/api/public/hooks/send-event-email")({
@@ -102,6 +104,7 @@ export const Route = createFileRoute("/api/public/hooks/send-event-email")({
               return await dispatchReviewReceived(apiKey, body);
             case "mentor_approved":
             case "mentor_rejected":
+            case "mentor_re_review_cleared":
               return await dispatchMentorStatus(apiKey, body);
             case "parental_consent_request":
               return await dispatchParentalConsentRequest(apiKey, body);
@@ -288,7 +291,11 @@ async function dispatchReviewReceived(
 
 async function dispatchMentorStatus(
   apiKey: string,
-  body: { type: "mentor_approved" | "mentor_rejected"; mentor_id: string; reason?: string },
+  body: {
+    type: "mentor_approved" | "mentor_rejected" | "mentor_re_review_cleared";
+    mentor_id: string;
+    reason?: string;
+  },
 ) {
   const { data: mentor, error } = await supabaseAdmin
     .from("mentors")
@@ -305,7 +312,9 @@ async function dispatchMentorStatus(
   const email =
     body.type === "mentor_approved"
       ? mentorApprovedEmail({ mentorName: mentor.full_name })
-      : mentorRejectedEmail({ mentorName: mentor.full_name, reason: body.reason ?? "" });
+      : body.type === "mentor_re_review_cleared"
+        ? mentorReReviewClearedEmail({ mentorName: mentor.full_name })
+        : mentorRejectedEmail({ mentorName: mentor.full_name, reason: body.reason ?? "" });
   try {
     await sendViaResend(apiKey, mentor.email, email.subject, email.html);
     return new Response(JSON.stringify({ ok: true, type: body.type, sent: 1 }), {
