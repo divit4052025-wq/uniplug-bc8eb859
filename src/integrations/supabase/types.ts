@@ -1553,6 +1553,7 @@ export type Database = {
           parental_consent_token: string | null;
           phone: string;
           photo_url: string | null;
+          profile_completed_at: string | null;
           school: string;
         };
         Insert: {
@@ -1573,6 +1574,7 @@ export type Database = {
           parental_consent_token?: string | null;
           phone: string;
           photo_url?: string | null;
+          profile_completed_at?: string | null;
           school: string;
         };
         Update: {
@@ -1593,6 +1595,7 @@ export type Database = {
           parental_consent_token?: string | null;
           phone?: string;
           photo_url?: string | null;
+          profile_completed_at?: string | null;
           school?: string;
         };
         Relationships: [];
@@ -1671,6 +1674,10 @@ export type Database = {
       };
       create_ref_add_request: {
         Args: { _kind: string; _proposed_name: string };
+        Returns: string;
+      };
+      finalize_student_profile: {
+        Args: never;
         Returns: string;
       };
       search_reference: {

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, X } from "lucide-react";
+import { Check, ChevronDown, X } from "lucide-react";
 
 export function MultiSelect({
   options,
@@ -91,7 +91,7 @@ export function MultiSelect({
               }`}
             >
               {opt}
-              {value.includes(opt) && <span className="text-primary">✓</span>}
+              {value.includes(opt) && <Check className="h-4 w-4 text-primary" />}
             </button>
           ))}
         </div>
