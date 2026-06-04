@@ -1,4 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700&display=swap");
+/* P7 (2026-06-04): decided brand fonts. Loaded globally (additive) but only
+   APPLIED inside the signup/finalize wizard via the scoped .signup-wizard block
+   at the bottom of this file — existing screens stay on Fraunces+Inter. The
+   app-wide reconciliation is deferred to the Claude Design polish pass. */
+@import url("https://fonts.googleapis.com/css2?family=Gabarito:wght@400;500;600;700;800;900&family=Quicksand:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -100,4 +105,19 @@
 @keyframes hero-rise {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── P7 student signup/finalize: scoped brand type (Gabarito display + Quicksand
+   body). Overriding the font vars on the wrapper re-resolves the base h1–h5
+   (var(--font-display)) and the font-display/font-sans utilities within this
+   subtree only; setting font-family makes descendant body text inherit
+   Quicksand. Unlayered → wins over the @layer base body/heading rules. No
+   existing screen is touched. ── */
+.signup-wizard {
+  --font-sans: "Quicksand", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Gabarito", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
+}
+.signup-wizard :is(h1, h2, h3, h4, h5) {
+  font-family: var(--font-display);
 }

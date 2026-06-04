@@ -19,6 +19,7 @@ import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { resolveUserRole } from "@/lib/auth/role";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
+import { finalizeSkippedThisSession } from "@/components/student-signup/gate";
 
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: () => clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
@@ -86,19 +87,36 @@ function Dashboard() {
     };
   }, [navigate, ctx.userId]);
 
-  const { data: profile } = useQuery<{ full_name: string | null }>({
+  const { data: profile } = useQuery<{
+    full_name: string | null;
+    profile_completed_at: string | null;
+  }>({
     queryKey: ["student-profile", userId],
     enabled: !!userId,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("students")
-        .select("full_name")
+        .select("full_name, profile_completed_at")
         .eq("id", userId as string)
         .maybeSingle();
       if (error) throw error;
-      return { full_name: data?.full_name ?? null };
+      return {
+        full_name: data?.full_name ?? null,
+        profile_completed_at: data?.profile_completed_at ?? null,
+      };
     },
   });
+
+  // P7 finalize gate: an authenticated student who hasn't completed their
+  // profile is routed to the finalize step. "Skip for now" (per-session) drops
+  // them here with a soft nudge banner instead, so a legacy/backfill user is
+  // never trapped.
+  const profileIncomplete = !!profile && profile.profile_completed_at === null;
+  useEffect(() => {
+    if (profileIncomplete && !finalizeSkippedThisSession()) {
+      navigate({ to: "/student-signup/finalize" });
+    }
+  }, [profileIncomplete, navigate]);
 
   const { data: consent } = useConsentStatus(userId);
 
@@ -139,6 +157,27 @@ function Dashboard() {
             </div>
           ) : (
             <div className="mt-8 space-y-12 animate-hero-rise">
+              {profileIncomplete && (
+                <div className="flex flex-col gap-3 rounded-2xl border border-[#C4907F]/30 bg-[#E8C4B8]/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-[#1A1A1A]">
+                      Finish setting up your profile
+                    </p>
+                    <p className="text-[13px] text-[#1A1A1A]/70">
+                      Add your subjects, targets and a photo for better mentor matches.
+                    </p>
+                  </div>
+                  {/* Near-black CTA: white-on-dusty-rose (#C4907F) fails WCAG AA
+                      contrast (~2.7:1); near-black clears it comfortably. */}
+                  <button
+                    type="button"
+                    onClick={() => navigate({ to: "/student-signup/finalize" })}
+                    className="shrink-0 rounded-full bg-[#1A1A1A] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                  >
+                    Complete profile
+                  </button>
+                </div>
+              )}
               {consent?.awaiting && (
                 <AwaitingConsentNotice studentId={userId} parentEmail={consent.parentEmail} />
               )}

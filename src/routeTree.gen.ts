@@ -32,6 +32,7 @@ import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as StudentSignupFinalizeRouteImport } from './routes/student-signup_.finalize'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
 import { Route as MessagesConversationIdRouteImport } from './routes/messages_.$conversationId'
@@ -156,6 +157,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudentSignupFinalizeRoute = StudentSignupFinalizeRouteImport.update({
+  id: '/student-signup_/finalize',
+  path: '/student-signup/finalize',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SessionNotesNoteIdRoute = SessionNotesNoteIdRouteImport.update({
   id: '/$noteId',
   path: '/$noteId',
@@ -229,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/student-signup/finalize': typeof StudentSignupFinalizeRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/student-signup/finalize': typeof StudentSignupFinalizeRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -296,6 +304,7 @@ export interface FileRoutesById {
   '/messages_/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
+  '/student-signup_/finalize': typeof StudentSignupFinalizeRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -331,6 +340,7 @@ export interface FileRouteTypes {
     | '/messages/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
+    | '/student-signup/finalize'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/messages/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
+    | '/student-signup/finalize'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -397,6 +408,7 @@ export interface FileRouteTypes {
     | '/messages_/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
+    | '/student-signup_/finalize'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -430,6 +442,7 @@ export interface RootRouteChildren {
   MentorIdRoute: typeof MentorIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
+  StudentSignupFinalizeRoute: typeof StudentSignupFinalizeRoute
   ApiPublicHooksRazorpayWebhookRoute: typeof ApiPublicHooksRazorpayWebhookRoute
   ApiPublicHooksSendEventEmailRoute: typeof ApiPublicHooksSendEventEmailRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
@@ -598,6 +611,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/student-signup_/finalize': {
+      id: '/student-signup_/finalize'
+      path: '/student-signup/finalize'
+      fullPath: '/student-signup/finalize'
+      preLoaderRoute: typeof StudentSignupFinalizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/session-notes/$noteId': {
       id: '/session-notes/$noteId'
       path: '/$noteId'
@@ -697,6 +717,7 @@ const rootRouteChildren: RootRouteChildren = {
   MentorIdRoute: MentorIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ParentalConsentTokenRoute: ParentalConsentTokenRoute,
+  StudentSignupFinalizeRoute: StudentSignupFinalizeRoute,
   ApiPublicHooksRazorpayWebhookRoute: ApiPublicHooksRazorpayWebhookRoute,
   ApiPublicHooksSendEventEmailRoute: ApiPublicHooksSendEventEmailRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
