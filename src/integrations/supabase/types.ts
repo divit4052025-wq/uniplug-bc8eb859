@@ -1754,6 +1754,7 @@ export type Database = {
         Args: {
           _date: string;
           _description?: string;
+          _duration?: number;
           _mentor_id: string;
           _subject_id?: string;
           _time_slot: string;
@@ -1765,7 +1766,7 @@ export type Database = {
         Returns: string;
       };
       reserve_slot: {
-        Args: { _date: string; _student_id: string; _time_slot: string };
+        Args: { _date: string; _duration?: number; _student_id: string; _time_slot: string };
         Returns: string;
       };
       claim_reserved_booking: {
