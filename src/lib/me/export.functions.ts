@@ -34,6 +34,13 @@ export const exportMyData = createServerFn({ method: "POST" })
         supabaseAdmin.from("mentors").select("*").eq("id", userId).maybeSingle(),
       ]);
 
+      // The parental-consent token is a parent-only capability secret (delivered
+      // only via the parent email link). It must never leave via the data export
+      // — an exported token could be replayed to self-grant consent. Redact it.
+      if (studentRow) {
+        delete (studentRow as Record<string, unknown>)["parental_consent_token"];
+      }
+
       // Parallel data fetch — all tables the user owns.
       const [
         bookings,
