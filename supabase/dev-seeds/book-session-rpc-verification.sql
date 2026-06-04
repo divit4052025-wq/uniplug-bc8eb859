@@ -154,8 +154,10 @@ BEGIN
     '{"sub":"22222222-2222-2222-2222-222222220a01","role":"authenticated"}', true);
   EXECUTE 'SET LOCAL ROLE authenticated';
   BEGIN
+    -- Phase 4c made :30 a valid grid minute; use an off-grid minute (:45) so this
+    -- still exercises the format-regex rejection, not availability.
     PERFORM public.book_session(
-      '11111111-1111-1111-1111-111111110a02'::uuid, v_future, '14:30');
+      '11111111-1111-1111-1111-111111110a02'::uuid, v_future, '14:45');
     v_msg := 'malformed time_slot ACCEPTED';
   EXCEPTION WHEN OTHERS THEN
     IF SQLERRM ILIKE '%time_slot must be HH:00%' THEN
@@ -238,11 +240,11 @@ DECLARE
 BEGIN
   v_anon_can_exec := has_function_privilege(
     'anon',
-    -- Phase 3 widened book_session to 5 args (added optional _subject_id/_description).
+    -- Phase 3 widened book_session to 5 args; Phase 4c added _duration → 6 args.
     -- has_function_privilege resolves by EXACT signature, so this must name the
-    -- current 5-arg form (a positional 3-arg call resolves via defaults, but this
+    -- current 6-arg form (a positional 3-arg call resolves via defaults, but this
     -- privilege check does not).
-    'public.book_session(uuid, date, text, uuid, text)',
+    'public.book_session(uuid, date, text, uuid, text, integer)',
     'execute'
   );
   IF v_anon_can_exec THEN
