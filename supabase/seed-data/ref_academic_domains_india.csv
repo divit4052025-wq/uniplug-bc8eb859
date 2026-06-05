@@ -1,6 +1,6 @@
 # ref_academic_domains — India bulk seed (PART 1).
-# Source: Hipo/university-domains-list world JSON (MIT), filtered to country='India',
-# domains lowercased + deduped. A soft verification FLAG (never a hard block).
+# Source: Hipo/university-domains-list world JSON (MIT), country='India', lowercased+deduped.
+# A soft verification FLAG (never a hard block).
 domain
 aaidu.org
 aau.ac.in

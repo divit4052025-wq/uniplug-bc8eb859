@@ -1,9 +1,10 @@
-# ref_universities — India bulk seed (PART 1).
-# Sources (both MIT, licence-clean): Bluff-0/UGC_Indian-University-Dataset (UGC universities) +
-# Hipo/university-domains-list (India entries). The official AISHE/AIKOSH XLSX (GODL-India) was
-# JS/approval-gated and not machine-fetchable; these MIT mirrors are the sanctioned fallback.
-# Normalised (trim, strip leading codes/indexes, ALL-CAPS->Title Case, collapse whitespace).
-# One column: name. Loaded with country='India', source='UGC', aliases='{}' by the paired migration.
+# ref_universities — India bulk seed (PART 1), normalized-deduped.
+# Sources (both MIT): Bluff-0/UGC_Indian-University-Dataset UNION Hipo/university-domains-list
+# (India). The official AISHE/AIKOSH XLSX (GODL-India) was JS/approval-gated + unfetchable; these
+# MIT mirrors are the sanctioned fallback. Normalised (codes/indexes stripped, ALL-CAPS->Title,
+# whitespace collapsed) and DEDUPED on a normalized key vs the curated source='seed' rows (curated
+# spellings win) + generic city-less stubs removed. One column: name. Loaded country='India',
+# source='UGC', aliases='{}' by the paired migration.
 name
 A P Goyal Shimla University
 A.K.S. University
@@ -11,7 +12,6 @@ A.P.J. Abdul Kalam Technological University
 AAFT University of Media and Arts
 AIPH University
 AISECT University
-AMITY University
 ARYA Institute of Engineering & Technology
 AURO University of Hospitality and Management
 Abhilashi University
@@ -46,7 +46,6 @@ Amrita Vishwa Vidyapeetham
 Anand Agricultural University
 Anant National University
 Andhra University
-Anna University
 Anna University of Technology, Tirunelveli
 Annamalai University
 Ansal University
@@ -60,7 +59,6 @@ Arunachal University of Studies
 Arunodaya University
 Arybhatta Knowledge University
 Asansol Engineering College
-Ashoka University
 Assam Agricultural University
 Assam Don Bosco University
 Assam Down Town University
@@ -74,7 +72,6 @@ Atal Bihari Vajpayee Indian Institute of Information Technology and Management, 
 Atharva College of Engineering
 Atmiya University
 Avantika University
-Avinashilingam Institute for Home Science & Higher Education for Women
 Avinashilingam Institute for Home Science and Higher Education for Women
 Awadesh Pratap Singh University
 Awadhesh Pratap Singh University
@@ -94,7 +91,6 @@ Babasaheb Bhimrao Ambedkar University
 Babu Banarasi Das University
 Baddi University of Emerging Sciences & Technology
 Bahra University
-Banaras Hindu University
 Banasthai Vidyapith
 Banasthali University
 Banda University of Agriculture & Technology
@@ -138,7 +134,6 @@ Bikaner Technical University
 Binod Bihari Mahto Koylanchal University
 Birla Global University
 Birla Institute of Technology
-Birla Institute of Technology & Science
 Birla Institute of Technology and Science
 Birla Institute of Technology, Ranchi
 Birsa Agricultural University
@@ -190,7 +185,6 @@ Chandigarh University
 Chandil Polytechnic School
 Chandr Shekhar Azad University of Agriculture & Technology
 Chandra Shekhar Azad University of Agriculture and Technology
-Charotar University of Science & Technology
 Charotar University of Science and Technology
 Chatrapati Sahuji Maharaj Kanpur University
 Chaudhary Charan Singh University
@@ -209,8 +203,6 @@ Chinmaya Vishwavidyapeeth
 Chitkara University
 Choudary Charan Singh Haryana Agricultural Univeersity
 Choudary Charan Singh University
-Christ
-Christ University
 Cluster University of Jammu
 Cluster University of Srinagar
 Cochin University of Science and Technology
@@ -230,14 +222,12 @@ Dav University
 Davangere University
 Dayalbagh Educational Institute
 Dayananda Sagar University
-Deccan College Postgraduate & Research Institute
 Deccan College Postgraduate and Research Institute
 Deen Bandhu Chhotu Ram University of Sciences & Technology
 Deen Dayal Upadhyay Gorakhpur University
 Defence Institute of Advanced Technology
 Delhi College of Engineering (DCE)
 Delhi Pharmaceutical Sciences & Research University
-Delhi Technological University
 Desh Bhagat University
 Dev Sanakrit Vishwavidyalaya
 Devi Ahilya University of Indore
@@ -251,7 +241,6 @@ Diamond Harbour Women's University
 Dibrugarh University
 Doon University
 Dr C V Raman University
-Dr C. V. Raman University
 Dr K N Modi University
 Dr Shyama Prasad Mukherjee University
 Dr. A.P.J Abdul Kalam University
@@ -260,8 +249,6 @@ Dr. Abdul Haq Urdu University
 Dr. B. R. Ambedkar National Institute of Technology Jalandhar
 Dr. B. R. Ambedkar University of Social Sciences
 Dr. B.R. Ambedkar National Law University
-Dr. B.R. Ambedkar Open University
-Dr. B.R. Ambedkar University
 Dr. B.R.Ambedkar Open University
 Dr. B.R.Ambedkar University
 Dr. Babasaheb Ambedkar Marathwada University
@@ -271,7 +258,6 @@ Dr. Babasaheb Ambedkar Technological University
 Dr. Babasaheb AmbedkarTechnological University
 Dr. Bhim Rao Abdekar University
 Dr. Bhimrao Ambedkar Law University
-Dr. C.V. Raman University
 Dr. D.Y. Patil University
 Dr. D.Y. Patil Vidyapeeth
 Dr. Hari Singh Gour University, formerly University of Sagar
@@ -322,7 +308,6 @@ Gautam Buddha University
 Geetanjali University
 Global Open University , Nagaland
 Goa University
-Gokhale Institute of Politics & Economics
 Gokhale Institute of Politics and Economics
 Gokul Global University
 Gola Polytechnic School
@@ -381,7 +366,6 @@ Himalayan Garhwal University
 Himalayan University
 Himgiri Zee University
 Hindustan Institute of Technology and Science
-Hindustan Institute of Technology and Science (HITS)
 Homi Bhabha National Institute Regd. Office
 Homoeopathy University
 I.E.C. (India Education Centre) University
@@ -412,7 +396,6 @@ Indain Institute of Foreigen Trade
 Indian Agricultural Research Institute
 Indian Association for the Cultivation of Science (IACS)
 Indian Board of Alternative Medicine
-Indian Institute Of Technology–Ropar (IIT–Ropar)
 Indian Institute of Information Technology Allahabad
 Indian Institute of Information Technology Sri City
 Indian Institute of Information Technology and Management
@@ -423,24 +406,12 @@ Indian Institute of Information Technology, Vadodara
 Indian Institute of Information Technology,Design & Manufacturing(IIITDM)
 Indian Institute of Management, Tiruchirappalli
 Indian Institute of Public Health
-Indian Institute of Science
 Indian Institute of Space Science and Technology
 Indian Institute of Teacher Education
-Indian Institute of Technology
-Indian Institute of Technology (Roorkee)
 Indian Institute of Technology Ropar
-Indian Institute of Technology, Bombay
-Indian Institute of Technology, Delhi
 Indian Institute of Technology, Gandhinagar
-Indian Institute of Technology, Guwahati
-Indian Institute of Technology, Hyderabad
-Indian Institute of Technology, Indore
 Indian Institute of Technology, Jodhpur
-Indian Institute of Technology, Kanpur
-Indian Institute of Technology, Kharagpur
-Indian Institute of Technology, Madras
 Indian Institute of Technology, Patna
-Indian Institute of Technology, Roorkee
 Indian Law Institue
 Indian Law Institute
 Indian Maritime University
@@ -460,7 +431,6 @@ Indira Gandhi Technological and Medical Science University
 Indira Gandhi University
 Indira Kala Sangeet Vishwavidyalaya
 Indraprastha Institute of Information Technology
-Indraprastha Institute of Information Technology, Delhi
 Indrashil University
 Indus International Uniersity
 Indus University
@@ -474,8 +444,6 @@ Institute of Trans-Disciplinary Health Sciences and Technology
 Institute of liver and Biliary Sciences
 Integral University
 International Institute for Population Sciences
-International Institute of Information Technology
-International Institute of Information Technology (IIIT)
 International Institute of Information Technology, Bangalore
 International Institute of Information Technology, Bhubaneswar
 International Institute of Information Technology, Pune
@@ -492,7 +460,6 @@ JIS University
 JK Lakshmipat University
 JSS Academy of Higher Education & Research
 JSS Science & Technology University
-Jadavpur University
 Jagadgura Rambhadracharya Handicapped University
 Jagadguru Ramanandacharya Sanskrit University
 Jagan Nath University
@@ -502,6 +469,7 @@ Jai Naraim Vyas University
 Jai Narain Vyas University
 Jai Prakash University
 Jai Prakash vishwavidyalaya(university)
+Jain (Deemed-to-be University)
 Jain Vishva Bharati Institute
 Jaipur National University
 Jamia Hamdard
@@ -518,7 +486,6 @@ Jawaharlal Nehru Centre for Advanced Scientific Research
 Jawaharlal Nehru Krishi Vishwavidyalaya
 Jawaharlal Nehru Technological University
 Jawaharlal Nehru Technological University Hyderabad
-Jawaharlal Nehru University
 Jayoti Vidyapeet Women's University
 Jaypee Institute of Information Technology
 Jaypee University
@@ -543,7 +510,6 @@ Kadi Sarva Vishwavidyalaya
 Kakatiya University
 Kalasalingam Academy of Research and Education
 Kalinga Institute of Industrial Technology
-Kalinga Institute of Industrial Technology (KIIT)
 Kalinga University
 Kaloji Narayan Rao University of Health Sciences
 Kaloji Narayana Rao University of Health Sciences
@@ -685,7 +651,6 @@ Manav Rachna University
 Mandsaur University
 Mangalayatan University
 Mangalore University
-Manipal Academy of Higher Education
 Manipal University
 Manipur International University
 Manipur Technical University
@@ -739,10 +704,8 @@ National Dairy Research Institute
 National Insitute of Technology
 National Institute of Food Technology Entrepreneurship & Management (NIFTEM)
 National Institute of Industrial Engineering
-National Institute of Mental Health & Neuro Sciences
 National Institute of Mental Health and Neuro Sciences
 National Institute of Pharmeutical Education & Research
-National Institute of Technology
 National Institute of Technology Agartala
 National Institute of Technology Andhra Pradesh
 National Institute of Technology Arunachal Pradesh
@@ -768,8 +731,8 @@ National Institute of Technology Srinagar
 National Institute of Technology Surathkal
 National Institute of Technology Trichy
 National Institute of Technology Uttarakhand
-National Institute of Technology Warangal
 National Law Institute University
+National Law School of India University
 National Law Universituy
 National Law University
 National Law University and Judicial Academy
@@ -780,19 +743,16 @@ National Sports University
 National University of Advanced Legal Studies (NUALS)
 National University of Educational Planning & Administration
 National University of Study & Research in Law
-National law School of India University
 Nava Nalanda Mahavihara
 Navrachana University
 Navsari Agriculture University
 Nehru Gram Bharati
 Netaji Shubhash Open University
 Netaji Subhas University
-Netaji Subhas University of Technology
 Nilamber-Pitamber University
 Nirma University
 Nitte
 Nizam's Institute of Medical Sciences
-Nizam’s Institute of Medical Sciences
 Noida International University
 Noorul Islam Centre for Higher Education
 North Benagal University
@@ -802,14 +762,12 @@ North Eastern Regional Institute of Science & Technology
 North Maharashtra University
 North Orissa University
 NorthCap University
-O.P. Jindal Global University
 O.P. Jindal University
 OPJS University
 Odisha State Open University
 Om Sterling Global University
 Open International University for Alternative Medicines
 Oriental University
-Orissa University Of Agriculture & Technology
 Orissa University of Agriculture and Technology
 Osmania University
 P. P. Savani University
@@ -921,7 +879,6 @@ S.R.M Institute of Science and Technology
 SA Engineering College
 SASTRA University
 SMK Fomra Institute of Technology
-SRM Institute Of Science & Technology
 SRM University
 Sage University
 Sai Nath University
@@ -972,7 +929,6 @@ Sharnbasva University
 Shekhawati University
 Sher-E-Kashmir University of Agricultural Sciences and Technology
 Sher-e-Kashmir University of Agricultural Science & Technology
-Shiv Nadar University
 Shivaji University
 Shobhit Institute of Engineering & Technology
 Shobhit University
@@ -1021,7 +977,6 @@ South Asian Universit y
 South Asian University
 South Gujarat University
 Spicer Adventist University
-Sree Chitra Tirunal Institute for Medical Sciences & Technology
 Sree Chitra Tirunal Institute for Medical Sciences and Technology
 Sree Rama Krishna Degree College
 Sree Sankaracharya University of Sanskrit
@@ -1033,6 +988,7 @@ Sri Devraj Urs Academy of Higher Education and Research
 Sri Guru Granth Sahib World University
 Sri Guru Ram Das University of Health Sciences
 Sri Konda Laxman Telangana State Horticultural University
+Sri Krishnadevaraya University
 Sri P V Narsimha Rao Telangana Veterinary University
 Sri Padmavati Mahila Vishwavidyalayam
 Sri Padmavati Women's University
@@ -1052,7 +1008,6 @@ Sri Venkateswara Institute of Medical Sciences
 Sri Venkateswara University
 Sri Venkateswara Vedic University
 Sri Venkateswara Veterinary University
-Sri krishnadevaraya University
 Srimanta Sankaradeva University of Health Sciences
 Srinivas University
 St Joseph's College Of Engineering
@@ -1074,7 +1029,6 @@ Swami Vivekananda Subharti University
 Swami Vivekananda Yoga Anusandhana Samsthana
 Swarnim Gujarat Sports University
 Swarnim Startup & Innovation University
-Symbiosis International University
 Symbiosis Skills and Open University
 Symbiosis University of Applied Sciences (SUAS)
 T.M. Bhagalpur University
@@ -1105,8 +1059,6 @@ Techno India University
 Teerthanker Mahaveer University
 Telangana University
 Tezpur University
-Thapar Institute of Engineering & Technology
-Thapar Institute of Engineering and Technology
 The Assam Kaziranga University
 The Assam Royal Global University
 The Bengal Engineering & Science University
@@ -1146,8 +1098,6 @@ University of Allahabad
 University of Burdwan
 University of Calcutta
 University of Calicut
-University of Delhi
-University of Engineering & Management
 University of Engineering and Management
 University of Health Sciences Andhra Pradesh
 University of Horticultural Sciences
@@ -1160,7 +1110,6 @@ University of Kota
 University of Lucknow
 University of Madras
 University of Media Arts
-University of Mumbai
 University of Music and Fine Arts
 University of Mysore
 University of North Bengal
@@ -1201,7 +1150,6 @@ Veer Surendra Sai University of Technology
 Vel Tech Rangarajan Dr. Sagunthala R & D Institute of Science and Technology
 Velammal Engineering College
 Velammal Institute of Technology
-Vellore Institute of Technology
 Venkateshwara Open University
 Vesveswaraiah Technological University
 Vidya Sagar University

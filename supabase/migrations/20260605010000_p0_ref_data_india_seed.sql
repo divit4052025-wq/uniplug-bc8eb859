@@ -1,32 +1,33 @@
 -- ════════════════════════════════════════════════════════════════════════════
 -- India reference-data seed — PART 1 of 2: universities + academic email domains
--- + top-tier university aliases. (Schools + colleges are a separate later build.)
+-- + top-tier aliases. (Schools + colleges are a separate later build.)
 -- ════════════════════════════════════════════════════════════════════════════
---
--- DATA-ONLY, ADDITIVE, idempotent. No tables/columns added (no types.ts change).
--- Pairs with the committed source data files:
---   supabase/seed-data/ref_universities_india.csv  (1229 names)
+-- DATA-ONLY, ADDITIVE, idempotent. No tables/columns/RPCs added (no types.ts change).
+-- Generated from the committed source data files (do not hand-edit the row lists):
+--   supabase/seed-data/ref_universities_india.csv  (1176 names, normalized-deduped)
 --   supabase/seed-data/ref_academic_domains_india.csv  (487 domains)
--- This migration is GENERATED from those files (do not hand-edit row lists;
--- regenerate from the CSVs). Mirrors the ON CONFLICT idempotency of
--- 20260603000002_p0_ref_seed.sql, so re-running never clobbers curated rows.
+--
+-- The university list is DEDUPED on a normalized key (lowercase, &->and, strip all
+-- punctuation, collapse whitespace): rows whose key matches a curated source='seed'
+-- row are dropped (curated canonical spelling + aliases win), and generic city-less
+-- stubs (a key that is a strict prefix of >=2 others) are removed. So the bulk rows
+-- here share NO normalized key with the curated set or each other.
 --
 -- SOURCES + LICENCES (attribution):
---   • Universities: Bluff-0/UGC_Indian-University-Dataset (UGC universities list) — MIT;
---     UNION Hipo/university-domains-list India entries — MIT. The official AISHE
---     "All Universities" XLSX (AIKOSH / Ministry of Education, GODL-India) was the
---     intended primary but is served behind a JS/approval-gated SPA and was not
---     machine-fetchable; these MIT mirrors are the sanctioned fallback. Bulk rows
---     are tagged source='UGC' (a distinct marker vs the curated source='seed').
---   • Email domains: Hipo/university-domains-list world JSON — MIT — filtered to India.
---   • Aliases: hand-authored for top institutions (keyed to the exact loaded name,
---     applied ONLY where aliases is currently empty — never clobbers the curated tier).
+--   • Universities: Bluff-0/UGC_Indian-University-Dataset (MIT) UNION
+--     Hipo/university-domains-list India entries (MIT). The official AISHE XLSX
+--     (AIKOSH / Ministry of Education, GODL-India) was JS/approval-gated + not
+--     machine-fetchable; MIT mirrors are the sanctioned fallback. Bulk tagged
+--     source='UGC' (distinct from curated source='seed').
+--   • Email domains: Hipo/university-domains-list world JSON (MIT), filtered to India.
+--   • Aliases: hand-authored for top institutions, keyed to the exact loaded name,
+--     applied ONLY where aliases is empty (never clobbers the curated tier).
 --
 -- Verification: supabase/dev-seeds/ref-data-india-seed-verification.sql
 -- LOCAL-ONLY: hosted Supabase stays on HOLD until the explicit reconciliation step.
 -- ════════════════════════════════════════════════════════════════════════════
 
--- ─── ref_universities — 1229 India names (UGC ∪ Hipo); ON CONFLICT preserves the curated set ───
+-- ─── ref_universities — 1176 India names (UGC ∪ Hipo, deduped); ON CONFLICT preserves curated ───
 INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('A P Goyal Shimla University', 'India', '{}', 'UGC'),
   ('A.K.S. University', 'India', '{}', 'UGC'),
@@ -34,7 +35,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('AAFT University of Media and Arts', 'India', '{}', 'UGC'),
   ('AIPH University', 'India', '{}', 'UGC'),
   ('AISECT University', 'India', '{}', 'UGC'),
-  ('AMITY University', 'India', '{}', 'UGC'),
   ('ARYA Institute of Engineering & Technology', 'India', '{}', 'UGC'),
   ('AURO University of Hospitality and Management', 'India', '{}', 'UGC'),
   ('Abhilashi University', 'India', '{}', 'UGC'),
@@ -69,7 +69,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Anand Agricultural University', 'India', '{}', 'UGC'),
   ('Anant National University', 'India', '{}', 'UGC'),
   ('Andhra University', 'India', '{}', 'UGC'),
-  ('Anna University', 'India', '{}', 'UGC'),
   ('Anna University of Technology, Tirunelveli', 'India', '{}', 'UGC'),
   ('Annamalai University', 'India', '{}', 'UGC'),
   ('Ansal University', 'India', '{}', 'UGC'),
@@ -83,7 +82,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Arunodaya University', 'India', '{}', 'UGC'),
   ('Arybhatta Knowledge University', 'India', '{}', 'UGC'),
   ('Asansol Engineering College', 'India', '{}', 'UGC'),
-  ('Ashoka University', 'India', '{}', 'UGC'),
   ('Assam Agricultural University', 'India', '{}', 'UGC'),
   ('Assam Don Bosco University', 'India', '{}', 'UGC'),
   ('Assam Down Town University', 'India', '{}', 'UGC'),
@@ -97,7 +95,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Atharva College of Engineering', 'India', '{}', 'UGC'),
   ('Atmiya University', 'India', '{}', 'UGC'),
   ('Avantika University', 'India', '{}', 'UGC'),
-  ('Avinashilingam Institute for Home Science & Higher Education for Women', 'India', '{}', 'UGC'),
   ('Avinashilingam Institute for Home Science and Higher Education for Women', 'India', '{}', 'UGC'),
   ('Awadesh Pratap Singh University', 'India', '{}', 'UGC'),
   ('Awadhesh Pratap Singh University', 'India', '{}', 'UGC'),
@@ -117,7 +114,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Babu Banarasi Das University', 'India', '{}', 'UGC'),
   ('Baddi University of Emerging Sciences & Technology', 'India', '{}', 'UGC'),
   ('Bahra University', 'India', '{}', 'UGC'),
-  ('Banaras Hindu University', 'India', '{}', 'UGC'),
   ('Banasthai Vidyapith', 'India', '{}', 'UGC'),
   ('Banasthali University', 'India', '{}', 'UGC'),
   ('Banda University of Agriculture & Technology', 'India', '{}', 'UGC'),
@@ -161,7 +157,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Binod Bihari Mahto Koylanchal University', 'India', '{}', 'UGC'),
   ('Birla Global University', 'India', '{}', 'UGC'),
   ('Birla Institute of Technology', 'India', '{}', 'UGC'),
-  ('Birla Institute of Technology & Science', 'India', '{}', 'UGC'),
   ('Birla Institute of Technology and Science', 'India', '{}', 'UGC'),
   ('Birla Institute of Technology, Ranchi', 'India', '{}', 'UGC'),
   ('Birsa Agricultural University', 'India', '{}', 'UGC'),
@@ -213,7 +208,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Chandil Polytechnic School', 'India', '{}', 'UGC'),
   ('Chandr Shekhar Azad University of Agriculture & Technology', 'India', '{}', 'UGC'),
   ('Chandra Shekhar Azad University of Agriculture and Technology', 'India', '{}', 'UGC'),
-  ('Charotar University of Science & Technology', 'India', '{}', 'UGC'),
   ('Charotar University of Science and Technology', 'India', '{}', 'UGC'),
   ('Chatrapati Sahuji Maharaj Kanpur University', 'India', '{}', 'UGC'),
   ('Chaudhary Charan Singh University', 'India', '{}', 'UGC'),
@@ -232,8 +226,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Chitkara University', 'India', '{}', 'UGC'),
   ('Choudary Charan Singh Haryana Agricultural Univeersity', 'India', '{}', 'UGC'),
   ('Choudary Charan Singh University', 'India', '{}', 'UGC'),
-  ('Christ', 'India', '{}', 'UGC'),
-  ('Christ University', 'India', '{}', 'UGC'),
   ('Cluster University of Jammu', 'India', '{}', 'UGC'),
   ('Cluster University of Srinagar', 'India', '{}', 'UGC'),
   ('Cochin University of Science and Technology', 'India', '{}', 'UGC'),
@@ -253,14 +245,12 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Davangere University', 'India', '{}', 'UGC'),
   ('Dayalbagh Educational Institute', 'India', '{}', 'UGC'),
   ('Dayananda Sagar University', 'India', '{}', 'UGC'),
-  ('Deccan College Postgraduate & Research Institute', 'India', '{}', 'UGC'),
   ('Deccan College Postgraduate and Research Institute', 'India', '{}', 'UGC'),
   ('Deen Bandhu Chhotu Ram University of Sciences & Technology', 'India', '{}', 'UGC'),
   ('Deen Dayal Upadhyay Gorakhpur University', 'India', '{}', 'UGC'),
   ('Defence Institute of Advanced Technology', 'India', '{}', 'UGC'),
   ('Delhi College of Engineering (DCE)', 'India', '{}', 'UGC'),
   ('Delhi Pharmaceutical Sciences & Research University', 'India', '{}', 'UGC'),
-  ('Delhi Technological University', 'India', '{}', 'UGC'),
   ('Desh Bhagat University', 'India', '{}', 'UGC'),
   ('Dev Sanakrit Vishwavidyalaya', 'India', '{}', 'UGC'),
   ('Devi Ahilya University of Indore', 'India', '{}', 'UGC'),
@@ -274,7 +264,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Dibrugarh University', 'India', '{}', 'UGC'),
   ('Doon University', 'India', '{}', 'UGC'),
   ('Dr C V Raman University', 'India', '{}', 'UGC'),
-  ('Dr C. V. Raman University', 'India', '{}', 'UGC'),
   ('Dr K N Modi University', 'India', '{}', 'UGC'),
   ('Dr Shyama Prasad Mukherjee University', 'India', '{}', 'UGC'),
   ('Dr. A.P.J Abdul Kalam University', 'India', '{}', 'UGC'),
@@ -283,8 +272,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Dr. B. R. Ambedkar National Institute of Technology Jalandhar', 'India', '{}', 'UGC'),
   ('Dr. B. R. Ambedkar University of Social Sciences', 'India', '{}', 'UGC'),
   ('Dr. B.R. Ambedkar National Law University', 'India', '{}', 'UGC'),
-  ('Dr. B.R. Ambedkar Open University', 'India', '{}', 'UGC'),
-  ('Dr. B.R. Ambedkar University', 'India', '{}', 'UGC'),
   ('Dr. B.R.Ambedkar Open University', 'India', '{}', 'UGC'),
   ('Dr. B.R.Ambedkar University', 'India', '{}', 'UGC'),
   ('Dr. Babasaheb Ambedkar Marathwada University', 'India', '{}', 'UGC'),
@@ -294,7 +281,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Dr. Babasaheb AmbedkarTechnological University', 'India', '{}', 'UGC'),
   ('Dr. Bhim Rao Abdekar University', 'India', '{}', 'UGC'),
   ('Dr. Bhimrao Ambedkar Law University', 'India', '{}', 'UGC'),
-  ('Dr. C.V. Raman University', 'India', '{}', 'UGC'),
   ('Dr. D.Y. Patil University', 'India', '{}', 'UGC'),
   ('Dr. D.Y. Patil Vidyapeeth', 'India', '{}', 'UGC'),
   ('Dr. Hari Singh Gour University, formerly University of Sagar', 'India', '{}', 'UGC'),
@@ -345,7 +331,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Geetanjali University', 'India', '{}', 'UGC'),
   ('Global Open University , Nagaland', 'India', '{}', 'UGC'),
   ('Goa University', 'India', '{}', 'UGC'),
-  ('Gokhale Institute of Politics & Economics', 'India', '{}', 'UGC'),
   ('Gokhale Institute of Politics and Economics', 'India', '{}', 'UGC'),
   ('Gokul Global University', 'India', '{}', 'UGC'),
   ('Gola Polytechnic School', 'India', '{}', 'UGC'),
@@ -404,7 +389,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Himalayan University', 'India', '{}', 'UGC'),
   ('Himgiri Zee University', 'India', '{}', 'UGC'),
   ('Hindustan Institute of Technology and Science', 'India', '{}', 'UGC'),
-  ('Hindustan Institute of Technology and Science (HITS)', 'India', '{}', 'UGC'),
   ('Homi Bhabha National Institute Regd. Office', 'India', '{}', 'UGC'),
   ('Homoeopathy University', 'India', '{}', 'UGC'),
   ('I.E.C. (India Education Centre) University', 'India', '{}', 'UGC'),
@@ -435,7 +419,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Indian Agricultural Research Institute', 'India', '{}', 'UGC'),
   ('Indian Association for the Cultivation of Science (IACS)', 'India', '{}', 'UGC'),
   ('Indian Board of Alternative Medicine', 'India', '{}', 'UGC'),
-  ('Indian Institute Of Technology–Ropar (IIT–Ropar)', 'India', '{}', 'UGC'),
   ('Indian Institute of Information Technology Allahabad', 'India', '{}', 'UGC'),
   ('Indian Institute of Information Technology Sri City', 'India', '{}', 'UGC'),
   ('Indian Institute of Information Technology and Management', 'India', '{}', 'UGC'),
@@ -446,24 +429,12 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Indian Institute of Information Technology,Design & Manufacturing(IIITDM)', 'India', '{}', 'UGC'),
   ('Indian Institute of Management, Tiruchirappalli', 'India', '{}', 'UGC'),
   ('Indian Institute of Public Health', 'India', '{}', 'UGC'),
-  ('Indian Institute of Science', 'India', '{}', 'UGC'),
   ('Indian Institute of Space Science and Technology', 'India', '{}', 'UGC'),
   ('Indian Institute of Teacher Education', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology (Roorkee)', 'India', '{}', 'UGC'),
   ('Indian Institute of Technology Ropar', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Bombay', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Delhi', 'India', '{}', 'UGC'),
   ('Indian Institute of Technology, Gandhinagar', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Guwahati', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Hyderabad', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Indore', 'India', '{}', 'UGC'),
   ('Indian Institute of Technology, Jodhpur', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Kanpur', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Kharagpur', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Madras', 'India', '{}', 'UGC'),
   ('Indian Institute of Technology, Patna', 'India', '{}', 'UGC'),
-  ('Indian Institute of Technology, Roorkee', 'India', '{}', 'UGC'),
   ('Indian Law Institue', 'India', '{}', 'UGC'),
   ('Indian Law Institute', 'India', '{}', 'UGC'),
   ('Indian Maritime University', 'India', '{}', 'UGC'),
@@ -483,7 +454,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Indira Gandhi University', 'India', '{}', 'UGC'),
   ('Indira Kala Sangeet Vishwavidyalaya', 'India', '{}', 'UGC'),
   ('Indraprastha Institute of Information Technology', 'India', '{}', 'UGC'),
-  ('Indraprastha Institute of Information Technology, Delhi', 'India', '{}', 'UGC'),
   ('Indrashil University', 'India', '{}', 'UGC'),
   ('Indus International Uniersity', 'India', '{}', 'UGC'),
   ('Indus University', 'India', '{}', 'UGC'),
@@ -497,8 +467,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Institute of liver and Biliary Sciences', 'India', '{}', 'UGC'),
   ('Integral University', 'India', '{}', 'UGC'),
   ('International Institute for Population Sciences', 'India', '{}', 'UGC'),
-  ('International Institute of Information Technology', 'India', '{}', 'UGC'),
-  ('International Institute of Information Technology (IIIT)', 'India', '{}', 'UGC'),
   ('International Institute of Information Technology, Bangalore', 'India', '{}', 'UGC'),
   ('International Institute of Information Technology, Bhubaneswar', 'India', '{}', 'UGC'),
   ('International Institute of Information Technology, Pune', 'India', '{}', 'UGC'),
@@ -515,7 +483,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('JK Lakshmipat University', 'India', '{}', 'UGC'),
   ('JSS Academy of Higher Education & Research', 'India', '{}', 'UGC'),
   ('JSS Science & Technology University', 'India', '{}', 'UGC'),
-  ('Jadavpur University', 'India', '{}', 'UGC'),
   ('Jagadgura Rambhadracharya Handicapped University', 'India', '{}', 'UGC'),
   ('Jagadguru Ramanandacharya Sanskrit University', 'India', '{}', 'UGC'),
   ('Jagan Nath University', 'India', '{}', 'UGC'),
@@ -525,6 +492,7 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Jai Narain Vyas University', 'India', '{}', 'UGC'),
   ('Jai Prakash University', 'India', '{}', 'UGC'),
   ('Jai Prakash vishwavidyalaya(university)', 'India', '{}', 'UGC'),
+  ('Jain (Deemed-to-be University)', 'India', '{}', 'UGC'),
   ('Jain Vishva Bharati Institute', 'India', '{}', 'UGC'),
   ('Jaipur National University', 'India', '{}', 'UGC'),
   ('Jamia Hamdard', 'India', '{}', 'UGC'),
@@ -541,7 +509,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Jawaharlal Nehru Krishi Vishwavidyalaya', 'India', '{}', 'UGC'),
   ('Jawaharlal Nehru Technological University', 'India', '{}', 'UGC'),
   ('Jawaharlal Nehru Technological University Hyderabad', 'India', '{}', 'UGC'),
-  ('Jawaharlal Nehru University', 'India', '{}', 'UGC'),
   ('Jayoti Vidyapeet Women''s University', 'India', '{}', 'UGC'),
   ('Jaypee Institute of Information Technology', 'India', '{}', 'UGC'),
   ('Jaypee University', 'India', '{}', 'UGC'),
@@ -566,7 +533,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Kakatiya University', 'India', '{}', 'UGC'),
   ('Kalasalingam Academy of Research and Education', 'India', '{}', 'UGC'),
   ('Kalinga Institute of Industrial Technology', 'India', '{}', 'UGC'),
-  ('Kalinga Institute of Industrial Technology (KIIT)', 'India', '{}', 'UGC'),
   ('Kalinga University', 'India', '{}', 'UGC'),
   ('Kaloji Narayan Rao University of Health Sciences', 'India', '{}', 'UGC'),
   ('Kaloji Narayana Rao University of Health Sciences', 'India', '{}', 'UGC'),
@@ -708,7 +674,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Mandsaur University', 'India', '{}', 'UGC'),
   ('Mangalayatan University', 'India', '{}', 'UGC'),
   ('Mangalore University', 'India', '{}', 'UGC'),
-  ('Manipal Academy of Higher Education', 'India', '{}', 'UGC'),
   ('Manipal University', 'India', '{}', 'UGC'),
   ('Manipur International University', 'India', '{}', 'UGC'),
   ('Manipur Technical University', 'India', '{}', 'UGC'),
@@ -762,10 +727,8 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('National Insitute of Technology', 'India', '{}', 'UGC'),
   ('National Institute of Food Technology Entrepreneurship & Management (NIFTEM)', 'India', '{}', 'UGC'),
   ('National Institute of Industrial Engineering', 'India', '{}', 'UGC'),
-  ('National Institute of Mental Health & Neuro Sciences', 'India', '{}', 'UGC'),
   ('National Institute of Mental Health and Neuro Sciences', 'India', '{}', 'UGC'),
   ('National Institute of Pharmeutical Education & Research', 'India', '{}', 'UGC'),
-  ('National Institute of Technology', 'India', '{}', 'UGC'),
   ('National Institute of Technology Agartala', 'India', '{}', 'UGC'),
   ('National Institute of Technology Andhra Pradesh', 'India', '{}', 'UGC'),
   ('National Institute of Technology Arunachal Pradesh', 'India', '{}', 'UGC'),
@@ -791,8 +754,8 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('National Institute of Technology Surathkal', 'India', '{}', 'UGC'),
   ('National Institute of Technology Trichy', 'India', '{}', 'UGC'),
   ('National Institute of Technology Uttarakhand', 'India', '{}', 'UGC'),
-  ('National Institute of Technology Warangal', 'India', '{}', 'UGC'),
   ('National Law Institute University', 'India', '{}', 'UGC'),
+  ('National Law School of India University', 'India', '{}', 'UGC'),
   ('National Law Universituy', 'India', '{}', 'UGC'),
   ('National Law University', 'India', '{}', 'UGC'),
   ('National Law University and Judicial Academy', 'India', '{}', 'UGC'),
@@ -803,19 +766,16 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('National University of Advanced Legal Studies (NUALS)', 'India', '{}', 'UGC'),
   ('National University of Educational Planning & Administration', 'India', '{}', 'UGC'),
   ('National University of Study & Research in Law', 'India', '{}', 'UGC'),
-  ('National law School of India University', 'India', '{}', 'UGC'),
   ('Nava Nalanda Mahavihara', 'India', '{}', 'UGC'),
   ('Navrachana University', 'India', '{}', 'UGC'),
   ('Navsari Agriculture University', 'India', '{}', 'UGC'),
   ('Nehru Gram Bharati', 'India', '{}', 'UGC'),
   ('Netaji Shubhash Open University', 'India', '{}', 'UGC'),
   ('Netaji Subhas University', 'India', '{}', 'UGC'),
-  ('Netaji Subhas University of Technology', 'India', '{}', 'UGC'),
   ('Nilamber-Pitamber University', 'India', '{}', 'UGC'),
   ('Nirma University', 'India', '{}', 'UGC'),
   ('Nitte', 'India', '{}', 'UGC'),
   ('Nizam''s Institute of Medical Sciences', 'India', '{}', 'UGC'),
-  ('Nizam’s Institute of Medical Sciences', 'India', '{}', 'UGC'),
   ('Noida International University', 'India', '{}', 'UGC'),
   ('Noorul Islam Centre for Higher Education', 'India', '{}', 'UGC'),
   ('North Benagal University', 'India', '{}', 'UGC'),
@@ -825,14 +785,12 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('North Maharashtra University', 'India', '{}', 'UGC'),
   ('North Orissa University', 'India', '{}', 'UGC'),
   ('NorthCap University', 'India', '{}', 'UGC'),
-  ('O.P. Jindal Global University', 'India', '{}', 'UGC'),
   ('O.P. Jindal University', 'India', '{}', 'UGC'),
   ('OPJS University', 'India', '{}', 'UGC'),
   ('Odisha State Open University', 'India', '{}', 'UGC'),
   ('Om Sterling Global University', 'India', '{}', 'UGC'),
   ('Open International University for Alternative Medicines', 'India', '{}', 'UGC'),
   ('Oriental University', 'India', '{}', 'UGC'),
-  ('Orissa University Of Agriculture & Technology', 'India', '{}', 'UGC'),
   ('Orissa University of Agriculture and Technology', 'India', '{}', 'UGC'),
   ('Osmania University', 'India', '{}', 'UGC'),
   ('P. P. Savani University', 'India', '{}', 'UGC'),
@@ -944,7 +902,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('SA Engineering College', 'India', '{}', 'UGC'),
   ('SASTRA University', 'India', '{}', 'UGC'),
   ('SMK Fomra Institute of Technology', 'India', '{}', 'UGC'),
-  ('SRM Institute Of Science & Technology', 'India', '{}', 'UGC'),
   ('SRM University', 'India', '{}', 'UGC'),
   ('Sage University', 'India', '{}', 'UGC'),
   ('Sai Nath University', 'India', '{}', 'UGC'),
@@ -995,7 +952,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Shekhawati University', 'India', '{}', 'UGC'),
   ('Sher-E-Kashmir University of Agricultural Sciences and Technology', 'India', '{}', 'UGC'),
   ('Sher-e-Kashmir University of Agricultural Science & Technology', 'India', '{}', 'UGC'),
-  ('Shiv Nadar University', 'India', '{}', 'UGC'),
   ('Shivaji University', 'India', '{}', 'UGC'),
   ('Shobhit Institute of Engineering & Technology', 'India', '{}', 'UGC'),
   ('Shobhit University', 'India', '{}', 'UGC'),
@@ -1044,7 +1000,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('South Asian University', 'India', '{}', 'UGC'),
   ('South Gujarat University', 'India', '{}', 'UGC'),
   ('Spicer Adventist University', 'India', '{}', 'UGC'),
-  ('Sree Chitra Tirunal Institute for Medical Sciences & Technology', 'India', '{}', 'UGC'),
   ('Sree Chitra Tirunal Institute for Medical Sciences and Technology', 'India', '{}', 'UGC'),
   ('Sree Rama Krishna Degree College', 'India', '{}', 'UGC'),
   ('Sree Sankaracharya University of Sanskrit', 'India', '{}', 'UGC'),
@@ -1056,6 +1011,7 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Sri Guru Granth Sahib World University', 'India', '{}', 'UGC'),
   ('Sri Guru Ram Das University of Health Sciences', 'India', '{}', 'UGC'),
   ('Sri Konda Laxman Telangana State Horticultural University', 'India', '{}', 'UGC'),
+  ('Sri Krishnadevaraya University', 'India', '{}', 'UGC'),
   ('Sri P V Narsimha Rao Telangana Veterinary University', 'India', '{}', 'UGC'),
   ('Sri Padmavati Mahila Vishwavidyalayam', 'India', '{}', 'UGC'),
   ('Sri Padmavati Women''s University', 'India', '{}', 'UGC'),
@@ -1075,7 +1031,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Sri Venkateswara University', 'India', '{}', 'UGC'),
   ('Sri Venkateswara Vedic University', 'India', '{}', 'UGC'),
   ('Sri Venkateswara Veterinary University', 'India', '{}', 'UGC'),
-  ('Sri krishnadevaraya University', 'India', '{}', 'UGC'),
   ('Srimanta Sankaradeva University of Health Sciences', 'India', '{}', 'UGC'),
   ('Srinivas University', 'India', '{}', 'UGC'),
   ('St Joseph''s College Of Engineering', 'India', '{}', 'UGC'),
@@ -1097,7 +1052,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Swami Vivekananda Yoga Anusandhana Samsthana', 'India', '{}', 'UGC'),
   ('Swarnim Gujarat Sports University', 'India', '{}', 'UGC'),
   ('Swarnim Startup & Innovation University', 'India', '{}', 'UGC'),
-  ('Symbiosis International University', 'India', '{}', 'UGC'),
   ('Symbiosis Skills and Open University', 'India', '{}', 'UGC'),
   ('Symbiosis University of Applied Sciences (SUAS)', 'India', '{}', 'UGC'),
   ('T.M. Bhagalpur University', 'India', '{}', 'UGC'),
@@ -1128,8 +1082,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Teerthanker Mahaveer University', 'India', '{}', 'UGC'),
   ('Telangana University', 'India', '{}', 'UGC'),
   ('Tezpur University', 'India', '{}', 'UGC'),
-  ('Thapar Institute of Engineering & Technology', 'India', '{}', 'UGC'),
-  ('Thapar Institute of Engineering and Technology', 'India', '{}', 'UGC'),
   ('The Assam Kaziranga University', 'India', '{}', 'UGC'),
   ('The Assam Royal Global University', 'India', '{}', 'UGC'),
   ('The Bengal Engineering & Science University', 'India', '{}', 'UGC'),
@@ -1169,8 +1121,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('University of Burdwan', 'India', '{}', 'UGC'),
   ('University of Calcutta', 'India', '{}', 'UGC'),
   ('University of Calicut', 'India', '{}', 'UGC'),
-  ('University of Delhi', 'India', '{}', 'UGC'),
-  ('University of Engineering & Management', 'India', '{}', 'UGC'),
   ('University of Engineering and Management', 'India', '{}', 'UGC'),
   ('University of Health Sciences Andhra Pradesh', 'India', '{}', 'UGC'),
   ('University of Horticultural Sciences', 'India', '{}', 'UGC'),
@@ -1183,7 +1133,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('University of Lucknow', 'India', '{}', 'UGC'),
   ('University of Madras', 'India', '{}', 'UGC'),
   ('University of Media Arts', 'India', '{}', 'UGC'),
-  ('University of Mumbai', 'India', '{}', 'UGC'),
   ('University of Music and Fine Arts', 'India', '{}', 'UGC'),
   ('University of Mysore', 'India', '{}', 'UGC'),
   ('University of North Bengal', 'India', '{}', 'UGC'),
@@ -1224,7 +1173,6 @@ INSERT INTO public.ref_universities (name, country, aliases, source) VALUES
   ('Vel Tech Rangarajan Dr. Sagunthala R & D Institute of Science and Technology', 'India', '{}', 'UGC'),
   ('Velammal Engineering College', 'India', '{}', 'UGC'),
   ('Velammal Institute of Technology', 'India', '{}', 'UGC'),
-  ('Vellore Institute of Technology', 'India', '{}', 'UGC'),
   ('Venkateshwara Open University', 'India', '{}', 'UGC'),
   ('Vesveswaraiah Technological University', 'India', '{}', 'UGC'),
   ('Vidya Sagar University', 'India', '{}', 'UGC'),
@@ -1750,13 +1698,15 @@ INSERT INTO public.ref_academic_domains (domain) VALUES
   ('ysparmaruniversity.org')
 ON CONFLICT (domain) DO NOTHING;
 
--- ─── top-tier aliases — 41 institutions; ONLY where aliases is empty ───
+-- ─── top-tier aliases — 52 institutions; ONLY where aliases is empty ───
 UPDATE public.ref_universities SET aliases = ARRAY['NIT Calicut','NITC']
   WHERE name = 'National Institute of Technology Calicut' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['NIT Rourkela','NITR']
   WHERE name = 'National Institute of Technology Rourkela' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['MNIT Jaipur','MNIT']
   WHERE name = 'Malaviya National Institute of Technology Jaipur' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['MANIT Bhopal','MANIT']
+  WHERE name = 'Maulana Azad National Institute of Technology' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['MNNIT Allahabad','MNNIT']
   WHERE name = 'Motilal Nehru National Institute Of Technology' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['SVNIT Surat','SVNIT','NIT Surat']
@@ -1775,10 +1725,22 @@ UPDATE public.ref_universities SET aliases = ARRAY['NIT Raipur']
   WHERE name = 'National Institute of Technology Raipur' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['NIT Jamshedpur']
   WHERE name = 'National Institute of Technology Jamshedpur' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['NIT Goa']
+  WHERE name = 'National Institute of Technology Goa' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['NIT Patna']
+  WHERE name = 'National Institute of Technology Patna' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['IIM Bangalore','IIMB']
+  WHERE name = 'Indian Institute of Management Bangalore' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['IIM Trichy','IIM Tiruchirappalli']
+  WHERE name = 'Indian Institute of Management, Tiruchirappalli' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['IISER Bhopal']
+  WHERE name = 'Indian Institute of Science' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['IIIT Bangalore','IIITB']
+  WHERE name = 'International Institute of Information Technology, Bangalore' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['IIIT Allahabad','IIITA']
   WHERE name = 'Indian Institute of Information Technology Allahabad' AND (aliases IS NULL OR cardinality(aliases) = 0);
-UPDATE public.ref_universities SET aliases = ARRAY['IIITM Gwalior','ABV-IIITM']
-  WHERE name = 'Atal Bihari Vajpayee Indian Institute of Information Technology and Management, Gwalior' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['JMI','Jamia']
+  WHERE name = 'Jamia Millia Islamia' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['AMU']
   WHERE name = 'Aligarh Muslim University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['UoH','Hyderabad Central University','HCU']
@@ -1787,7 +1749,7 @@ UPDATE public.ref_universities SET aliases = ARRAY['DU','Delhi University']
   WHERE name = 'University of Delhi' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Mumbai University','MU']
   WHERE name = 'University of Mumbai' AND (aliases IS NULL OR cardinality(aliases) = 0);
-UPDATE public.ref_universities SET aliases = ARRAY['Calcutta University','CU']
+UPDATE public.ref_universities SET aliases = ARRAY['Calcutta University']
   WHERE name = 'University of Calcutta' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Madras University']
   WHERE name = 'University of Madras' AND (aliases IS NULL OR cardinality(aliases) = 0);
@@ -1799,8 +1761,12 @@ UPDATE public.ref_universities SET aliases = ARRAY['PU Chandigarh']
   WHERE name = 'Panjab University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Mysore University']
   WHERE name = 'University of Mysore' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['Rajasthan University']
+  WHERE name = 'University of Rajasthan' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['GGSIPU','IP University','IPU']
   WHERE name = 'Guru Gobind Singh Indraprastha University' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['Hamdard University']
+  WHERE name = 'Jamia Hamdard' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Pondi University']
   WHERE name = 'Pondicherry University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['TISS']
@@ -1813,23 +1779,27 @@ UPDATE public.ref_universities SET aliases = ARRAY['Symbiosis','SIU']
   WHERE name = 'Symbiosis International University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Amrita University','Amrita']
   WHERE name = 'Amrita Vishwa Vidyapeetham' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['KIIT']
+  WHERE name = 'Kalinga Institute of Industrial Technology' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Thapar University','TIET']
   WHERE name = 'Thapar Institute of Engineering and Technology' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Bennett']
   WHERE name = 'Bennett University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['Shoolini']
   WHERE name = 'Shoolini University of Biotechnology and Management Sciences' AND (aliases IS NULL OR cardinality(aliases) = 0);
-UPDATE public.ref_universities SET aliases = ARRAY['CU Punjab']
-  WHERE name = 'Chandigarh University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['NLSIU','NLS Bangalore']
-  WHERE name = 'National law School of India University' AND (aliases IS NULL OR cardinality(aliases) = 0);
+  WHERE name = 'National Law School of India University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['ISI']
   WHERE name = 'Indian Statistical Institute' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['ISB','ISB Hyderabad']
   WHERE name = 'Indian School of Business Management and Administration' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['BIT Mesra']
+  WHERE name = 'Birla Institute of Technology' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['DSU','Dayananda Sagar']
   WHERE name = 'Dayananda Sagar University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['PESU']
   WHERE name = 'PES University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['JU']
   WHERE name = 'Jadavpur University' AND (aliases IS NULL OR cardinality(aliases) = 0);
+UPDATE public.ref_universities SET aliases = ARRAY['Jain University','Jain']
+  WHERE name = 'Jain (Deemed-to-be University)' AND (aliases IS NULL OR cardinality(aliases) = 0);

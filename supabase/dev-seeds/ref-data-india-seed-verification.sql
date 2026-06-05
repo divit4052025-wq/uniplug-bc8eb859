@@ -85,6 +85,25 @@ BEGIN
   INSERT INTO _r VALUES ('D.09_bulk_aliases_bounded', CASE WHEN v BETWEEN 1 AND 120 THEN 'PASS' ELSE 'FAIL' END, 'UGC rows with aliases = '||v||' (the hand-authored top tier only)');
 END $$;
 
+-- D.10 — canonical universities are normalized-UNIQUE (no two rows share a key).
+-- The SQL key mirrors the generator's norm_key: drop parentheticals, lowercase,
+-- & -> 'and', strip punctuation, collapse whitespace.
+DO $$
+DECLARE v int;
+BEGIN
+  WITH k AS (
+    SELECT trim(regexp_replace(
+             regexp_replace(
+               replace(
+                 lower(regexp_replace(name, '\([^)]*\)', ' ', 'g')),
+                 '&', ' and '),
+               '[^a-z0-9 ]', ' ', 'g'),
+             '\s+', ' ', 'g')) AS nk
+    FROM public.ref_universities)
+  SELECT count(*) INTO v FROM (SELECT nk FROM k GROUP BY nk HAVING count(*) > 1) d;
+  INSERT INTO _r VALUES ('D.10_normalized_unique', CASE WHEN v=0 THEN 'PASS' ELSE 'FAIL' END, 'duplicate normalized keys = '||v||' (expect 0)');
+END $$;
+
 SELECT test_id, status, detail FROM _r ORDER BY test_id;
 
 ROLLBACK;
