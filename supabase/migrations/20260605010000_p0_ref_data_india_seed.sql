@@ -1698,7 +1698,7 @@ INSERT INTO public.ref_academic_domains (domain) VALUES
   ('ysparmaruniversity.org')
 ON CONFLICT (domain) DO NOTHING;
 
--- ─── top-tier aliases — 52 institutions; ONLY where aliases is empty ───
+-- ─── top-tier aliases — 50 institutions; ONLY where aliases is empty ───
 UPDATE public.ref_universities SET aliases = ARRAY['NIT Calicut','NITC']
   WHERE name = 'National Institute of Technology Calicut' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['NIT Rourkela','NITR']
@@ -1733,8 +1733,6 @@ UPDATE public.ref_universities SET aliases = ARRAY['IIM Bangalore','IIMB']
   WHERE name = 'Indian Institute of Management Bangalore' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['IIM Trichy','IIM Tiruchirappalli']
   WHERE name = 'Indian Institute of Management, Tiruchirappalli' AND (aliases IS NULL OR cardinality(aliases) = 0);
-UPDATE public.ref_universities SET aliases = ARRAY['IISER Bhopal']
-  WHERE name = 'Indian Institute of Science' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['IIIT Bangalore','IIITB']
   WHERE name = 'International Institute of Information Technology, Bangalore' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['IIIT Allahabad','IIITA']
@@ -1793,8 +1791,6 @@ UPDATE public.ref_universities SET aliases = ARRAY['ISI']
   WHERE name = 'Indian Statistical Institute' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['ISB','ISB Hyderabad']
   WHERE name = 'Indian School of Business Management and Administration' AND (aliases IS NULL OR cardinality(aliases) = 0);
-UPDATE public.ref_universities SET aliases = ARRAY['BIT Mesra']
-  WHERE name = 'Birla Institute of Technology' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['DSU','Dayananda Sagar']
   WHERE name = 'Dayananda Sagar University' AND (aliases IS NULL OR cardinality(aliases) = 0);
 UPDATE public.ref_universities SET aliases = ARRAY['PESU']
