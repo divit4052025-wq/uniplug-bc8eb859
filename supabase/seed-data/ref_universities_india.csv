@@ -1,0 +1,1236 @@
+# ref_universities — India bulk seed (PART 1).
+# Sources (both MIT, licence-clean): Bluff-0/UGC_Indian-University-Dataset (UGC universities) +
+# Hipo/university-domains-list (India entries). The official AISHE/AIKOSH XLSX (GODL-India) was
+# JS/approval-gated and not machine-fetchable; these MIT mirrors are the sanctioned fallback.
+# Normalised (trim, strip leading codes/indexes, ALL-CAPS->Title Case, collapse whitespace).
+# One column: name. Loaded with country='India', source='UGC', aliases='{}' by the paired migration.
+name
+A P Goyal Shimla University
+A.K.S. University
+A.P.J. Abdul Kalam Technological University
+AAFT University of Media and Arts
+AIPH University
+AISECT University
+AMITY University
+ARYA Institute of Engineering & Technology
+AURO University of Hospitality and Management
+Abhilashi University
+Academy of Maritime Education and Training
+Acharaya N.G.Ranga Agricultural University
+Acharaya Nagarjuna University
+Acharya Nagarjuna University
+Acharya Ranga Agricultural University
+Adamas University
+Adesh University
+Adichunchanagiri University
+Adikavi Nannaya University
+Aditya University
+Ahmedabad University
+Ajeenkya D.Y. Patil University
+Akal University
+Akkamahadevi women's University (Formerly known as "Karnataka State Women's University)
+Al-Falah University
+Al-Karim University
+Alagappa University
+Aliah University
+Aligarh Muslim University
+All India Institute of Medical Sciences
+Allahabad Agricultural Institute, Deemed University
+Allahabad State University
+Allahabad University
+Alliance University
+Alpha College of Engineering
+Ambedkar University Delhi (AUD)
+Amravati University
+Amrita Vishwa Vidyapeetham
+Anand Agricultural University
+Anant National University
+Andhra University
+Anna University
+Anna University of Technology, Tirunelveli
+Annamalai University
+Ansal University
+Anurag University
+Apeejay Stya University
+Apex Professional University
+Apex university
+Arka Jain University
+Arni University
+Arunachal University of Studies
+Arunodaya University
+Arybhatta Knowledge University
+Asansol Engineering College
+Ashoka University
+Assam Agricultural University
+Assam Don Bosco University
+Assam Down Town University
+Assam Rajiv Gandhi University of Co-operative Management
+Assam Science & Technology University
+Assam University
+Assam Women's University
+Atal Bihari Bajpayee Vishwavidyalaya
+Atal Bihari Vajpayee Hindi Vishwavidyalaya
+Atal Bihari Vajpayee Indian Institute of Information Technology and Management, Gwalior
+Atharva College of Engineering
+Atmiya University
+Avantika University
+Avinashilingam Institute for Home Science & Higher Education for Women
+Avinashilingam Institute for Home Science and Higher Education for Women
+Awadesh Pratap Singh University
+Awadhesh Pratap Singh University
+Ayush and Health Sciences University of Chhattisgarh
+Azim Premji University
+B. R. Ambedkar Bihar University
+B. S. Abdur Rahman University
+B.L.D.E.
+B.R.Ambedkar National Institute of Technology
+B.S. Abdur Rahman Institute of Science and Technology
+BML Munjal University
+Baba Farid University of Health Sciences
+Baba Ghulam Shah Badshah University
+Baba MastNath University
+Babasaheb Bhimrao Ambedkar Bihar University
+Babasaheb Bhimrao Ambedkar University
+Babu Banarasi Das University
+Baddi University of Emerging Sciences & Technology
+Bahra University
+Banaras Hindu University
+Banasthai Vidyapith
+Banasthali University
+Banda University of Agriculture & Technology
+Bangalore University
+Bankura University
+Bareilly International University
+Barkatullaah University
+Barkatullah University
+Bastar Vishwavidyalaya
+Bengal Engineering College
+Bengaluru Central University
+Bengaluru North University
+Bennett University
+Berhampur University
+Bhabha University
+Bhagat Phool Singh Mahila Vishwavidyalaya
+Bhagwan Parshuram Institute of Technology
+Bhagwant Global University
+Bhagwant University
+Bhakta Kavi Narsinh Mehta University
+Bharath Institue Of Higher Education & Research
+Bharath Institute of Higher Education & Research
+Bharathiar University
+Bharathidasan University
+Bharati Vidyapeeth
+Bharati Vidyapeeth University
+Bharatiya Engineering Science and Technology Innovation University
+Bhartiya Skill Development University
+Bhatkhande Music Institute
+Bhavnagar University
+Bhupal Nobles University
+Bhupender Narayan Mandal University
+Bhupendra Narayan Mandal University
+Bidhan Chandra Agricultural University
+Bidhan Chandra Krishi Vishwavidyalaya
+Bihar Agricultural University
+Bihar Animal Sciences University
+Biju Patnaik University of Technology
+Biju Pattnaik University of Technology
+Bikaner Technical University
+Binod Bihari Mahto Koylanchal University
+Birla Global University
+Birla Institute of Technology
+Birla Institute of Technology & Science
+Birla Institute of Technology and Science
+Birla Institute of Technology, Ranchi
+Birsa Agricultural University
+Birsa Munda Tribal University
+Bishop Herber College
+Bodoland University
+Brainware University
+Bundelkhand University
+Burdwan University
+C. U. Shah University
+CCS Haryana Agricultural University
+CEPT University
+CMJ University
+CMR University
+COEP Technological University
+COER University Roorkee
+CT University
+Calcutta University
+Calicut University
+Calorx Teacher's University
+Capital University
+Career Point University
+Center for Entrepreneurship and Small Business Management
+Central Agricultural University
+Central Institute of Buddhist Studies(CIBS)
+Central Institute of English and Foreign Languages
+Central Institute of Fisheries Education
+Central Institute of Higher Tibetan Studies
+Central Institute of Technology(CIT)
+Central University of Gujarat
+Central University of Haryana
+Central University of Himachal Pradesh
+Central University of Jammu
+Central University of Jharkhand
+Central University of Karnataka
+Central University of Kashmir
+Central University of Kerala
+Central University of Orissa
+Central University of Punjab
+Central University of Rajasthan
+Central University of South Bihar
+Central university of Tamil Nadu
+Centurion University of Technolgy and Management
+Centurion University of Technology and Management
+Ch. Bansi Lal University
+Ch. Charan Singh University
+Chanakya National Law University
+Chandigarh University
+Chandil Polytechnic School
+Chandr Shekhar Azad University of Agriculture & Technology
+Chandra Shekhar Azad University of Agriculture and Technology
+Charotar University of Science & Technology
+Charotar University of Science and Technology
+Chatrapati Sahuji Maharaj Kanpur University
+Chaudhary Charan Singh University
+Chaudhary Devi Lal University
+Chaudhary Ranbir Singh University
+Chaudhary Sarwan Kumar Himachal Pradesh Krishi Vishvavidyalaya
+Chennai Institute of Technology
+Chennai Mathematical Institute
+Chettinad Academy of Research and Education (CARE)
+Chhatrapati Shahu Ji Maharaj University
+Chhatrapati Shivaji Maharaj University
+Chhattisgarh Kamdhenu Vishwavidyalaya
+Chhattisgarh Swami Vivekanad Technical Universty
+Children's University
+Chinmaya Vishwavidyapeeth
+Chitkara University
+Choudary Charan Singh Haryana Agricultural Univeersity
+Choudary Charan Singh University
+Christ
+Christ University
+Cluster University of Jammu
+Cluster University of Srinagar
+Cochin University of Science and Technology
+Cochin Unviersity of Science & Technology
+Cooch Behar Panchanan Barma University
+Cotton University
+D Y Patil International University
+D.A.V University
+D.Y Patil Educational Society
+DAV Institute of Engineering & Technology
+DIT University
+Dakshina Bharat Hindi Prachar Sabha
+Damodaram Sanjivayya National Law University
+Darul Huda Islamic University
+Datta Meghe Institute of Medical Sciences
+Dav University
+Davangere University
+Dayalbagh Educational Institute
+Dayananda Sagar University
+Deccan College Postgraduate & Research Institute
+Deccan College Postgraduate and Research Institute
+Deen Bandhu Chhotu Ram University of Sciences & Technology
+Deen Dayal Upadhyay Gorakhpur University
+Defence Institute of Advanced Technology
+Delhi College of Engineering (DCE)
+Delhi Pharmaceutical Sciences & Research University
+Delhi Technological University
+Desh Bhagat University
+Dev Sanakrit Vishwavidyalaya
+Devi Ahilya University of Indore
+Devi Ahilya Vishwavidyalaya
+Dhanamanjuri University
+Dharamsinh Desai University
+Dharmashastra National Law University
+Dharmsinh Desai University
+Dhirubhai Ambani Institute of Information and Communication Technology
+Diamond Harbour Women's University
+Dibrugarh University
+Doon University
+Dr C V Raman University
+Dr C. V. Raman University
+Dr K N Modi University
+Dr Shyama Prasad Mukherjee University
+Dr. A.P.J Abdul Kalam University
+Dr. A.P.J. Abdul Kalam Technical University
+Dr. Abdul Haq Urdu University
+Dr. B. R. Ambedkar National Institute of Technology Jalandhar
+Dr. B. R. Ambedkar University of Social Sciences
+Dr. B.R. Ambedkar National Law University
+Dr. B.R. Ambedkar Open University
+Dr. B.R. Ambedkar University
+Dr. B.R.Ambedkar Open University
+Dr. B.R.Ambedkar University
+Dr. Babasaheb Ambedkar Marathwada University
+Dr. Babasaheb Ambedkar Marathwada Universtiy
+Dr. Babasaheb Ambedkar Open University
+Dr. Babasaheb Ambedkar Technological University
+Dr. Babasaheb AmbedkarTechnological University
+Dr. Bhim Rao Abdekar University
+Dr. Bhimrao Ambedkar Law University
+Dr. C.V. Raman University
+Dr. D.Y. Patil University
+Dr. D.Y. Patil Vidyapeeth
+Dr. Hari Singh Gour University, formerly University of Sagar
+Dr. Harisingh Gour Vishwavidyalaya
+Dr. M.G.R. Educational and Research Institute
+Dr. N.T.R. University of Health Sciences
+Dr. Panjabrao Deshmukh Krishi Vidyapeeth
+Dr. Punjabrao Deshmukh Krishi Vidyapeeth
+Dr. Ram Manohar Lohia Avadh University
+Dr. Ram Manohar Lohia Awadh University
+Dr. Ram Manohar Lohia Institute of Medical Sciences
+Dr. Ram Manohar Lohiya National Law University
+Dr. Shakuntala Misra National Rehabilitation University
+Dr. Shyama Prasad University
+Dr. Sudhir Chandra Sur Institute of Technology & Sports Complex
+Dr. Vishwanath Karad MIT World Peace University
+Dr. Y.S.Parmar University of Horticulture & Forestry
+Dr. Y.S.R. Horticultural Univerity
+Dr. YS Parmar University of Horticulture and Forestry
+Dravidian University
+Easwari Engineering College
+Eiilm University
+English & Foreign Languages University
+Era University
+Eternal University
+Fakir Mohan University
+Fatima Mata National College
+First Global University to teaching Jainism
+Flame University
+Forest Research Institute
+Forest Research Institute Dehradun
+G L A University
+G.B.Pant University of Agriculture & Technology
+G.H Raisoni University
+G.L.S. University
+GD Goenka University
+GNA University
+GSFC University
+Galgotias University
+Gandhi Institute of Engineering & Technology University.
+Gandhi Institute of Technology and Management (GITAM)
+Gandhi Institute of Technology and Managment
+Gangadhar Meher University
+Ganpat University
+Garden City University
+Gauhati University
+Gautam Buddha University
+Geetanjali University
+Global Open University , Nagaland
+Goa University
+Gokhale Institute of Politics & Economics
+Gokhale Institute of Politics and Economics
+Gokul Global University
+Gola Polytechnic School
+Gondwana University
+Gopal Narayan Singh University
+Govind Ballabh Pant University of Agriculture and Technology
+Govind Guru Tribal University
+Graphic Era
+Graphic Era Hill University
+Greater Kolkata College of Engineering & Management
+Gujarat Ayurved University
+Gujarat Ayurveda University
+Gujarat Forensic Sciences University
+Gujarat Maritime University
+Gujarat National Law University
+Gujarat Technological University
+Gujarat Technological University Ahmedabad
+Gujarat University
+Gujarat University Ahmedabad
+Gujarat University of Transplantation Sciences
+Gujarat Vidyapith
+Gulbarga University
+Guru Angad Dev Veterinary & Animal Sciences University
+Guru Ghasidas University
+Guru Ghasidas Vishwavidyalaya
+Guru Gobind Singh Indraprastha University
+Guru Gobind Singh Indraprastha Vishwavidyalaya
+Guru Jambeshwar University
+Guru Jambeshwar University of Science and Technology
+Guru Kashi University
+Guru Nanak Dev University
+Guru Nanak Institute of Dental Sciences & Research
+Guru Nanak Institute of Hotel Management
+Guru Nanak Institute of Pharmaceutical Science & Technology
+Guru Nanak Institute of Technology
+Guru Ravidas Ayurved University
+Gurugram University
+Gurukul Kangri vidyapeeth
+Gurukul University
+Gurukula Kangri University
+Harcourt Butler Technical University
+Haridev Joshi University of Journalism and Mass Communication
+Haryana Vishwakarma Skill University
+Hemchand Yadav Vishwavidyalaya(Earlier known as Durg Vishwavidyalaya)
+Hemchandracharay North Gujarat University
+Hemchandracharya North Gujarat University
+Hemwati Nandan Bahuguna Garhwal University
+Hemwati Nandan Bahuguna Medical Education University
+Hidayatullah National Law University
+Hidayatullah National Law University, Raipur
+Himachal Pradesh Agricultural University
+Himachal Pradesh National Law University
+Himachal Pradesh Technical University
+Himachal Pradesh University
+Himalayan Garhwal University
+Himalayan University
+Himgiri Zee University
+Hindustan Institute of Technology and Science
+Hindustan Institute of Technology and Science (HITS)
+Homi Bhabha National Institute Regd. Office
+Homoeopathy University
+I.E.C. (India Education Centre) University
+IASE (Institute of Advanced Studies) Deemed University
+ICFAI Foundation for Higher Education
+ICFAI University
+ICFAI University, Dehradun
+ICFAI University, Himachal Pradesh
+ICFAI University, Hyderabad
+ICFAI University, Jaipur
+ICFAI University, Jharkhand
+ICFAI University, Meghalaya
+ICFAI University, Mizoram
+ICFAI University, Nagaland
+ICFAI University, Raipur
+ICFAI University, Sikkim
+ICFAI University, Tripura
+IFTM University
+IIHMR University
+IILM University
+IIMT University
+IIT Bhubaneswar
+IMS Unison University
+ISBM University
+ITM University
+ITM Vocational University
+Indain Institute of Foreigen Trade
+Indian Agricultural Research Institute
+Indian Association for the Cultivation of Science (IACS)
+Indian Board of Alternative Medicine
+Indian Institute Of Technology–Ropar (IIT–Ropar)
+Indian Institute of Information Technology Allahabad
+Indian Institute of Information Technology Sri City
+Indian Institute of Information Technology and Management
+Indian Institute of Information Technology and Management - Kerala
+Indian Institute of Information Technology, Guwahati
+Indian Institute of Information Technology, Kota
+Indian Institute of Information Technology, Vadodara
+Indian Institute of Information Technology,Design & Manufacturing(IIITDM)
+Indian Institute of Management, Tiruchirappalli
+Indian Institute of Public Health
+Indian Institute of Science
+Indian Institute of Space Science and Technology
+Indian Institute of Teacher Education
+Indian Institute of Technology
+Indian Institute of Technology (Roorkee)
+Indian Institute of Technology Ropar
+Indian Institute of Technology, Bombay
+Indian Institute of Technology, Delhi
+Indian Institute of Technology, Gandhinagar
+Indian Institute of Technology, Guwahati
+Indian Institute of Technology, Hyderabad
+Indian Institute of Technology, Indore
+Indian Institute of Technology, Jodhpur
+Indian Institute of Technology, Kanpur
+Indian Institute of Technology, Kharagpur
+Indian Institute of Technology, Madras
+Indian Institute of Technology, Patna
+Indian Institute of Technology, Roorkee
+Indian Law Institue
+Indian Law Institute
+Indian Maritime University
+Indian School of Business Management and Administration
+Indian School of Mines (ISM)
+Indian Statistical Institute
+Indian University
+Indian Veterinary Research Institute
+Indira Gandhi Agricultural University
+Indira Gandhi Delhi Technical University for Women
+Indira Gandhi Institute of Development Research
+Indira Gandhi Institute of Development and Research
+Indira Gandhi Institute of Medical Sciences
+Indira Gandhi Krishi Vishwavidyalaya
+Indira Gandhi National Open University
+Indira Gandhi Technological and Medical Science University
+Indira Gandhi University
+Indira Kala Sangeet Vishwavidyalaya
+Indraprastha Institute of Information Technology
+Indraprastha Institute of Information Technology, Delhi
+Indrashil University
+Indus International Uniersity
+Indus University
+Institute of Advanced Research
+Institute of Advanced Studies in Education
+Institute of Chemical Technology
+Institute of Infrastructure Technology Research and Management
+Institute of Management Studies
+Institute of Technology and Management
+Institute of Trans-Disciplinary Health Sciences and Technology
+Institute of liver and Biliary Sciences
+Integral University
+International Institute for Population Sciences
+International Institute of Information Technology
+International Institute of Information Technology (IIIT)
+International Institute of Information Technology, Bangalore
+International Institute of Information Technology, Bhubaneswar
+International Institute of Information Technology, Pune
+Invertis University
+Islamic University of Sciences & Technology University
+J.E.C.R.C University
+J.S. University
+JIS College of Engineering
+JIS Institute of Advanced Studies & Research
+JIS Institute of Pharmacy
+JIS School of Medical Science & Research
+JIS School of Polytechnic
+JIS University
+JK Lakshmipat University
+JSS Academy of Higher Education & Research
+JSS Science & Technology University
+Jadavpur University
+Jagadgura Rambhadracharya Handicapped University
+Jagadguru Ramanandacharya Sanskrit University
+Jagan Nath University
+Jagannath University
+Jagran Lakecity University
+Jai Naraim Vyas University
+Jai Narain Vyas University
+Jai Prakash University
+Jai Prakash vishwavidyalaya(university)
+Jain Vishva Bharati Institute
+Jaipur National University
+Jamia Hamdard
+Jamia Hamdard University
+Jamia Millia Islamia
+Jamia Millia Islamia University
+Jammu University
+Jananayak Chandrashekhar University
+Janardan Rai Nagar Rajasthan Vidyapeeth
+Jawahar lal Nehru Centre for Advanced Scientific Research
+Jawaharlal Nehru Agricultural University
+Jawaharlal Nehru Architecture and Fine Arts University
+Jawaharlal Nehru Centre for Advanced Scientific Research
+Jawaharlal Nehru Krishi Vishwavidyalaya
+Jawaharlal Nehru Technological University
+Jawaharlal Nehru Technological University Hyderabad
+Jawaharlal Nehru University
+Jayoti Vidyapeet Women's University
+Jaypee Institute of Information Technology
+Jaypee University
+Jaypee University of Engineering & Technology
+Jaypee University of Information Technology
+Jeppiar Engineering College
+Jharkhand Rai University
+Jharkhand Raksha Shakti University
+Jharkhand University of Technology
+Jiwaji University
+Jodhpur National University
+Junagarh Agricultural University
+K K University
+K.L.E. Academy of Higher Education and Research
+K.R. Mangalam University
+KCG College of Technology
+KIET Group of Institutions
+KLE Technological University
+KREA University
+KSGH Music and Performing Arts University
+Kadi Sarva Vishwavidyalaya
+Kakatiya University
+Kalasalingam Academy of Research and Education
+Kalinga Institute of Industrial Technology
+Kalinga Institute of Industrial Technology (KIIT)
+Kalinga University
+Kaloji Narayan Rao University of Health Sciences
+Kaloji Narayana Rao University of Health Sciences
+Kalyani University
+Kamdhenu University
+Kameshwar Singh Darbhanga Sanskrit University
+Kameshwar Singh.Darbhanga Sanskrit Vishwavidyalaya
+Kannada University
+Kannur University
+Karanataka State Law University
+Karanataka State Open University
+Karanataka University
+Karanataka Veterinary Animal & Fisheries Science University
+Karnatak University
+Karnataka Folklore University
+Karnataka Sanskrit University
+Karnataka State Law University
+Karnataka State Open University
+Karnataka State Rural Development and Panchayat Raj University
+Karnavati University
+Karpagam Academy of Higher Education
+Karpagam University
+Karunya Institute Of Technology
+Karunya Institute of Technology and Sciences
+Kashmir University
+Kavayitri Bahinabai Chadhari North Maharashtra University
+Kavi Kulguru Kalidas Sanskrit Vishwavidyalaya
+Kazi Nazrul University
+Kerala Agricultural University
+Kerala Agricultural Unviersity
+Kerala Kalamandalam
+Kerala University
+Kerala University of Fisheries & Ocean Studies
+Kerala University of Fisheries and Ocean Sciences
+Kerala University of Health Sciences
+Kerala Veterinary & Animal Sciences University
+Khaja Bandanawaz University
+Khallikote University
+Khwaja Moinuddin Chishti Urdu Arabi-Farsi University
+King Georges Medical University
+Kohinoor School of Hospitality Management
+Kolhan University
+Koneru Lakshmaiah Education Foundation
+Konkan Agricultural University
+Konkan Krishi Vidyapeeth
+Krantiguru Shyamji Krishna Verma Kachchh University
+Krishna Institute of Medical Sciences
+Krishna Kanta Handique State Open University
+Krishna University
+Krishnaguru Adhyatmik Visvavidyalaya
+Krishnakumarsinhji Bhavnagar University
+Kumar Bhaskar Varma Sanskrit & Ancient Studies University
+Kumaraguru College of Technology
+Kumaun University
+Kurukshetra University
+Kushabhau Thakre Patrakarita Avam Jansanchar Vishwavidyalaya
+Kuvempu University
+L.D.College of Engineering
+LNCT University
+Lakshmibai National Institute of Physical Education
+Lakulish Yoga University
+Lala Lajpat Rai University of Veterinary & Animal Sciences
+Lalit Narayan Mithila University
+Lingaya's Vidyapeeth
+Lords University
+Lovely Professional University
+Loyola-ICAM College of Engineering and Technology
+Lucknow University
+M.J.P. Rohilkhand University
+M.P.Bhoj (open) University
+M.S. Ramaiah University of Applied Sciences
+M.V.N. University
+MATS University
+MGM Institute of Health Sciences
+MIT Art Design and Technology University
+MIT World Peace University
+Madan Mohan Malaviya University of Technology
+Madaras University
+Madhav University
+Madhya Pradesh Bhoj (Open) University
+Madhya Pradesh Pashu Chikitsa Vigyan Vishwavidyalaya
+Madhyanchal Professional University
+Madras Institute of Technology
+Madurai Kamaraj University
+Madurai Kamraj University
+Magadh University
+Mahamaya Technical University
+Mahapurusha Srimanta Sankaradeva Viswavidyalaya
+Maharahtra University of Health Sciences
+Maharaj Vinayak Global University
+Maharaja Agrasen University
+Maharaja Bir Bikram University
+Maharaja Chhatrasal Bundelkhand Vishwavidyalaya
+Maharaja Ganga Singh University
+Maharaja Ganga Singh University, Bikaner
+Maharaja Ranjit Singh Punjab Technical University
+Maharaja Sayajirao University of Baroda
+Maharaja Surajmal Brij University
+Maharana Partap Horticultural University
+Maharana Pratap University of Agriculture & Technology
+Maharashtra Animal & Fishery Sciences University
+Maharashtra National Law University
+Maharishi Arvind University Jaipur
+Maharishi Balmiki Sanskrit University
+Maharishi Dayanand Saraswati University
+Maharishi Dayanand University
+Maharishi Dayanand University, Rohtak
+Maharishi Mahesh Yogi Vedic Vishwavidyalaya
+Maharishi Markandeshwar (Deemed to be University)
+Maharishi Markandeshwar University
+Maharishi University of Information Technology
+Maharishi University of Management and Technology
+Maharshi Dayanand Sarswati University Ajmer
+Maharshi Panini Sanskrit Evam Vedic Vishwavidyalaya
+Mahatam Gandhi Kashi Vidyapeeth
+Mahatama Gandhi University
+Mahatma Gandhi Antarrashtriya Hindi Vishwavidyalaya
+Mahatma Gandhi Central University
+Mahatma Gandhi Chitrakoot Gramodaya Vishwavidyalaya
+Mahatma Gandhi Chitrakut Gramoday University
+Mahatma Gandhi Kashi Vidyapith
+Mahatma Gandhi University
+Mahatma Gandhi University of Medical Sciences & Technology
+Mahatma Gandhi University, Kerala
+Mahatma Gandhi University, Nalgonda
+Mahatma Gandhi Unversity
+Mahatma Jyoti Rao Phoole University
+Mahatma Jyotiba Phule Rohilkhand University Bareilly
+Mahatma Phule Agricultural University
+Mahatma Phule Krishi Vidyapeeth
+Makanlal Chutur Vedi University
+Makhanlal Chaturvedi National University of Journalism & Communication
+Malaviya National Institute of Technology Jaipur
+Malviya National Institute of Technology
+Malwanchal University
+Manav Bharti University
+Manav Rachna International Institute of Research and Studies
+Manav Rachna University
+Mandsaur University
+Mangalayatan University
+Mangalore University
+Manipal Academy of Higher Education
+Manipal University
+Manipur International University
+Manipur Technical University
+Manipur University
+Manipur University of Culture
+Manonmaniam Sundarnar University
+Mansarovar Global University
+Mar Athanasios College for Advanced Studies
+Marathwada Agricultural University
+Martin Luther Christian University
+Marwadi University
+Mata Gujri University
+Maulana Abul Kalam Azad University of Technology
+Maulana Azad National Institute of Technology
+Maulana Azad National Institute of Technology Bhopal
+Maulana Azad National Urdu University
+Maulana Azad University
+Maulana Mazharul Haque Arabic & Persian University
+Medi-Caps University
+Meenakshi Academy of Higher Education and Research
+Mewar University
+Mizoram University
+Mody Institute of Education and Research
+Mody University of Science & Technology
+Mohammad Ali Jauhar University
+Mohan Lal Shukhadia University
+Mohan Lal Sukhadia University
+Monad University
+Mother Teresa Women's University
+Motherhood University
+Motilal Nehru National Institute Of Technology
+Motilal Nehru National Institute of Technolgy
+Moulana Azad national Urdu University
+Mumbai University
+Munger University
+Mysore University
+NIILM University
+NIIT University
+NIMS University
+Nagaland University
+Nagpur University
+Nalanda Open University
+Nalanda University
+Narendra Deo University of Agriculture & Technology
+Narendra Deva University of Agriculture and Technology
+Narsee Monjee Institute of Management Studies
+Narula Institute of Technology
+National Academy of Legal Studies & Research University
+National Brain Research Centre
+National Dairy Research Institute
+National Insitute of Technology
+National Institute of Food Technology Entrepreneurship & Management (NIFTEM)
+National Institute of Industrial Engineering
+National Institute of Mental Health & Neuro Sciences
+National Institute of Mental Health and Neuro Sciences
+National Institute of Pharmeutical Education & Research
+National Institute of Technology
+National Institute of Technology Agartala
+National Institute of Technology Andhra Pradesh
+National Institute of Technology Arunachal Pradesh
+National Institute of Technology Calicut
+National Institute of Technology Delhi
+National Institute of Technology Durgapur
+National Institute of Technology Goa
+National Institute of Technology Hamirpur
+National Institute of Technology Jamshedpur
+National Institute of Technology Karnataka
+National Institute of Technology Kurukshetra
+National Institute of Technology Manipur
+National Institute of Technology Meghalaya
+National Institute of Technology Mizoram
+National Institute of Technology Nagaland
+National Institute of Technology Patna
+National Institute of Technology Puducherry
+National Institute of Technology Raipur
+National Institute of Technology Rourkela
+National Institute of Technology Sikkim
+National Institute of Technology Silchar
+National Institute of Technology Srinagar
+National Institute of Technology Surathkal
+National Institute of Technology Trichy
+National Institute of Technology Uttarakhand
+National Institute of Technology Warangal
+National Law Institute University
+National Law Universituy
+National Law University
+National Law University and Judicial Academy
+National Museum Institute of History of Arts Conservation and Musicology
+National Rail and Transportation Institute
+National Sanskrit University
+National Sports University
+National University of Advanced Legal Studies (NUALS)
+National University of Educational Planning & Administration
+National University of Study & Research in Law
+National law School of India University
+Nava Nalanda Mahavihara
+Navrachana University
+Navsari Agriculture University
+Nehru Gram Bharati
+Netaji Shubhash Open University
+Netaji Subhas University
+Netaji Subhas University of Technology
+Nilamber-Pitamber University
+Nirma University
+Nitte
+Nizam's Institute of Medical Sciences
+Nizam’s Institute of Medical Sciences
+Noida International University
+Noorul Islam Centre for Higher Education
+North Benagal University
+North East Frontier Technical University
+North Eastern Hill University
+North Eastern Regional Institute of Science & Technology
+North Maharashtra University
+North Orissa University
+NorthCap University
+O.P. Jindal Global University
+O.P. Jindal University
+OPJS University
+Odisha State Open University
+Om Sterling Global University
+Open International University for Alternative Medicines
+Oriental University
+Orissa University Of Agriculture & Technology
+Orissa University of Agriculture and Technology
+Osmania University
+P. P. Savani University
+P. V. Narasimha Rao Telangana Veterinary University
+P.K. University
+PDM University
+PES University
+PSG College of Technology
+Pacific Academy of Higher Education & Research (PAHER)
+Pacific Medical University
+Padmashree Dr.D.Y. Patil Vidyapeeeth
+Palamuru University
+Pandit Deendayal Energy University
+Pandit Deendayal petroleum University
+Pandit Dwarka Prasad Mishra Indian Institute of Information Technology
+Pandit Ravi Shankar Shukla University
+Pandit S N Shukla University
+Panimalar Engineering College
+Panjab University
+Parul University
+Patliputra University
+Patna University
+People's University
+Periyar Manaimmai Institute of Science & Technology (PMIST)
+Periyar University
+Plastindia International University
+Pondicherry University
+Ponnaiyan Ramajayam Institute of Science & technology (PMIST)
+Poornima University
+Post-Graduate Institute of Medical Education & Research
+Postgraduate lnstitute of Medical Education and Research
+Potti Sreeramulu Telugu University
+Potti Sreeramulu Teugu Universtity
+Pragyan International University
+Pratap University
+Prathyusha Engineering College
+Pravara Institute of Medical Sciences
+Presidency University
+Professor Jayashankar Telangana State Agricultural University
+Pt. Bhagwat Dayal Sharma University of Health Sciences
+Pt. Sundarlal Sharma (Open) University
+Pt.Ravishankar Shukla University
+Punjab Agricultural University
+Punjab Agriculture University
+Punjab Engineering College
+Punjab Technical University
+Punjab University
+Punjabi University
+Punjabi University Patiala
+Purnea University
+Quantum University
+R.N.B. Global University
+RIMT University
+RK University
+RKDF University
+RMD Engineering College
+RMK College of Engineering and Technology
+RMK Engineering College
+Rabindra Bharati University
+Rabindranath Tagore University (formerly known as AISECT University)
+Radha Govind University
+Raffles University
+Rai Technology University
+Rai University
+Raiganj University
+Raj Rishi Bhartrihari Matsya University
+Raja Mansingh Tomar Music & Arts University
+Rajagiri School of Engineering and Technology
+Rajalakshmi Engineering College
+Rajalakshmi Institute of Technology
+Rajasthan Agricultural University, Bikaner
+Rajasthan Ayurveda University
+Rajasthan ILD Skills University (RISU)
+Rajasthan Technical University
+Rajasthan University
+Rajasthan University of Health Sciences
+Rajasthan University of Veterinary & Animal Sciences
+Rajasthan Vidyapeeth University
+Rajendra Agricultural University
+Rajitlal Institute of Technology & Health Sciences (RITHS)
+Rajiv Gandhi National Aviation University
+Rajiv Gandhi National Institute of Youth Development
+Rajiv Gandhi Prodoyogiki Vishwavidyalaya
+Rajiv Gandhi Technical University (University of Technology of Madhya Pradesh)
+Rajiv Gandhi University
+Rajiv Gandhi University of Health Science
+Rajiv Gandhi University of Knowledge Technology
+Rajmata Vijayaraje Scindia Krishi Vishwa Vidyalaya
+Raksha Shakti University
+Ram Krishna Dharmath Foundation University
+Rama Devi Women's University
+Rama University
+Ramaiah University of Applied Sciences
+Ramakrishna Mission Vivekananda Educational and Research Institute
+Ramchandra Chandravansi University
+Ranchi University
+Rani Channamma University
+Rani Durgavati University
+Rani Durgavati Vishwavidyalaya
+Ras Bihari Bose Subharti university
+Rashtriya Sanskrit Sansthana
+Rashtriya Sanskrit Vidyapeeth
+Ravenshaw University
+Rayalaseema University
+Rayat Bahra University
+Renaissance University
+Reva University
+S.R.M Institute of Science and Technology
+SA Engineering College
+SASTRA University
+SMK Fomra Institute of Technology
+SRM Institute Of Science & Technology
+SRM University
+Sage University
+Sai Nath University
+Sai Tirupati University
+Sam Higginbottom Institute of Agriculture Technology & Sciences
+Sambalpur University
+Sampurnanand Sanskrit University
+Sampurnanand Sanskrit Vishwavidyalaya
+Sanchi University of Buddhist-Indic Studies
+Sandip University
+Sangai International University
+Sangam University
+Sanjay Gandhi Postgraduate lnstitute of Medical Sciences
+Sanjay Ghodawat University
+Sankalchand Patel University
+Sanskriti University
+Sant Baba Bhag Singh University
+Sant Gadge Baba Amravati University
+Sant Longowal Institute of Engineering and Technology
+Santosh
+Sardar Bhagwan Singh University
+Sardar Krushinagar Dantiwada Agricultural University
+Sardar Patel University
+Sardar Patel University of Police Security & Criminal Justice
+Sardar Valabh Bhai National Institute of Technology
+Sardar Vallabh Bhai Patel University of Agriculture & Technology
+Sardar Vallabhai Patel University of Agriculture Amd Technology
+Sardar Vallabhbhai National Institute of Technology
+Sardarkrushinagar Dantiwada Agricultural University
+Sarguja University
+Sarla Birla University
+Sarvepalli Radhakrishnan University
+Satavahana University
+Sathyabama Institute of Science and Technology
+Sathyabama University
+Saurashtra University
+Saveetha Amaravati University
+Saveetha Engineering College
+Saveetha Institute of Medical and Technical Sciences
+Saveetha School of Engineering
+Saveetha University
+Savitribai Phule Pune University
+School of Planning and Architecture
+Seacom Skills University
+Shanmugha Arts Science Technology & Research Academy (SASTRA)
+Sharda University
+Sharnbasva University
+Shekhawati University
+Sher-E-Kashmir University of Agricultural Sciences and Technology
+Sher-e-Kashmir University of Agricultural Science & Technology
+Shiv Nadar University
+Shivaji University
+Shobhit Institute of Engineering & Technology
+Shobhit University
+Shobhit University, Meerut
+Shoolini University of Biotechnology and Management Sciences
+Shree Guru Gobind Singh Tricentenary University
+Shree Sankaracharaya University of Sanskrit
+Shree Somnath Sanskrit University
+Shreemati Nathibai Damodar Thackersey Women's University
+Shri Dharmasthala Manjunatheshwara University
+Shri Govind Guru University
+Shri Guru Ram Rai University
+Shri Jagannath Sanskrit University
+Shri Jagannath Sanskrit Vishwavidyalaya
+Shri Jagdish Prasad Jhabarmal Tibrewala University
+Shri Jagdishprasad Jhabarmal Tibrewala University
+Shri Khushal Das University
+Shri Krishna University
+Shri Lal Bahadur Shastri Rashtriya Sanskrit Vidyapeetha
+Shri Lal Bahadur Shastri Rashtriya Sanskrit Vidyapith
+Shri Mata Vaishno Devi University
+Shri Ramasamy Memorial University Sikkim
+Shri Ramswaroop Memorial University
+Shri Rawatpura Sarkar University
+Shri Vaishnav Vidyapeeth Vishwavidyalaya
+Shri Venkateshwara University
+Shridhar University
+Shyam University
+Siddharth University
+Sidho-Kanho-Birsha University
+Sido Kanhu Murmu University
+Sido Kanhu University
+Sikha 'O' Anushandhan University
+Sikkim Manipal University
+Sikkim Manipal University of Health, Medical and Technological Sciences
+Sikkim State University
+Sikkim University
+Siksha 'O' Anusandhan
+Singhania University
+Sir Padmapat Singhania University
+Sister Nivedita University
+Smt. Nathibai Damodar Thackersey Women's University
+Solapur University
+Somaiya Vidyavihar
+South Asian Universit y
+South Asian University
+South Gujarat University
+Spicer Adventist University
+Sree Chitra Tirunal Institute for Medical Sciences & Technology
+Sree Chitra Tirunal Institute for Medical Sciences and Technology
+Sree Rama Krishna Degree College
+Sree Sankaracharya University of Sanskrit
+Sri Balaji Vidyapeeth (Deemed to be University)
+Sri Chandrasekharendra Saraswathi Vishwa Mahavidyalaya
+Sri Chandrasekharendra Saraswathi Viswa Mahavidyalaya
+Sri Dev Suman Uttarakhand Vishwavidyalaya
+Sri Devraj Urs Academy of Higher Education and Research
+Sri Guru Granth Sahib World University
+Sri Guru Ram Das University of Health Sciences
+Sri Konda Laxman Telangana State Horticultural University
+Sri P V Narsimha Rao Telangana Veterinary University
+Sri Padmavati Mahila Vishwavidyalayam
+Sri Padmavati Women's University
+Sri Ramachandra Medical College and Research Institute
+Sri Ramachardra Medical College and Research Institute
+Sri Sai Ram Engineering College
+Sri Sai Ram Institute of Technology
+Sri Sai University
+Sri Sant Gajanan Maharaj College of Engineering
+Sri Sathya Sai Institute of Higher Learning
+Sri Satya Sai University of Technology & Medical Sciences
+Sri Siddhartha Academy of Higher Education
+Sri Sivasubramaniya Nadar Institutions
+Sri Sri University
+Sri Venkateswara College of Engineering
+Sri Venkateswara Institute of Medical Sciences
+Sri Venkateswara University
+Sri Venkateswara Vedic University
+Sri Venkateswara Veterinary University
+Sri krishnadevaraya University
+Srimanta Sankaradeva University of Health Sciences
+Srinivas University
+St Joseph's College Of Engineering
+St Joseph's Institute Of Technology
+St. Joseph University
+St. Joseph's College of Commerce
+St. Peter’s Institute of Higher Education and Research
+St. Xavier's University
+Starex University
+State University of Performing and Visual Arts
+Sumandeep Vidyapeeth
+Sunrise University
+Suresh Gyan Vihar University
+Swami Keshwanand Rajasthan Agriculture University
+Swami Rama Himalayan University
+Swami Ramanand Teerth Marathwada University
+Swami Vivekanand University
+Swami Vivekananda Subharti University
+Swami Vivekananda Yoga Anusandhana Samsthana
+Swarnim Gujarat Sports University
+Swarnim Startup & Innovation University
+Symbiosis International University
+Symbiosis Skills and Open University
+Symbiosis University of Applied Sciences (SUAS)
+T.M. Bhagalpur University
+TERI School of Advanced studies
+Takhatmal Shrivallabh Homoeopathic Medical College
+Tamil Nadu Agricultural University
+Tamil Nadu Dr. Ambedkar Law University
+Tamil Nadu Dr. M.G.R. Medical University
+Tamil Nadu Fisheries University
+Tamil Nadu Music and Fine Arts University
+Tamil Nadu Open University
+Tamil Nadu Teacher Education University
+Tamil Nadu Veterinary and Animal Sciences University
+Tamil University
+Tamilnadu Agricultural University
+Tamilnadu Dr. Ambedkar Law University
+Tamilnadu Dr. M.G.R.Medical University
+Tamilnadu National Law School
+Tamilnadu Physical Educaton and Sports University
+Tamilnadu Veterinary & Animal Sciences University
+Tantia University
+Tata Institute of Fundamental Research
+Tata Institute of Social Sciences
+Team Lease Skills University
+Technique Polytechnic Institute
+Techno Global University
+Techno India University
+Teerthanker Mahaveer University
+Telangana University
+Tezpur University
+Thapar Institute of Engineering & Technology
+Thapar Institute of Engineering and Technology
+The Assam Kaziranga University
+The Assam Royal Global University
+The Bengal Engineering & Science University
+The Gandhiigram Rural Institute
+The Global Open University
+The Global University
+The Glocal University
+The ICFAI University
+The Indira Gandhi National Tribal University
+The Institute of Chartered Financial Analysts of India University
+The LNM Institute of Information Technology jaipur
+The Neotia University
+The New College
+The Northcap University
+The Rajiv Gandhi National University of Law
+The Rashtrasant Tukadoji Maharaj Nagpur University
+The Sanskrit College and University
+The West Bengal National University of Juridical Science
+The West Bengal University of Health Sciences
+Thiagarajar College of Engineering
+Thiruvalluvar University
+Thunchath Ezhuthachan Malayalam University
+Tilak Maharashtra Vidyapeeth
+Tilka Manjhi Bhagalpur University
+Tripura University
+Tumkur University
+U.P. Pandit Deen Dayal Upadhyaya Pashu Chikitsa Vigyan Vishwavidhyalaya Evam Go-Anusandhan Sansthan
+U.P. Rajarshi Tandon Open University
+U.P.King George's University of Dental Sciences
+UKA Tarsadia University
+University College of Medical Sciences
+University College, Thiruvananthapuram
+University of Agricultural Sciences
+University of Agricultural Sciences, Bangalore
+University of Agricultural Sciences, Dharwad
+University of Allahabad
+University of Burdwan
+University of Calcutta
+University of Calicut
+University of Delhi
+University of Engineering & Management
+University of Engineering and Management
+University of Health Sciences Andhra Pradesh
+University of Horticultural Sciences
+University of Hyderabad
+University of Jammu
+University of Kalyani
+University of Kashmir
+University of Kerala
+University of Kota
+University of Lucknow
+University of Madras
+University of Media Arts
+University of Mumbai
+University of Music and Fine Arts
+University of Mysore
+University of North Bengal
+University of Patanjali
+University of Petroleum and Energy Studies
+University of Pune
+University of Rajasthan
+University of Roorkee
+University of Science & Technology Meghalaya
+University of Technology
+University of Technology & Management
+Univesity of Gour Banga
+Usha Martin University
+Utkal University
+Utkal University of Culture
+Uttar Banga Krishi Vishwavidyalaya
+Uttar Pradesh Technical University
+Uttar Pradesh University of Medical Sciences
+Uttarakhand Aawasiya Viswavidyalaya
+Uttarakhand Ayurved University
+Uttarakhand Open University
+Uttarakhand Sanskrit University
+Uttarakhand Technical University
+Uttaranchal University
+VBS Purvanchal University
+VELS Institute of Science Technology & Advanced Studies (VISTAS)
+VIT Bhopal
+VIT Bhopal University
+VIT-AP University
+Vardhaman Mahaveer Open University
+Vardhman Mahaveer Open University
+Veer Bahadur Singh Purvanchal University
+Veer Chandra Singh Garhwali Uttarakhand University of Horticulture & Forestry
+Veer Kunwar Singh University
+Veer Narmad South Gujarat University
+Veer Surendra Sai Institute of Medical Science and Research
+Veer Surendra Sai University of Technology
+Vel Tech Rangarajan Dr. Sagunthala R & D Institute of Science and Technology
+Velammal Engineering College
+Velammal Institute of Technology
+Vellore Institute of Technology
+Venkateshwara Open University
+Vesveswaraiah Technological University
+Vidya Sagar University
+Vidyasagar University
+Vignan University
+Vignan's Foundation for Science Technology and Research
+Vijayanagara Sri Krishnadevaraya University
+Vikram University
+Vikrama Simhapuri University
+Vinayaka Mission's Research Foundation-Deemed University
+Vinayaka Missions Sikkim University
+Vinayaka Mission’s Research Foundation
+Vinoba Bhave University
+Vishwakarma University
+Visva Bharati
+Visva-Bharati University
+Visvesvaraya National Institute of Technology
+Visvesvaraya Technological University
+Vivekananda Global University
+West Bengal State University
+West Bengal University of Animal and Fishery Sciences
+West Bengal University of Teachers Training Education Planning and Administration
+West Bengal University of Technology
+William Carey University
+World University Of Design
+Xavier university
+YBN University
+YMCA University of Science & Technology
+Yashawantrao Chavan Maharashtra Open University
+Yashwant Rao Chavan Maharashtra Open University
+Yenepoya
+Yogi Vemana University
