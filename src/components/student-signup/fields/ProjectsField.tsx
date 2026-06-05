@@ -7,8 +7,8 @@ import { Plus, X } from "lucide-react";
 
 import { Field, inputClass } from "@/components/site/AuthShell";
 import { Button } from "@/components/ui/button";
-import { RefMultiSelect } from "./RefMultiSelect";
-import { Caption, FieldError } from "./Labeled";
+import { RefMultiSelect } from "@/components/signup/RefMultiSelect";
+import { Caption, FieldError } from "@/components/signup/Labeled";
 import type { ProjectDraft, RefItem } from "../types";
 
 interface ProjectsFieldProps {

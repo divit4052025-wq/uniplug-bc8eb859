@@ -1,7 +1,7 @@
 // P7 — device-local stash for the rich-profile selections, written at "create
-// account" (pre-auth) and replayed in the authenticated finalize step. If the
-// stash is missing at finalize (different device / cleared storage) the finalize
-// screen collects those fields fresh instead — the data is never lost silently.
+// account" (pre-auth) and replayed in the authenticated finalize step. Delegates
+// to the shared generic draft store; keeps a ProfileDraft-typed API.
+import { readDraft, removeDraft, writeDraft } from "@/components/signup/draft";
 import { DRAFT_STORAGE_KEY, type ProfileDraft } from "./types";
 
 const EMPTY: Omit<ProfileDraft, "savedAt"> = {
@@ -14,45 +14,31 @@ const EMPTY: Omit<ProfileDraft, "savedAt"> = {
 };
 
 export function saveProfileDraft(draft: Omit<ProfileDraft, "savedAt">): void {
-  if (typeof window === "undefined") return;
-  try {
-    const payload: ProfileDraft = { ...draft, savedAt: new Date().toISOString() };
-    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
-  } catch {
-    // Storage full / disabled — finalize will fall back to fresh collection.
-  }
+  writeDraft(DRAFT_STORAGE_KEY, {
+    ...draft,
+    savedAt: new Date().toISOString(),
+  } satisfies ProfileDraft);
 }
 
 export function loadProfileDraft(): ProfileDraft | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as Partial<ProfileDraft>;
-    // Defensive normalisation — a malformed stash must not crash finalize.
-    return {
-      ...EMPTY,
-      ...parsed,
-      subjects: parsed.subjects ?? [],
-      targetUniversities: parsed.targetUniversities ?? [],
-      courses: parsed.courses ?? [],
-      sports: parsed.sports ?? [],
-      cocurriculars: parsed.cocurriculars ?? [],
-      projects: parsed.projects ?? [],
-      savedAt: parsed.savedAt ?? "",
-    };
-  } catch {
-    return null;
-  }
+  const parsed = readDraft<Partial<ProfileDraft>>(DRAFT_STORAGE_KEY);
+  if (!parsed) return null;
+  // Defensive normalisation — a malformed stash must not crash finalize.
+  return {
+    ...EMPTY,
+    ...parsed,
+    subjects: parsed.subjects ?? [],
+    targetUniversities: parsed.targetUniversities ?? [],
+    courses: parsed.courses ?? [],
+    sports: parsed.sports ?? [],
+    cocurriculars: parsed.cocurriculars ?? [],
+    projects: parsed.projects ?? [],
+    savedAt: parsed.savedAt ?? "",
+  };
 }
 
 export function clearProfileDraft(): void {
-  if (typeof window === "undefined") return;
-  try {
-    window.localStorage.removeItem(DRAFT_STORAGE_KEY);
-  } catch {
-    /* no-op */
-  }
+  removeDraft(DRAFT_STORAGE_KEY);
 }
 
 /** True when a draft carries at least one selection worth replaying. */

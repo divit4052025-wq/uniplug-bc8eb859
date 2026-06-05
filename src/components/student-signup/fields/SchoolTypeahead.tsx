@@ -9,7 +9,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 
 import { inputClass } from "@/components/site/AuthShell";
-import { searchSchools } from "../refClient";
+import { searchSchools } from "@/components/signup/refClient";
 import type { RefItem } from "../types";
 
 interface SchoolTypeaheadProps {

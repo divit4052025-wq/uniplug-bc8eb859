@@ -37,6 +37,7 @@ import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$
 import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
 import { Route as MessagesConversationIdRouteImport } from './routes/messages_.$conversationId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
+import { Route as MentorSignupFinalizeRouteImport } from './routes/mentor-signup_.finalize'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
@@ -182,6 +183,11 @@ const MentorIdRoute = MentorIdRouteImport.update({
   path: '/mentor/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MentorSignupFinalizeRoute = MentorSignupFinalizeRouteImport.update({
+  id: '/mentor-signup_/finalize',
+  path: '/mentor-signup/finalize',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CallBookingIdRoute = CallBookingIdRouteImport.update({
   id: '/call/$bookingId',
   path: '/call/$bookingId',
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/mentor-signup/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/mentor-signup/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/mentor-signup_/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages_/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/mentor-signup/finalize'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
@@ -370,6 +380,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/mentor-signup/finalize'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
@@ -404,6 +415,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/mentor-signup_/finalize'
     | '/mentor/$id'
     | '/messages_/$conversationId'
     | '/parental-consent/$token'
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   WelcomeRoute: typeof WelcomeRoute
   CallBookingIdRoute: typeof CallBookingIdRoute
+  MentorSignupFinalizeRoute: typeof MentorSignupFinalizeRoute
   MentorIdRoute: typeof MentorIdRoute
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
@@ -646,6 +659,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentorIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentor-signup_/finalize': {
+      id: '/mentor-signup_/finalize'
+      path: '/mentor-signup/finalize'
+      fullPath: '/mentor-signup/finalize'
+      preLoaderRoute: typeof MentorSignupFinalizeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/call/$bookingId': {
       id: '/call/$bookingId'
       path: '/call/$bookingId'
@@ -714,6 +734,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   WelcomeRoute: WelcomeRoute,
   CallBookingIdRoute: CallBookingIdRoute,
+  MentorSignupFinalizeRoute: MentorSignupFinalizeRoute,
   MentorIdRoute: MentorIdRoute,
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ParentalConsentTokenRoute: ParentalConsentTokenRoute,

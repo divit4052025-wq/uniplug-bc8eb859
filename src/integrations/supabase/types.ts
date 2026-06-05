@@ -459,6 +459,7 @@ export type Database = {
       };
       mentors: {
         Row: {
+          application_submitted_at: string | null;
           bio: string | null;
           code_of_conduct_accepted_at: string | null;
           college_email: string | null;
@@ -488,6 +489,7 @@ export type Database = {
           year: string;
         };
         Insert: {
+          application_submitted_at?: string | null;
           bio?: string | null;
           code_of_conduct_accepted_at?: string | null;
           college_email?: string | null;
@@ -517,6 +519,7 @@ export type Database = {
           year: string;
         };
         Update: {
+          application_submitted_at?: string | null;
           bio?: string | null;
           code_of_conduct_accepted_at?: string | null;
           college_email?: string | null;
@@ -1706,6 +1709,7 @@ export type Database = {
       admin_list_mentors: {
         Args: { _status?: string };
         Returns: {
+          application_submitted_at: string | null;
           course: string;
           created_at: string;
           email: string;
@@ -1738,6 +1742,14 @@ export type Database = {
       reject_mentor: {
         Args: { _mentor_id: string; _reason?: string | null };
         Returns: undefined;
+      };
+      submit_mentor_application: {
+        Args: never;
+        Returns: string;
+      };
+      resubmit_mentor_application: {
+        Args: never;
+        Returns: string;
       };
       admin_clear_re_review: {
         Args: { _mentor_id: string };

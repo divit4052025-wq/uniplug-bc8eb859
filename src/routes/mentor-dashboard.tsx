@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
+import { RejectedScreen, UnderReviewScreen } from "@/components/mentor-signup/MentorStatusScreens";
+import { mentorFinalizeSkippedThisSession } from "@/components/mentor-signup/gate";
 import { MentorSidebar, type MentorSectionKey } from "@/components/mentor-dashboard/MentorSidebar";
 import { MentorMobileNav } from "@/components/mentor-dashboard/MentorMobileNav";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
@@ -38,6 +40,8 @@ const SECTION_TO_ANCHOR: Partial<Record<MentorSectionKey, string>> = {
 type MentorRow = {
   full_name: string | null;
   status: "pending" | "approved" | "rejected" | null;
+  application_submitted_at: string | null;
+  verification_notes: string | null;
 };
 
 function MentorDashboard() {
@@ -95,13 +99,15 @@ function MentorDashboard() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("mentors")
-        .select("full_name, status")
+        .select("full_name, status, application_submitted_at, verification_notes")
         .eq("id", mentorId as string)
         .maybeSingle();
       if (error) throw error;
       return {
         full_name: data?.full_name ?? null,
         status: (data?.status as MentorRow["status"]) ?? null,
+        application_submitted_at: data?.application_submitted_at ?? null,
+        verification_notes: data?.verification_notes ?? null,
       };
     },
   });
@@ -123,6 +129,17 @@ function MentorDashboard() {
   const firstName = fullName.split(" ")[0] ?? "";
   const status: MentorRow["status"] = mentorRow?.status ?? null;
 
+  // P8 application gate: a pending mentor who hasn't submitted their documents is
+  // routed to the finalize step (unless they chose "Finish later" this session).
+  const qc = useQueryClient();
+  const pendingUnsubmitted =
+    !!mentorRow && status === "pending" && mentorRow.application_submitted_at == null;
+  useEffect(() => {
+    if (pendingUnsubmitted && !mentorFinalizeSkippedThisSession()) {
+      navigate({ to: "/mentor-signup/finalize" });
+    }
+  }, [pendingUnsubmitted, navigate]);
+
   const select = (key: MentorSectionKey) => {
     setActive(key);
     if (key === "settings") return;
@@ -137,28 +154,26 @@ function MentorDashboard() {
     return <div className="min-h-screen bg-[#FFFCFB]" />;
   }
 
-  // While the mentor row is still loading, render the empty shell rather
-  // than the "Application received" rejection screen — otherwise approved
-  // mentors flash that screen on first paint.
+  // Mentor application gate — route the non-approved states (approved falls
+  // through to the dashboard). The loading shell above prevents a flash.
   if (mentorRow && status !== "approved") {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#FFFCFB] px-6">
-        <div className="max-w-2xl text-center">
-          <p className="font-display text-3xl text-[#1A1A1A] sm:text-4xl">
-            Application received — we will review and get back to you within 48 hours.
-          </p>
-          <button
-            onClick={async () => {
-              await supabase.auth.signOut();
-              navigate({ to: "/" });
-            }}
-            className="mt-8 rounded-full border border-[#1A1A1A] px-6 py-2 text-sm font-medium text-[#1A1A1A] transition hover:bg-[#1A1A1A] hover:text-white"
-          >
-            Sign out
-          </button>
-        </div>
-      </main>
-    );
+    if (status === "rejected") {
+      return (
+        <RejectedScreen
+          mentorId={mentorId}
+          reason={mentorRow.verification_notes}
+          onResubmitted={() =>
+            void qc.invalidateQueries({ queryKey: ["mentor-profile-header", mentorId] })
+          }
+        />
+      );
+    }
+    // pending + unsubmitted (+ not skipped) → the effect redirects to finalize;
+    // render a blank shell meanwhile. Otherwise (submitted / skipped) → review.
+    if (pendingUnsubmitted && !mentorFinalizeSkippedThisSession()) {
+      return <div className="min-h-screen bg-[#FFFCFB]" />;
+    }
+    return <UnderReviewScreen />;
   }
 
   return (

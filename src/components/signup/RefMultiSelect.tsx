@@ -16,8 +16,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { searchReference } from "../refClient";
-import type { RefItem, RefKind } from "../types";
+import { searchReference } from "./refClient";
+import type { RefItem, RefKind } from "./types";
 
 interface RefMultiSelectProps {
   kind: RefKind;

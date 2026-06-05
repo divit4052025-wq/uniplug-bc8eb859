@@ -14,7 +14,7 @@
 // Concrete per-axis inserts (no dynamic column keys) keep the generated
 // Database types precise.
 import { supabase } from "@/integrations/supabase/client";
-import { createRefAddRequest } from "./refClient";
+import { createRefAddRequest } from "@/components/signup/refClient";
 import type { ProfileDraft, RefItem, RefKind } from "./types";
 
 /** File "request to add" for items with no canonical ref row yet (best-effort). */

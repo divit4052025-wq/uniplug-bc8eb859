@@ -9,6 +9,9 @@ import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { AwaitingConsentNotice } from "@/components/consent/AwaitingConsentNotice";
+import { Mascot, type MascotShape } from "@/components/mascots/Mascot";
+import { MASCOTS } from "@/components/mascots/mascot-data";
+import { mascotForSpecialty } from "@/components/mascots/specialty";
 import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
@@ -66,6 +69,7 @@ type Mentor = {
   topics: [string, string];
   price: number;
   verified: boolean;
+  mascot: MascotShape;
 };
 
 type MentorProfile = {
@@ -77,6 +81,7 @@ type MentorProfile = {
   year: string;
   price_inr: number;
   verified_at: string | null;
+  mascot_key: string | null;
 };
 
 function BrowsePage() {
@@ -135,6 +140,7 @@ function BrowsePage() {
         topics: [m.course, m.year] as [string, string],
         price: m.price_inr,
         verified: m.verified_at != null,
+        mascot: mascotForSpecialty(m.mascot_key),
       }));
     },
   });
@@ -445,15 +451,10 @@ function CheckRow({
 }
 
 function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
-  const initials = mentor.name
-    .split(" ")
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("");
   return (
     <article className="group flex flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(26,26,26,0.25)]">
       <Link to="/mentor/$id" params={{ id: mentor.id }} className="block">
-        <CardHeader mentor={mentor} initials={initials} />
+        <CardHeader mentor={mentor} />
       </Link>
 
       <div className="mt-4 flex flex-wrap gap-1.5">
@@ -489,12 +490,19 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
   );
 }
 
-function CardHeader({ mentor, initials }: { mentor: Mentor; initials: string }) {
+function CardHeader({ mentor }: { mentor: Mentor }) {
   return (
     <div className="flex items-start gap-3">
       <div className="relative">
-        <div className="grid h-16 w-16 place-content-center rounded-full bg-[#FFFCFB] font-display text-[20px] font-semibold text-[#1A1A1A]">
-          {initials}
+        <div className="grid h-16 w-16 place-content-center overflow-hidden rounded-full bg-[#FFFCFB]">
+          <Mascot
+            shape={mentor.mascot}
+            color={MASCOTS[mentor.mascot].color}
+            size={58}
+            idle={false}
+            shadow={false}
+            decorative
+          />
         </div>
         {mentor.verified && (
           <span className="absolute -bottom-0.5 -right-0.5 grid h-6 w-6 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#EDE0DB]">
@@ -508,7 +516,7 @@ function CardHeader({ mentor, initials }: { mentor: Mentor; initials: string }) 
             {mentor.name}
           </h3>
         </div>
-        <p className="mt-0.5 text-[14px] text-[#C4907F]">{mentor.university}</p>
+        <p className="mt-0.5 text-[14px] text-[#1A1A1A]/70">{mentor.university}</p>
         <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
           {mentor.course} · {mentor.year}
         </p>

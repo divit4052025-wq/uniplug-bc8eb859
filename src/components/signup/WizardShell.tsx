@@ -28,6 +28,8 @@ interface WizardShellProps {
   nextLabel?: string;
   nextLoading?: boolean;
   nextDisabled?: boolean;
+  /** Small uppercase eyebrow label (top-right). Default "For students". */
+  eyebrow?: string;
 }
 
 export function WizardShell({
@@ -43,6 +45,7 @@ export function WizardShell({
   nextLabel = "Continue",
   nextLoading = false,
   nextDisabled = false,
+  eyebrow = "For students",
 }: WizardShellProps) {
   const total = steps.length;
   const pct = Math.round(((stepIndex + 1) / total) * 100);
@@ -61,7 +64,7 @@ export function WizardShell({
         <div className="mb-6 flex items-center justify-between gap-4">
           <Logo variant="wordmark-offwhite" className="h-12 w-auto sm:h-14" />
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-            For students
+            {eyebrow}
           </p>
         </div>
 

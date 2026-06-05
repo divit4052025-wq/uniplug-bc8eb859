@@ -1,29 +1,8 @@
-// P7 student signup wizard — shared types.
-//
-// The wizard is PRE-AUTH: it can read the anon-callable typeahead RPCs
-// (search_reference / search_schools) but cannot write the six owner-RLS join
-// tables (no session yet). So the rich selections below are STASHED on the
-// device at "create account" and replayed in the authenticated finalize step.
-// Scalars (name/phone/school/grade/dob/board/bio/parent/countries + the legal
-// version keys) instead ride along in the auth.signUp metadata that
-// handle_new_user reads.
+// P7 student wizard types. The role-agnostic RefItem/RefKind now live in the
+// shared signup module and are re-exported here so existing imports keep working.
+export type { RefItem, RefKind } from "@/components/signup/types";
 
-/** A reference-data selection. id === null means "couldn't find it → request to
- *  add": it can't be linked to a join table yet (no canonical ref row), so at
- *  finalize we file a create_ref_add_request for it instead of inserting a row. */
-export interface RefItem {
-  id: string | null;
-  name: string;
-}
-
-/** Strict ref kinds accepted by search_reference / create_ref_add_request. */
-export type RefKind =
-  | "university"
-  | "course"
-  | "subject"
-  | "sport"
-  | "cocurricular"
-  | "project_category";
+import type { RefItem } from "@/components/signup/types";
 
 /** An academic/science project entry (multi-add). Stored into
  *  student_project_categories(project_category_id, detail) — the table carries a
@@ -34,8 +13,8 @@ export interface ProjectDraft {
   description: string;
 }
 
-/** The rich-profile payload that is stashed pre-auth and replayed at finalize.
- *  Every field here maps to an owner-RLS join table written client-side. */
+/** The rich-profile payload stashed pre-auth and replayed at finalize. Every
+ *  field maps to an owner-RLS join table written client-side. */
 export interface ProfileDraft {
   subjects: RefItem[];
   targetUniversities: RefItem[];

@@ -80,6 +80,7 @@ interface MentorRow {
   year: string;
   status: string;
   created_at: string;
+  application_submitted_at: string | null;
 }
 interface StudentRow {
   id: string;
@@ -259,7 +260,8 @@ function ApprovalsSection() {
     queryFn: async () => {
       const { data, error } = await supabase.rpc("admin_list_mentors", { _status: "pending" });
       if (error) throw error;
-      return (data as MentorRow[] | null) ?? [];
+      // P8: only show SUBMITTED applications (docless/abandoned signups stay out).
+      return ((data as MentorRow[] | null) ?? []).filter((m) => m.application_submitted_at != null);
     },
   });
 

@@ -39,3 +39,9 @@ Canonical plan: "Final Build-Ready Plan (Revised)". Detailed specs: docs/plans/p
 - Supabase PITR (Pro)
 - Legal copy incl. the C-1 refund-tier policy amendment + counsel sign-off
 - Parental-consent token hardening + email-failure alerting + 3 legacy NULL-DOB rows
+
+## Trackers (added on claude/p8-mentor-signup-2026-06-05)
+1. **Pre-launch child-safety (self-consent gap):** `parental_consent_email` is student-UPDATE-able (the migration-060 column allowlist grants it) and, combined with any consent-link resend path, lets a minor redirect the consent link to their own inbox and self-approve. This is a broader self-consent gap. Fix before launch via the full adversarial review: kill the redirect (e.g. lock `parental_consent_email` once a token is minted / freeze it across a resend) while preserving the legitimate typo-correction path before consent is requested.
+2. **Hosted reconciliation — video:** migration file `20260530000003_video_calls.sql` is on main; hosted already has the schema under ledger row `20260530194526`. At sync, **MARK-AS-APPLIED (reconcile the ledger row), do NOT re-apply** — the `video_calls` tables already exist on hosted.
+3. **On-main video dev-seed:** `supabase/dev-seeds/video-call-join-auth-verification.sql` ERRORs on the post-P4c schema (the `bookings_no_overlap` overlap-constraint fixture) — dev-seed fix needed (not a feature regression).
+4. **Daily.co ops:** add a payment method to the Daily account + verify the live Worker `DAILY_API_KEY` before video works in prod.
