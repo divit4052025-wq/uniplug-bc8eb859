@@ -56,16 +56,26 @@ export function isBookingStarted(dateStr: string, timeSlot: string): boolean {
 }
 
 /**
- * Has the booking already ended in IST? Sessions are 60 minutes — see
- * MentorCalendar.DURATION_MINUTES.
+ * Has the booking already ended in IST? Duration-aware: a 30-min booking ends
+ * 30 minutes after its start, a 60-min booking 60 minutes after. Computed on the
+ * epoch timeline (start-ms + duration) rather than modulo-24 hour arithmetic, so
+ * it stays correct for :30 slots and across midnight.
+ *
+ * `durationMinutes` defaults to 60 to preserve behaviour for callers that don't
+ * yet thread the booking's duration. The client filter is a UX nicety only — the
+ * server (authorize_video_join) remains the authority for join eligibility.
  */
-export function isBookingEnded(dateStr: string, timeSlot: string): boolean {
-  const [hhStr, mmStr] = timeSlot.split(":");
-  const endHour = (Number.parseInt(hhStr, 10) + 1) % 24;
-  return (
-    Date.now() >=
-    new Date(`${dateStr}T${String(endHour).padStart(2, "0")}:${mmStr}:00${IST_OFFSET}`).getTime()
-  );
+export function isBookingEnded(dateStr: string, timeSlot: string, durationMinutes = 60): boolean {
+  const startMs = new Date(`${dateStr}T${timeSlot}:00${IST_OFFSET}`).getTime();
+  return Date.now() >= startMs + durationMinutes * 60_000;
+}
+
+/** Hours from now until the booking's start in IST (negative once started).
+ *  Used to preview the cancellation refund tier (the server's
+ *  cancel_booking_as_student remains the authority for the actual amount). */
+export function hoursUntilStartIST(dateStr: string, timeSlot: string): number {
+  const startMs = new Date(`${dateStr}T${timeSlot}:00${IST_OFFSET}`).getTime();
+  return (startMs - Date.now()) / 3_600_000;
 }
 
 /** Format a YYYY-MM-DD date for display in IST. Example: "Wed, 14 May 2026". */

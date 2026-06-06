@@ -5,15 +5,15 @@ Canonical plan: "Final Build-Ready Plan (Revised)". Detailed specs: docs/plans/p
 - P0 ref-data + pg_trgm + seed + ref_add_requests + ref_academic_domains + typeahead + add-request/promote — DONE (main)
 - P1 student cols + 6 join tables + legal_acceptances + handle_new_user ext + student-photos private bucket + owner-write RLS — DONE
 - P2 mentor cols + mentor_admits + mentor_payout_methods + mentor_private_notes + column-lock ext — DONE (CORRECTION: validate_college_email was listed here but was NEVER built in P2 — delivered 2026-06-06 in the mentor email gate below)
-- Mentor email gate (two-track, 2026-06-06) — validate_college_email classifier (fail-closed) + mentors.tier (standard|enhanced, server-derived at signup, self-tamper-locked with college_email) + submit/resubmit enhanced enrollment-proof enforcement + finalize upload + M1 nudge + admin tier badge — BUILT on claude/p2-mentor-email-gate-2026-06-06 (migration 20260606000003), unmerged
+- Mentor email gate (two-track, 2026-06-06) — validate_college_email classifier (fail-closed) + mentors.tier (standard|enhanced, server-derived at signup, self-tamper-locked with college_email) + submit/resubmit enhanced enrollment-proof enforcement + finalize upload + M1 nudge + admin tier badge — DONE (migration 20260606000003 + two rls-review hardening fixes; MERGED to main @ 78198ac)
 - P3 booking subject/desc + 30-min + holds + reschedule + mentee-limit — DONE (built across the scheduling sub-phases; mentee-limit landed in the backend-completion bundle)
 - P4 doc visibility/shares/notes/versions + contact-stripped get_student_overview_for_mentor — DONE (backend-completion bundle)
 - P5 profile masking + filters + aggregate rating + cross-party contact audit — DONE (bundle)
 - P6 admin approve_mentor/reject_mentor(reason)/admin_clear_re_review + admin.tsx wiring — DONE (bundle)
 - Consent hardening (not a numbered phase) — send_message consent gate + self-set-consent column-lock (column-privilege boundary + token unreadable + data-export redaction) — DONE
-- P7 student signup wizard + finalize upload + NULL-profile backfill nudge — NOT STARTED (UI)
-- P8 mentor signup wizard + finalize + submit/resubmit + blocked-incomplete — NOT STARTED (UI)
-- P9 student dashboard layout + per-section routes + Home + AI prep + profile editing — NOT STARTED (UI)
+- P7 student signup wizard + finalize upload + NULL-profile backfill nudge — DONE (UI; PR #28 / 44751eb, MERGED to main)
+- P8 mentor signup wizard + finalize + submit/resubmit + blocked-incomplete — DONE (UI; 58e4998, MERGED to main)
+- P9 student dashboard — NOT greenfield: a working student dashboard already ships at src/routes/dashboard.tsx (/dashboard) with 7 sections + Settings; P9 = EXTEND-IN-PLACE (anchor-scroll, no per-section routes; route stays /dashboard). Steps 1-3 BUILT on claude/p9-student-dashboard-2026-06-06 (unmerged): (1) duration-aware isBookingEnded; (2) in-dashboard ProfileSection in the Settings branch (allowlisted students cols + row-level INSERT/DELETE on the 5 interest join-tables + student_schools target-unis; DOB read-only; grade/parental_consent_email/email/parent_phone NOT editable); (3) Cancel + Reschedule wired on UpcomingSessions via the existing SECURITY DEFINER RPCs. Steps 4-6 (read-only Payments/history; AI-prep regenerate; optional URL routes) NOT STARTED. Plan: docs/plans/phase-9-student-dashboard.md.
 - P10 mentor dashboard layout + per-section routes + earnings/payout + email-switch + preview + private notes — NOT STARTED (UI)
 - P11 matching — extend match.functions.ts (target-unis↔admits ID join + interests↔specialty, surface General, NULL-safe) — NOT STARTED
 - P12 Playwright e2e (signup→finalize→browse→book→complete→review) + axe + release-checks — NOT STARTED
