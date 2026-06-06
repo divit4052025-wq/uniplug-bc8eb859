@@ -34,6 +34,16 @@ export async function setMentorIdDocument(userId: string, path: string): Promise
   if (error) throw error;
 }
 
+/** Set the mentor's enrollment-proof path (ENHANCED track; mentor-writable, not
+ *  caught by the self-tamper lock — only tier/college_email are). */
+export async function setMentorEnrollmentDocument(userId: string, path: string): Promise<void> {
+  const { error } = await supabase
+    .from("mentors")
+    .update({ enrollment_letter_path: path })
+    .eq("id", userId);
+  if (error) throw error;
+}
+
 export interface AdmitWrite {
   item: RefItem;
   proofPath: string | null;

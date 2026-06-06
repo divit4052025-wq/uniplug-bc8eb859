@@ -481,6 +481,7 @@ export type Database = {
           ref_university_id: string | null;
           specialty_id: string | null;
           status: Database["public"]["Enums"]["mentor_status"];
+          tier: Database["public"]["Enums"]["mentor_tier"];
           topics: string[];
           university: string;
           verification_notes: string | null;
@@ -511,6 +512,7 @@ export type Database = {
           ref_university_id?: string | null;
           specialty_id?: string | null;
           status?: Database["public"]["Enums"]["mentor_status"];
+          tier?: Database["public"]["Enums"]["mentor_tier"];
           topics?: string[];
           university: string;
           verification_notes?: string | null;
@@ -541,6 +543,7 @@ export type Database = {
           ref_university_id?: string | null;
           specialty_id?: string | null;
           status?: Database["public"]["Enums"]["mentor_status"];
+          tier?: Database["public"]["Enums"]["mentor_tier"];
           topics?: string[];
           university?: string;
           verification_notes?: string | null;
@@ -1722,6 +1725,7 @@ export type Database = {
           full_name: string;
           id: string;
           status: string;
+          tier: string;
           university: string;
           year: string;
         }[];
@@ -2017,9 +2021,14 @@ export type Database = {
         Args: { _booking_id: string; _new_status: string };
         Returns: undefined;
       };
+      validate_college_email: {
+        Args: { _email: string };
+        Returns: Database["public"]["Enums"]["mentor_tier"];
+      };
     };
     Enums: {
       mentor_status: "pending" | "approved" | "rejected";
+      mentor_tier: "standard" | "enhanced";
       session_status: "upcoming" | "completed" | "cancelled";
     };
     CompositeTypes: {
@@ -2147,6 +2156,7 @@ export const Constants = {
   public: {
     Enums: {
       mentor_status: ["pending", "approved", "rejected"],
+      mentor_tier: ["standard", "enhanced"],
       session_status: ["upcoming", "completed", "cancelled"],
     },
   },

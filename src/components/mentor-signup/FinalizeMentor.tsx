@@ -16,6 +16,7 @@ import { markSkippedThisSession } from "@/components/signup/gate";
 import type { RefItem } from "@/components/signup/types";
 import {
   type AdmitWrite,
+  setMentorEnrollmentDocument,
   setMentorIdDocument,
   submitMentorApplication,
   uploadMentorDocument,
@@ -36,6 +37,11 @@ export function FinalizeMentor() {
 
   const [idPhoto, setIdPhoto] = useState<File | null>(null);
   const [idPreview, setIdPreview] = useState<string | null>(null);
+  // ENHANCED-track mentors (email not a recognized college domain) must also
+  // upload a proof of enrollment — the DB submit_mentor_application() enforces it.
+  const [tier, setTier] = useState<"standard" | "enhanced" | null>(null);
+  const [enrollPhoto, setEnrollPhoto] = useState<File | null>(null);
+  const [enrollName, setEnrollName] = useState<string | null>(null);
   const [admits, setAdmits] = useState<RefItem[]>([]);
   const [proofs, setProofs] = useState<Record<string, File | null>>({});
 
@@ -53,7 +59,7 @@ export function FinalizeMentor() {
       const uid = session.user.id;
       const { data: row } = await supabase
         .from("mentors")
-        .select("application_submitted_at")
+        .select("application_submitted_at, tier")
         .eq("id", uid)
         .maybeSingle();
       if (cancelled) return;
@@ -62,6 +68,8 @@ export function FinalizeMentor() {
         return;
       }
       setUserId(uid);
+      // Fail-closed in the UI too: unknown tier is treated as enhanced.
+      setTier((row?.tier as "standard" | "enhanced") ?? "enhanced");
       const draft = loadMentorDraft();
       if (draft?.admits?.length) setAdmits(draft.admits);
       setPhase("ready");
@@ -80,11 +88,24 @@ export function FinalizeMentor() {
 
   const onProof = (key: string, file: File | null) => setProofs((p) => ({ ...p, [key]: file }));
 
+  const onEnrollPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEnrollPhoto(file);
+    setEnrollName(file.name);
+  };
+
   async function finish() {
     if (!userId) return;
     setError(null);
     if (!idPhoto) {
       setError("Please upload a photo of your college ID — it's required to submit.");
+      return;
+    }
+    if (tier === "enhanced" && !enrollPhoto) {
+      setError(
+        "Enhanced review: upload a proof of enrollment (admission letter, fee receipt, or a dated college ID). It's required to submit.",
+      );
       return;
     }
     if (admits.length === 0) {
@@ -96,6 +117,12 @@ export function FinalizeMentor() {
       // College-ID photo first (the DB submit requires id_document_path).
       const idPath = await uploadMentorDocument(userId, idPhoto, "college-id");
       await setMentorIdDocument(userId, idPath);
+
+      // ENHANCED track: the enrollment proof (DB submit() enforces it server-side).
+      if (tier === "enhanced" && enrollPhoto) {
+        const enrollPath = await uploadMentorDocument(userId, enrollPhoto, "enrollment-proof");
+        await setMentorEnrollmentDocument(userId, enrollPath);
+      }
 
       // Per-admit proofs (optional) → admit rows.
       const toWrite: AdmitWrite[] = [];
@@ -173,6 +200,36 @@ export function FinalizeMentor() {
               </label>
             </div>
           </Caption>
+
+          {/* ENHANCED track: required proof of enrollment */}
+          {tier === "enhanced" && (
+            <div className="rounded-2xl border-l-4 border-primary bg-secondary/40 px-5 py-4">
+              <p className="text-[13px] font-semibold text-foreground">
+                Enhanced review — one extra step
+              </p>
+              <p className="mt-1 text-[13px] font-light text-muted-foreground">
+                Your email isn&apos;t a recognized college domain, so we ask for a quick proof of
+                enrollment — an admission letter, fee receipt, or a dated college ID. Required to
+                submit.
+              </p>
+              <label className="mt-3 inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 focus-within:ring-4 focus-within:ring-primary/15">
+                {enrollName ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-primary" /> {enrollName}
+                  </>
+                ) : (
+                  "Upload enrollment proof"
+                )}
+                <input
+                  type="file"
+                  accept="image/*,application/pdf"
+                  aria-label="Upload your proof of enrollment (admission letter, fee receipt, or dated college ID)"
+                  className="sr-only"
+                  onChange={onEnrollPhoto}
+                />
+              </label>
+            </div>
+          )}
 
           {/* Admits + per-admit proof */}
           <div>

@@ -4,7 +4,8 @@ Canonical plan: "Final Build-Ready Plan (Revised)". Detailed specs: docs/plans/p
 ## Phase map
 - P0 ref-data + pg_trgm + seed + ref_add_requests + ref_academic_domains + typeahead + add-request/promote — DONE (main)
 - P1 student cols + 6 join tables + legal_acceptances + handle_new_user ext + student-photos private bucket + owner-write RLS — DONE
-- P2 mentor cols + mentor_admits + mentor_payout_methods + mentor_private_notes + column-lock ext + validate_college_email — DONE
+- P2 mentor cols + mentor_admits + mentor_payout_methods + mentor_private_notes + column-lock ext — DONE (CORRECTION: validate_college_email was listed here but was NEVER built in P2 — delivered 2026-06-06 in the mentor email gate below)
+- Mentor email gate (two-track, 2026-06-06) — validate_college_email classifier (fail-closed) + mentors.tier (standard|enhanced, server-derived at signup, self-tamper-locked with college_email) + submit/resubmit enhanced enrollment-proof enforcement + finalize upload + M1 nudge + admin tier badge — BUILT on claude/p2-mentor-email-gate-2026-06-06 (migration 20260606000003), unmerged
 - P3 booking subject/desc + 30-min + holds + reschedule + mentee-limit — DONE (built across the scheduling sub-phases; mentee-limit landed in the backend-completion bundle)
 - P4 doc visibility/shares/notes/versions + contact-stripped get_student_overview_for_mentor — DONE (backend-completion bundle)
 - P5 profile masking + filters + aggregate rating + cross-party contact audit — DONE (bundle)

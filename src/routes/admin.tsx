@@ -79,6 +79,7 @@ interface MentorRow {
   course: string;
   year: string;
   status: string;
+  tier: string;
   created_at: string;
   application_submitted_at: string | null;
 }
@@ -478,7 +479,17 @@ function PendingMentorRow({
 
   return (
     <TableRow>
-      <TableCell className="font-medium">{mentor.full_name}</TableCell>
+      <TableCell className="font-medium">
+        {mentor.full_name}
+        {mentor.tier === "enhanced" && (
+          <span
+            className="ml-2 inline-flex items-center rounded-full bg-[#EDE0DB] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#1A1A1A]"
+            title="College email isn't a recognized institutional domain — requires an enrollment proof"
+          >
+            Enhanced review
+          </span>
+        )}
+      </TableCell>
       <TableCell>{mentor.university}</TableCell>
       <TableCell>{mentor.course}</TableCell>
       <TableCell className="text-[#1A1A1A]/70">{mentor.email}</TableCell>

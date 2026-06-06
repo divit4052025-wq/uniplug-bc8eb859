@@ -57,6 +57,12 @@ const STEPS: (WizardStepMeta & { title: string; hint?: string })[] = [
 ];
 
 const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+// Client-side nudge heuristic ONLY — mirrors the server TLD patterns (it does not
+// check ref_academic_domains, so a domain like christuniversity.in may nudge yet
+// classify standard server-side; the over-warning is harmless). The authoritative
+// tier is set server-side at signup by validate_college_email.
+const looksInstitutional = (v: string) =>
+  /\.(ac\.in|edu\.in|edu|res\.in)$/.test(v.trim().toLowerCase().split("@")[1] ?? "");
 
 export function MentorSignupWizard() {
   const navigate = useNavigate();
@@ -314,9 +320,17 @@ export function MentorSignupWizard() {
               id="college-email-hint"
               className="mt-1 text-[11px] font-light text-muted-foreground"
             >
-              Only a verified college email is approved — we manually review your college-ID photo
-              and this email. You can switch to a personal email after approval.
+              A recognized college email (.ac.in, .edu, .edu.in, .res.in, or a known institution) is
+              the fastest path — we manually review your college-ID photo and this email.
             </p>
+            {collegeEmail.trim() !== "" &&
+              isEmail(collegeEmail) &&
+              !looksInstitutional(collegeEmail) && (
+                <p className="mt-1.5 rounded-lg bg-secondary/50 px-3 py-2 text-[12px] font-light text-foreground">
+                  Not a recognized college domain — that&apos;s fine. You can still apply;
+                  you&apos;ll just upload a quick proof of enrollment on the next step.
+                </p>
+              )}
             <FieldError id="collegeEmail-error">{errors.collegeEmail}</FieldError>
           </Field>
           <p className="text-[12px] font-light text-muted-foreground">
