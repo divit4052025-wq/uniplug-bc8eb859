@@ -29,12 +29,16 @@ BEGIN
   INSERT INTO _r VALUES ('D.02_bulk_source_tag', CASE WHEN v>1000 THEN 'PASS' ELSE 'FAIL' END, 'source=UGC rows = '||v);
 END $$;
 
--- D.03 — curated tier PRESERVED (additive): the 96 source='seed' rows still present
+-- D.03 — curated tier PRESERVED + Build-2a supplement: source='seed' = 96 PART-1
+-- curated (never clobbered) + 25 Build-2a top-tier supplement = 121. Also assert a
+-- marker PART-1 curated row survives, so the count isn't satisfied by drift.
 DO $$
-DECLARE v int;
+DECLARE v int; v_marker boolean;
 BEGIN
   SELECT count(*) INTO v FROM public.ref_universities WHERE source='seed';
-  INSERT INTO _r VALUES ('D.03_curated_preserved', CASE WHEN v=96 THEN 'PASS' ELSE 'FAIL' END, 'source=seed rows = '||v||' (expect 96 — additive, never clobbered)');
+  SELECT EXISTS(SELECT 1 FROM public.ref_universities WHERE name='Indian Institute of Technology Bombay' AND source='seed') INTO v_marker;
+  INSERT INTO _r VALUES ('D.03_curated_preserved', CASE WHEN v=121 AND v_marker THEN 'PASS' ELSE 'FAIL' END,
+    'source=seed rows = '||v||' (expect 121 = 96 PART-1 curated + 25 Build-2a supplement); IITB-marker='||v_marker);
 END $$;
 
 -- D.04 — academic domains loaded (>= 487 total after the additive Hipo India load)
@@ -102,6 +106,40 @@ BEGIN
     FROM public.ref_universities)
   SELECT count(*) INTO v FROM (SELECT nk FROM k GROUP BY nk HAVING count(*) > 1) d;
   INSERT INTO _r VALUES ('D.10_normalized_unique', CASE WHEN v=0 THEN 'PASS' ELSE 'FAIL' END, 'duplicate normalized keys = '||v||' (expect 0)');
+END $$;
+
+-- ════ Build 2a — colleges (Section A) + curated supplement (Section B) ════
+
+-- D.11 — AISHE colleges loaded (post two-layer dedup): source='AISHE' count.
+DO $$
+DECLARE v int;
+BEGIN
+  SELECT count(*) INTO v FROM public.ref_universities WHERE source='AISHE';
+  INSERT INTO _r VALUES ('D.11_colleges_loaded', CASE WHEN v=52274 THEN 'PASS' ELSE 'FAIL' END, 'source=AISHE rows = '||v||' (expect 52274)');
+END $$;
+
+-- D.12 — collision marker: same-named colleges survive across districts.
+DO $$
+DECLARE v int;
+BEGIN
+  SELECT count(*) INTO v FROM public.ref_universities WHERE name LIKE 'St. Xavier''s College,%';
+  INSERT INTO _r VALUES ('D.12_xavier_collision', CASE WHEN v>=2 THEN 'PASS' ELSE 'FAIL' END, 'distinct "St. Xavier''s College, ..." rows = '||v);
+END $$;
+
+-- D.13 — IIT family complete: all 23 IITs present, exactly one row each (no city twice).
+-- IIT = name contains "indian institute of technology" OR starts "IIT " ; excludes IIIT.
+DO $$
+DECLARE v_cnt int; v_cities int;
+BEGIN
+  WITH iit AS (
+    SELECT lower(regexp_replace(name, '^.*[^A-Za-z]([A-Za-z]+)\s*$', '\1')) AS city
+    FROM public.ref_universities
+    WHERE (name ~* 'indian institute of technology' OR name ~* '^iit[ ,]')
+      AND name !~* 'information technology'
+  )
+  SELECT count(*), count(DISTINCT city) INTO v_cnt, v_cities FROM iit;
+  INSERT INTO _r VALUES ('D.13_iit_family', CASE WHEN v_cnt=23 AND v_cities=23 THEN 'PASS' ELSE 'FAIL' END,
+    'IIT rows='||v_cnt||', distinct cities='||v_cities||' (expect 23/23)');
 END $$;
 
 SELECT test_id, status, detail FROM _r ORDER BY test_id;
