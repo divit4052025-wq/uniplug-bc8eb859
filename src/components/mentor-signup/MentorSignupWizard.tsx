@@ -335,10 +335,11 @@ export function MentorSignupWizard() {
               max={1}
               closeOnSelect
               ariaLabel="University"
+              aria-describedby={describe("university")}
               placeholder="Search your university…"
             />
           </Caption>
-          <FieldError>{errors.university}</FieldError>
+          <FieldError id="university-error">{errors.university}</FieldError>
           <Field label="Year of study">
             <select
               className={inputClass}
@@ -364,10 +365,11 @@ export function MentorSignupWizard() {
               max={1}
               closeOnSelect
               ariaLabel="Course"
+              aria-describedby={describe("course")}
               placeholder="Search your course…"
             />
           </Caption>
-          <FieldError>{errors.course}</FieldError>
+          <FieldError id="course-error">{errors.course}</FieldError>
         </div>
       )}
 

@@ -108,7 +108,7 @@ export function RefMultiSelect({
 
   return (
     <div>
-      {value.length > 0 && (
+      {value.length > 0 && max !== 1 && (
         <ul className="mb-2 flex flex-wrap gap-1.5" aria-label="Selected">
           {value.map((item) => (
             <li key={item.id ?? `new:${item.name}`}>
@@ -140,9 +140,12 @@ export function RefMultiSelect({
             aria-describedby={describedBy}
             aria-haspopup="listbox"
             aria-expanded={open}
-            className="flex w-full items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-left text-sm font-light text-muted-foreground/80 transition hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
+            className={`flex w-full items-center justify-between rounded-xl border border-border bg-background px-4 py-3 text-left text-sm font-light transition hover:border-primary/50 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15 ${
+              max === 1 && value.length === 1 ? "text-foreground" : "text-muted-foreground/80"
+            }`}
           >
-            {placeholder}
+            {/* single-select (max=1) shows the chosen value in the trigger; multi shows chips above + the placeholder here */}
+            {max === 1 && value.length === 1 ? value[0].name : placeholder}
             <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
           </button>
         </PopoverTrigger>

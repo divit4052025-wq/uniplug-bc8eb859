@@ -38,7 +38,7 @@ export function Nav() {
             to="/mentor-signup"
             className="inline-flex h-10 items-center rounded-full border border-[#1A1A1A] px-5 text-[13px] font-medium text-[#1A1A1A] transition hover:bg-[#1A1A1A] hover:text-white"
           >
-            Become a Plug
+            Become the Plug
           </Link>
         </nav>
       </div>
