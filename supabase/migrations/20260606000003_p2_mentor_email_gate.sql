@@ -12,7 +12,9 @@
 --    positive institutional match; every uncertainty (NULL/malformed/unknown) → 'enhanced'.
 --  • FAIL-CLOSED ENFORCEMENT (server-side, the gate): submit_mentor_application() AND
 --    resubmit_mentor_application() refuse an 'enhanced' applicant with no enrollment
---    proof. The M1 client nudge is advisory, never the gate.
+--    proof — AND prevent_mentor_self_approval enforces the SAME at the data layer (cases
+--    4/5), so a direct UPDATE (not just the RPC) cannot move an enhanced application to
+--    submitted/pending without the proof. The M1 client nudge is advisory, never the gate.
 --  • TIER IS SERVER-DERIVED, NEVER CLIENT-SET: a BEFORE INSERT trigger computes
 --    tier := validate_college_email(college_email); client signup metadata cannot set tier.
 --  • NO TIER DRIFT: prevent_mentor_self_approval now locks BOTH tier AND college_email
@@ -62,8 +64,11 @@ AS $$
   END;
 $$;
 -- server-internal only (signup trigger / backfill / never the client) — minimal surface
-REVOKE ALL ON FUNCTION public.validate_college_email(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.validate_college_email(text) TO service_role;
+REVOKE ALL     ON FUNCTION public.validate_college_email(text) FROM PUBLIC;
+-- REVOKE-from-PUBLIC does NOT remove Supabase's default per-role grants to anon /
+-- authenticated, so revoke those explicitly (server-internal function).
+REVOKE EXECUTE ON FUNCTION public.validate_college_email(text) FROM anon, authenticated;
+GRANT  EXECUTE ON FUNCTION public.validate_college_email(text) TO service_role;
 COMMENT ON FUNCTION public.validate_college_email(text) IS
   'Phase 2 (2026-06-06): classifies a mentor college email into mentor_tier. STANDARD only on a positive institutional match (.ac.in/.edu.in/.edu/.res.in TLD OR a ref_academic_domains hit incl. sub-domains); EVERYTHING else (NULL/malformed/unknown) → ENHANCED (fail-closed). Never raises, never blocks. Server-internal (anon/PUBLIC revoked).';
 
@@ -135,6 +140,9 @@ BEGIN
      AND OLD.college_email       IS NOT DISTINCT FROM NEW.college_email
      AND NEW.application_submitted_at IS DISTINCT FROM OLD.application_submitted_at
      AND NEW.id_document_path IS NOT NULL
+     -- ENHANCED track: the enrollment proof is mandatory even on a direct UPDATE
+     -- (the gate must hold at the data layer, not only inside the RPC).
+     AND (NEW.tier <> 'enhanced'::public.mentor_tier OR NEW.enrollment_letter_path IS NOT NULL)
   THEN
     RETURN NEW;
   END IF;
@@ -151,6 +159,8 @@ BEGIN
      AND NEW.verification_notes IS NULL
      AND NEW.id_document_path IS NOT NULL
      AND NEW.application_submitted_at IS DISTINCT FROM OLD.application_submitted_at
+     -- ENHANCED track: enrollment proof mandatory on resubmit too (direct-UPDATE-safe).
+     AND (NEW.tier <> 'enhanced'::public.mentor_tier OR NEW.enrollment_letter_path IS NOT NULL)
   THEN
     RETURN NEW;
   END IF;

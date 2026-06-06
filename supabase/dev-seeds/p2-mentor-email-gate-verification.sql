@@ -47,6 +47,10 @@ INSERT INTO auth.users (
 ( 'e2000000-0000-0000-0000-0000000000ee'::uuid,'authenticated','authenticated','p2-mentor-e@example.com',
   crypt('x',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
   jsonb_build_object('role','mentor','full_name','Mentor E','university','Yale','course','History','year','3rd Year','college_email','e@gmail.com'),
+  '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
+( 'e2000000-0000-0000-0000-0000000000ff'::uuid,'authenticated','authenticated','p2-mentor-f@example.com',
+  crypt('x',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
+  jsonb_build_object('role','mentor','full_name','Mentor F','university','NIT Trichy','course','EE','year','2nd Year','college_email','f@gmail.com'),
   '','','','',now(),now(),'00000000-0000-0000-0000-000000000000')
 ON CONFLICT (id) DO NOTHING;
 
@@ -55,6 +59,7 @@ UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000aa
 UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000bb/id.jpg', enrollment_letter_path='e2000000-0000-0000-0000-0000000000bb/enroll.pdf' WHERE id='e2000000-0000-0000-0000-0000000000bb'; -- B: enhanced, id+enroll
 UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000cc/id.jpg' WHERE id='e2000000-0000-0000-0000-0000000000cc';                            -- C: standard, id only
 UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000dd/id.jpg', status='rejected'::public.mentor_status, verification_notes='clearer ID please' WHERE id='e2000000-0000-0000-0000-0000000000dd'; -- D: enhanced, rejected
+UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000ff/id.jpg' WHERE id='e2000000-0000-0000-0000-0000000000ff'; -- F: enhanced, id only (direct-UPDATE bypass test)
 
 -- ─── E.01 classifier (fail-closed) ───
 DO $$
@@ -204,6 +209,34 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   SELECT EXISTS(SELECT 1 FROM public.students WHERE id='e2000000-0000-0000-0000-0000000000f5') INTO v_exists;
   INSERT INTO _e VALUES ('E.12_student_signup_unaffected', CASE WHEN v_exists THEN 'PASS' ELSE 'FAIL' END, 'student row created = '||v_exists);
+END $$;
+
+-- ─── E.13 DIRECT-UPDATE submit bypass: enhanced, no proof, raw UPDATE app_submitted -> DENIED ───
+DO $$
+DECLARE v_pass boolean := false; v_msg text:=''; v_ts timestamptz;
+BEGIN
+  PERFORM set_config('request.jwt.claims','{"sub":"e2000000-0000-0000-0000-0000000000ff","role":"authenticated"}',true);
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  BEGIN UPDATE public.mentors SET application_submitted_at=now() WHERE id='e2000000-0000-0000-0000-0000000000ff'; v_msg:='ACCEPTED (direct submit bypass!)';
+  EXCEPTION WHEN OTHERS THEN IF SQLSTATE='P0001' THEN v_pass:=true; v_msg:='denied: '||SQLERRM; ELSE v_msg:='unexpected ['||SQLSTATE||']: '||SQLERRM; END IF; END;
+  EXECUTE 'RESET ROLE'; PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+  SELECT application_submitted_at INTO v_ts FROM public.mentors WHERE id='e2000000-0000-0000-0000-0000000000ff';
+  v_pass := v_pass AND (v_ts IS NULL);
+  INSERT INTO _e VALUES ('E.13_direct_submit_enhanced_no_proof_denied', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg||' submitted='||coalesce(v_ts::text,'<null>'));
+END $$;
+
+-- ─── E.14 DIRECT-UPDATE resubmit bypass: enhanced rejected, no proof, raw rejected->pending -> DENIED ───
+DO $$
+DECLARE v_pass boolean := false; v_msg text:=''; v_status text;
+BEGIN
+  PERFORM set_config('request.jwt.claims','{"sub":"e2000000-0000-0000-0000-0000000000dd","role":"authenticated"}',true);
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  BEGIN UPDATE public.mentors SET status='pending'::public.mentor_status, verification_notes=NULL, application_submitted_at=now() WHERE id='e2000000-0000-0000-0000-0000000000dd'; v_msg:='ACCEPTED (direct resubmit bypass!)';
+  EXCEPTION WHEN OTHERS THEN IF SQLSTATE='P0001' THEN v_pass:=true; v_msg:='denied: '||SQLERRM; ELSE v_msg:='unexpected ['||SQLSTATE||']: '||SQLERRM; END IF; END;
+  EXECUTE 'RESET ROLE'; PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+  SELECT status::text INTO v_status FROM public.mentors WHERE id='e2000000-0000-0000-0000-0000000000dd';
+  v_pass := v_pass AND (v_status='rejected');
+  INSERT INTO _e VALUES ('E.14_direct_resubmit_enhanced_no_proof_denied', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg||' final_status='||v_status);
 END $$;
 
 SELECT test_id, status, detail FROM _e ORDER BY test_id;
