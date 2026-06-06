@@ -51,6 +51,14 @@ INSERT INTO auth.users (
 ( 'e2000000-0000-0000-0000-0000000000ff'::uuid,'authenticated','authenticated','p2-mentor-f@example.com',
   crypt('x',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
   jsonb_build_object('role','mentor','full_name','Mentor F','university','NIT Trichy','course','EE','year','2nd Year','college_email','f@gmail.com'),
+  '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
+( 'e2000000-0000-0000-0000-0000000000a1'::uuid,'authenticated','authenticated','p2-mentor-g@example.com',
+  crypt('x',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
+  jsonb_build_object('role','mentor','full_name','Mentor G','university','NIT Surat','course','CE','year','1st Year','college_email','g@gmail.com'),
+  '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
+( 'e2000000-0000-0000-0000-0000000000a2'::uuid,'authenticated','authenticated','p2-mentor-h@example.com',
+  crypt('x',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
+  jsonb_build_object('role','mentor','full_name','Mentor H','university','NIT Goa','course','IT','year','4th Year','college_email','h@gmail.com'),
   '','','','',now(),now(),'00000000-0000-0000-0000-000000000000')
 ON CONFLICT (id) DO NOTHING;
 
@@ -60,6 +68,8 @@ UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000bb
 UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000cc/id.jpg' WHERE id='e2000000-0000-0000-0000-0000000000cc';                            -- C: standard, id only
 UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000dd/id.jpg', status='rejected'::public.mentor_status, verification_notes='clearer ID please' WHERE id='e2000000-0000-0000-0000-0000000000dd'; -- D: enhanced, rejected
 UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000ff/id.jpg' WHERE id='e2000000-0000-0000-0000-0000000000ff'; -- F: enhanced, id only (direct-UPDATE bypass test)
+UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000a1/id.jpg', enrollment_letter_path='' WHERE id='e2000000-0000-0000-0000-0000000000a1';                                                            -- G: enhanced, EMPTY enrollment (submit)
+UPDATE public.mentors SET id_document_path='e2000000-0000-0000-0000-0000000000a2/id.jpg', enrollment_letter_path='   ', status='rejected'::public.mentor_status, verification_notes='clearer ID please' WHERE id='e2000000-0000-0000-0000-0000000000a2'; -- H: enhanced, WHITESPACE enrollment, rejected (resubmit)
 
 -- ─── E.01 classifier (fail-closed) ───
 DO $$
@@ -237,6 +247,30 @@ BEGIN
   SELECT status::text INTO v_status FROM public.mentors WHERE id='e2000000-0000-0000-0000-0000000000dd';
   v_pass := v_pass AND (v_status='rejected');
   INSERT INTO _e VALUES ('E.14_direct_resubmit_enhanced_no_proof_denied', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg||' final_status='||v_status);
+END $$;
+
+-- ─── E.15 submit with EMPTY-string enrollment proof -> DENIED (non-NULL but blank) ───
+DO $$
+DECLARE v_pass boolean := false; v_msg text:='';
+BEGIN
+  PERFORM set_config('request.jwt.claims','{"sub":"e2000000-0000-0000-0000-0000000000a1","role":"authenticated"}',true);
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  BEGIN PERFORM public.submit_mentor_application(); v_msg:='ACCEPTED (empty proof should deny)';
+  EXCEPTION WHEN OTHERS THEN IF SQLSTATE='P0001' THEN v_pass:=true; v_msg:='denied: '||SQLERRM; ELSE v_msg:='unexpected ['||SQLSTATE||']: '||SQLERRM; END IF; END;
+  EXECUTE 'RESET ROLE'; PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+  INSERT INTO _e VALUES ('E.15_submit_empty_proof_denied', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
+END $$;
+
+-- ─── E.16 resubmit with WHITESPACE enrollment proof -> DENIED ───
+DO $$
+DECLARE v_pass boolean := false; v_msg text:='';
+BEGIN
+  PERFORM set_config('request.jwt.claims','{"sub":"e2000000-0000-0000-0000-0000000000a2","role":"authenticated"}',true);
+  EXECUTE 'SET LOCAL ROLE authenticated';
+  BEGIN PERFORM public.resubmit_mentor_application(); v_msg:='ACCEPTED (whitespace proof should deny)';
+  EXCEPTION WHEN OTHERS THEN IF SQLSTATE='P0001' THEN v_pass:=true; v_msg:='denied: '||SQLERRM; ELSE v_msg:='unexpected ['||SQLSTATE||']: '||SQLERRM; END IF; END;
+  EXECUTE 'RESET ROLE'; PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+  INSERT INTO _e VALUES ('E.16_resubmit_whitespace_proof_denied', CASE WHEN v_pass THEN 'PASS' ELSE 'FAIL' END, v_msg);
 END $$;
 
 SELECT test_id, status, detail FROM _e ORDER BY test_id;

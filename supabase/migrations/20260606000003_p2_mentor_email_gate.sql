@@ -142,7 +142,7 @@ BEGIN
      AND NEW.id_document_path IS NOT NULL
      -- ENHANCED track: the enrollment proof is mandatory even on a direct UPDATE
      -- (the gate must hold at the data layer, not only inside the RPC).
-     AND (NEW.tier <> 'enhanced'::public.mentor_tier OR NEW.enrollment_letter_path IS NOT NULL)
+     AND (NEW.tier <> 'enhanced'::public.mentor_tier OR coalesce(length(btrim(NEW.enrollment_letter_path)), 0) > 0)
   THEN
     RETURN NEW;
   END IF;
@@ -160,7 +160,7 @@ BEGIN
      AND NEW.id_document_path IS NOT NULL
      AND NEW.application_submitted_at IS DISTINCT FROM OLD.application_submitted_at
      -- ENHANCED track: enrollment proof mandatory on resubmit too (direct-UPDATE-safe).
-     AND (NEW.tier <> 'enhanced'::public.mentor_tier OR NEW.enrollment_letter_path IS NOT NULL)
+     AND (NEW.tier <> 'enhanced'::public.mentor_tier OR coalesce(length(btrim(NEW.enrollment_letter_path)), 0) > 0)
   THEN
     RETURN NEW;
   END IF;
@@ -196,7 +196,7 @@ BEGIN
   IF v_id_doc IS NULL THEN
     RAISE EXCEPTION 'upload your college ID before submitting your application' USING ERRCODE = 'P0001';
   END IF;
-  IF v_tier = 'enhanced'::public.mentor_tier AND v_enroll IS NULL THEN
+  IF v_tier = 'enhanced'::public.mentor_tier AND coalesce(length(btrim(v_enroll)), 0) = 0 THEN
     RAISE EXCEPTION 'upload your enrollment proof before submitting (enhanced review)' USING ERRCODE = 'P0001';
   END IF;
   UPDATE public.mentors SET application_submitted_at = now()
@@ -237,7 +237,7 @@ BEGIN
   IF v_id_doc IS NULL THEN
     RAISE EXCEPTION 'upload your college ID before resubmitting' USING ERRCODE = 'P0001';
   END IF;
-  IF v_tier = 'enhanced'::public.mentor_tier AND v_enroll IS NULL THEN
+  IF v_tier = 'enhanced'::public.mentor_tier AND coalesce(length(btrim(v_enroll)), 0) = 0 THEN
     RAISE EXCEPTION 'upload your enrollment proof before resubmitting (enhanced review)' USING ERRCODE = 'P0001';
   END IF;
   UPDATE public.mentors
