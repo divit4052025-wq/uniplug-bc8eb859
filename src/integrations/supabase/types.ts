@@ -919,19 +919,25 @@ export type Database = {
       };
       ref_schools: {
         Row: {
+          aliases: string[];
           created_at: string;
           id: string;
           name: string;
+          source: string | null;
         };
         Insert: {
+          aliases?: string[];
           created_at?: string;
           id?: string;
           name: string;
+          source?: string | null;
         };
         Update: {
+          aliases?: string[];
           created_at?: string;
           id?: string;
           name?: string;
+          source?: string | null;
         };
         Relationships: [];
       };
