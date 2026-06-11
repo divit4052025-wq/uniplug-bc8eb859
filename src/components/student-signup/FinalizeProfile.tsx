@@ -11,8 +11,11 @@ import { Check, Loader2 } from "lucide-react";
 
 import { AuthShell, Field, inputClass } from "@/components/site/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
 import { log } from "@/lib/log";
 import { withRetry } from "@/lib/retry";
+import { ACCEPTED_IMAGE_INPUT, UNSUPPORTED_IMAGE_MESSAGE, isAcceptedImage } from "@/lib/images";
 import { ProjectsField } from "./fields/ProjectsField";
 import { RefMultiSelect } from "@/components/signup/RefMultiSelect";
 import { Caption } from "@/components/signup/Labeled";
@@ -79,6 +82,14 @@ export function FinalizeProfile() {
   const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Guard BEFORE preview + staging-for-upload: reject non-renderable formats
+    // (e.g. HEIC) so they never become a broken preview or a stored-but-unshowable
+    // object.
+    if (!isAcceptedImage(file)) {
+      toast.error(UNSUPPORTED_IMAGE_MESSAGE);
+      e.target.value = "";
+      return;
+    }
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
@@ -166,7 +177,7 @@ export function FinalizeProfile() {
         </div>
         <label className="cursor-pointer rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 focus-within:ring-4 focus-within:ring-primary/15">
           {photoFile ? "Change photo" : "Upload photo"}
-          <input type="file" accept="image/*" className="sr-only" onChange={onPhoto} />
+          <input type="file" accept={ACCEPTED_IMAGE_INPUT} className="sr-only" onChange={onPhoto} />
         </label>
       </div>
     </Caption>

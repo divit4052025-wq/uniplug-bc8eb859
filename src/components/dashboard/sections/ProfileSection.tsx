@@ -15,6 +15,7 @@ import { ErrorBanner } from "@/components/ui/error-banner";
 import { LoadingSkeleton } from "@/components/ui/state-views";
 import { useOptimisticMutation } from "@/lib/hooks/useOptimisticMutation";
 import { BOARDS, COUNTRIES } from "@/components/student-signup/constants";
+import { ACCEPTED_IMAGE_INPUT, UNSUPPORTED_IMAGE_MESSAGE, isAcceptedImage } from "@/lib/images";
 import { formatBookingDate } from "@/lib/time";
 import type { RefItem, RefKind } from "@/components/signup/types";
 import {
@@ -144,6 +145,14 @@ function BasicDetailsCard({ studentId }: { studentId: string }) {
   const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Guard BEFORE preview + staging-for-upload: reject non-renderable formats
+    // (e.g. HEIC) so they never become a broken preview or a stored-but-unshowable
+    // object.
+    if (!isAcceptedImage(file)) {
+      toast.error(UNSUPPORTED_IMAGE_MESSAGE);
+      e.target.value = "";
+      return;
+    }
     setPhotoFile(file);
     setPhotoPreview(URL.createObjectURL(file));
   };
@@ -190,7 +199,7 @@ function BasicDetailsCard({ studentId }: { studentId: string }) {
         </div>
         <label className="cursor-pointer rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 focus-within:ring-4 focus-within:ring-primary/15">
           {photoFile || existingPhotoUrl ? "Change photo" : "Upload photo"}
-          <input type="file" accept="image/*" className="sr-only" onChange={onPhoto} />
+          <input type="file" accept={ACCEPTED_IMAGE_INPUT} className="sr-only" onChange={onPhoto} />
         </label>
       </div>
 
