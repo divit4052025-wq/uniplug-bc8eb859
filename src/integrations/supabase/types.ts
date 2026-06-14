@@ -1785,6 +1785,32 @@ export type Database = {
         Args: { _booking_id: string };
         Returns: Json;
       };
+      // P10a (2026-06-11): per-party bookings accessor. Mentor reads OWN bookings
+      // (auth.uid()=mentor_id) with payout_id restored, razorpay_* omitted.
+      get_my_bookings_as_mentor: {
+        Args: never;
+        Returns: {
+          created_at: string;
+          date: string;
+          description: string | null;
+          duration: number;
+          id: string;
+          paid_at: string | null;
+          payout_id: string | null;
+          price: number;
+          reschedule_count: number;
+          status: string;
+          student_id: string;
+          subject_id: string | null;
+          time_slot: string;
+        }[];
+      };
+      // P10c (2026-06-11): authoritative read-only mentor earnings (ledger-sourced).
+      // Returns jsonb { currency, summary{...}, next_payout_date, sessions[] }.
+      get_mentor_earnings: {
+        Args: never;
+        Returns: Json;
+      };
       admin_stats: {
         Args: never;
         Returns: {

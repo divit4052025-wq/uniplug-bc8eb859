@@ -1,29 +1,29 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, X, Loader2, UploadCloud } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { AccountDataSection } from "@/components/settings/AccountDataSection";
+import { useOptimisticMutation } from "@/lib/hooks/useOptimisticMutation";
+import {
+  loadMentorProfile,
+  saveMentorProfile,
+  type MentorScalarProfile,
+} from "@/components/mentor-dashboard/mentorProfileEdit";
 
 const BIO_MAX = 500;
 const ACCEPTED_IMAGE = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024; // 5 MB
 
-type MentorProfile = {
-  bio: string;
-  topics: string[];
-  photo_url: string | null;
-};
-
 export function SettingsSection({ mentorId }: { mentorId: string }) {
-  const qc = useQueryClient();
   const profileKey = ["mentor-profile", mentorId] as const;
 
   const [bio, setBio] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [phone, setPhone] = useState("");
   const [topicInput, setTopicInput] = useState("");
   const [photoUploading, setPhotoUploading] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -35,21 +35,9 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
     isLoading,
     isError,
     refetch,
-  } = useQuery<MentorProfile>({
+  } = useQuery<MentorScalarProfile>({
     queryKey: profileKey,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("mentors")
-        .select("bio, topics, photo_url")
-        .eq("id", mentorId)
-        .maybeSingle();
-      if (error) throw error;
-      return {
-        bio: data?.bio ?? "",
-        topics: Array.isArray(data?.topics) ? (data.topics as string[]) : [],
-        photo_url: data?.photo_url ?? null,
-      };
-    },
+    queryFn: () => loadMentorProfile(mentorId),
   });
 
   // Sync local form state from query data on first load.
@@ -58,6 +46,7 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
       setBio(profile.bio);
       setTopics(profile.topics);
       setPhotoUrl(profile.photo_url);
+      setPhone(profile.phone ?? "");
       setInitialized(true);
     }
   }, [profile, initialized]);
@@ -112,21 +101,23 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
     }
   };
 
-  const saveMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase
-        .from("mentors")
-        .update({ bio: bio.trim() || null, topics, photo_url: photoUrl })
-        .eq("id", mentorId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Profile saved.");
-      void qc.invalidateQueries({ queryKey: profileKey });
-    },
-    onError: (err) => {
-      toast.error(err instanceof Error ? err.message : "Couldn't save profile.");
-    },
+  // Allowlisted save (mentorProfileEdit.saveMentorProfile names only the safe
+  // columns; the self-approval trigger rejects any locked-column UPDATE).
+  const saveMutation = useOptimisticMutation<MentorScalarProfile, void, void>({
+    mutationFn: () =>
+      saveMentorProfile(mentorId, {
+        bio: bio.trim() || null,
+        topics,
+        photo_url: photoUrl,
+        phone: phone.trim() || null,
+      }),
+    queryKeys: [profileKey],
+    optimisticUpdate: (old) =>
+      old
+        ? { ...old, bio: bio.trim(), topics, photo_url: photoUrl, phone: phone.trim() || null }
+        : old,
+    successMessage: "Profile saved.",
+    errorMessage: (err) => (err instanceof Error ? err.message : "Couldn't save profile."),
   });
 
   if (isError) {
@@ -270,6 +261,22 @@ export function SettingsSection({ mentorId }: { mentorId: string }) {
           </button>
         </div>
         <p className="mt-2 text-[11px] text-[#1A1A1A]/50">Press Enter or click + to add a topic.</p>
+      </section>
+
+      <section className="rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-6">
+        <h3 className="text-[14px] font-semibold text-[#1A1A1A]">Contact Phone</h3>
+        <p className="mt-0.5 text-[12px] text-[#1A1A1A]/60">
+          Private — used by UniPlug to reach you about sessions. Never shown to students.
+        </p>
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value.slice(0, 20))}
+          type="tel"
+          inputMode="tel"
+          aria-label="Contact phone"
+          placeholder="e.g. +91 98765 43210"
+          className="mt-3 w-full rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-4 py-2.5 text-[14px] text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
+        />
       </section>
 
       <button

@@ -1,16 +1,30 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { X, FileText } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorBanner } from "@/components/ui/error-banner";
+import { useOptimisticMutation } from "@/lib/hooks/useOptimisticMutation";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { formatBookingDate, isBookingEnded, todayInIST } from "@/lib/time";
 
 type Row = {
   id: string;
   date: string;
   time_slot: string;
+  duration: number;
   student_id: string;
   student?: {
     full_name: string;
@@ -21,6 +35,8 @@ type Row = {
 
 type Document = { id: string; file_name: string };
 type School = { id: string; name: string; category: string };
+
+const upcomingKey = (mentorId: string) => ["mentor-upcoming-sessions", mentorId] as const;
 
 export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
   const [profile, setProfile] = useState<{
@@ -36,20 +52,26 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
     isError,
     refetch,
   } = useQuery<Row[]>({
-    queryKey: ["mentor-upcoming-sessions", mentorId],
+    queryKey: upcomingKey(mentorId),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("bookings")
-        .select("id, date, time_slot, student_id")
-        .eq("mentor_id", mentorId)
-        .eq("status", "confirmed")
-        .gte("date", todayInIST())
-        .order("date", { ascending: true })
-        .order("time_slot", { ascending: true });
+      // P10a: read through the per-party SECURITY DEFINER accessor (returns the
+      // mentor-relevant column set incl duration; payout_id stays server-side).
+      // The mentor never select(*)s bookings — the sensitive financial columns
+      // are REVOKEd from the browser.
+      const { data, error } = await supabase.rpc("get_my_bookings_as_mentor");
       if (error) throw error;
+      const today = todayInIST();
       const bookings = (data ?? []).filter(
-        (b): b is { id: string; date: string; time_slot: string; student_id: string } =>
-          !!b.student_id && !isBookingEnded(b.date, b.time_slot),
+        (b) =>
+          !!b.student_id &&
+          b.status === "confirmed" &&
+          b.date >= today &&
+          // B (P10): duration-aware — a 30-min session leaves the list 30 min
+          // after start, not 60.
+          !isBookingEnded(b.date, b.time_slot, b.duration ?? 60),
+      );
+      bookings.sort((a, b) =>
+        a.date === b.date ? a.time_slot.localeCompare(b.time_slot) : a.date.localeCompare(b.date),
       );
       const ids = Array.from(new Set(bookings.map((s) => s.student_id)));
       const studMap = new Map<string, { full_name: string; grade: string; school: string }>();
@@ -68,6 +90,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
         id: s.id,
         date: s.date,
         time_slot: s.time_slot,
+        duration: s.duration ?? 60,
         student_id: s.student_id,
         student: studMap.get(s.student_id),
       }));
@@ -122,7 +145,7 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                       {formatBookingDate(r.date)} · {r.time_slot}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() =>
                         openProfile(
@@ -143,6 +166,11 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
                     >
                       Message
                     </Link>
+                    <CancelButton
+                      booking={r}
+                      mentorId={mentorId}
+                      studentName={r.student?.full_name ?? "your student"}
+                    />
                     <Link
                       to="/call/$bookingId"
                       params={{ bookingId: r.id }}
@@ -211,5 +239,89 @@ export function MentorUpcomingSessions({ mentorId }: { mentorId: string }) {
         </div>
       )}
     </section>
+  );
+}
+
+type CancelResult = { tier: string; refundable_inr: number; captured_inr: number };
+
+/**
+ * Mentor-initiated cancellation. cancel_booking_as_mentor (SECURITY DEFINER) is
+ * the authority: it full-refunds the student and reverses/claws back the mentor's
+ * accrual in one transaction. The mentor is warned of both effects before
+ * confirming. The booking leaves the confirmed list optimistically.
+ */
+function CancelButton({
+  booking,
+  mentorId,
+  studentName,
+}: {
+  booking: Row;
+  mentorId: string;
+  studentName: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const qc = useQueryClient();
+
+  const cancel = useOptimisticMutation<Row[], void, CancelResult>({
+    mutationFn: async () => {
+      const { data, error } = await supabase.rpc("cancel_booking_as_mentor", {
+        _booking_id: booking.id,
+      });
+      if (error) throw error;
+      return data as unknown as CancelResult;
+    },
+    queryKeys: [upcomingKey(mentorId)],
+    optimisticUpdate: (old) => (old ?? []).filter((b) => b.id !== booking.id),
+    errorMessage: (err) => (err instanceof Error ? err.message : "Couldn't cancel this session."),
+    mutationOptions: {
+      onSuccess: (data) => {
+        setOpen(false);
+        const refundable = data?.refundable_inr ?? 0;
+        toast.success(
+          refundable > 0
+            ? `Session cancelled — ₹${refundable.toLocaleString("en-IN")} refunded to ${studentName}.`
+            : "Session cancelled.",
+        );
+        // Free slot + earnings change → refresh the mentor's schedule/earnings.
+        void qc.invalidateQueries({ queryKey: ["mentor-earnings", mentorId] });
+        void qc.invalidateQueries({ queryKey: ["mentor-schedule", mentorId] });
+      },
+    },
+  });
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex h-9 items-center justify-center rounded-full border border-[#1A1A1A]/15 px-4 text-[12px] font-medium text-[#1A1A1A] transition hover:border-destructive hover:text-destructive"
+        >
+          Cancel
+        </button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancel this session?</AlertDialogTitle>
+          <AlertDialogDescription>
+            {formatBookingDate(booking.date)} · {booking.time_slot} with {studentName}. Cancelling
+            refunds {studentName} in full and reverses your earnings for this session. This can't be
+            undone.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={cancel.isPending}>Keep session</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              cancel.mutate();
+            }}
+            disabled={cancel.isPending}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {cancel.isPending ? "Cancelling…" : "Cancel session"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

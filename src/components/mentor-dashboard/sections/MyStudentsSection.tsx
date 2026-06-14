@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { X, FileText, Check, Circle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { X, FileText, Check, Circle, Lock, Loader2 } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -24,11 +25,15 @@ type StudentNote = {
 
 export function MyStudentsSection({ mentorId }: { mentorId: string }) {
   const [open, setOpen] = useState<{
+    studentId: string;
     name: string;
     docs: { id: string; file_name: string }[];
     schools: { id: string; name: string; category: string }[];
     notes: StudentNote[];
+    privateNoteId: string | null;
   } | null>(null);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [viewing, setViewing] = useState<string | null>(null);
 
   const {
     data: rows = [],
@@ -72,52 +77,115 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
   });
 
   const view = async (studentId: string, name: string) => {
-    const [{ data: overview }, { data: notes }] = await Promise.all([
-      supabase.rpc("get_student_overview_for_mentor", { _student_id: studentId }),
-      supabase
-        .from("session_notes")
-        .select("id, summary, created_at, action_points")
-        .eq("student_id", studentId)
-        .eq("mentor_id", mentorId)
-        .order("created_at", { ascending: false }),
-    ]);
-    const overviewRow = (
-      overview as
-        | {
-            documents?: { id: string; file_name: string }[];
-            schools?: { id: string; name: string; category: string }[];
-          }[]
-        | null
-    )?.[0];
-    const docs = overviewRow?.documents ?? [];
-    const schools = overviewRow?.schools ?? [];
-    const noteRows = notes ?? [];
-    const noteIds = noteRows.map((n) => n.id);
-    const compMap = new Map<string, Record<number, boolean>>();
-    if (noteIds.length) {
-      const { data: comps } = await supabase
-        .from("action_point_completions")
-        .select("session_note_id, action_point_index, completed")
-        .in("session_note_id", noteIds);
-      (comps ?? []).forEach((c) => {
-        const cur = compMap.get(c.session_note_id) ?? {};
-        cur[c.action_point_index] = c.completed;
-        compMap.set(c.session_note_id, cur);
+    setViewing(studentId);
+    try {
+      const [{ data: overview }, { data: notes }, { data: priv }] = await Promise.all([
+        supabase.rpc("get_student_overview_for_mentor", { _student_id: studentId }),
+        supabase
+          .from("session_notes")
+          .select("id, summary, created_at, action_points")
+          .eq("student_id", studentId)
+          .eq("mentor_id", mentorId)
+          .order("created_at", { ascending: false }),
+        // Mentor's OWN private note about this student (owner-CRUD RLS:
+        // auth.uid()=mentor_id). One freeform note per student — load the latest.
+        supabase
+          .from("mentor_private_notes")
+          .select("id, body")
+          .eq("mentor_id", mentorId)
+          .eq("student_id", studentId)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+      const overviewRow = (
+        overview as
+          | {
+              documents?: { id: string; file_name: string }[];
+              schools?: { id: string; name: string; category: string }[];
+            }[]
+          | null
+      )?.[0];
+      const docs = overviewRow?.documents ?? [];
+      const schools = overviewRow?.schools ?? [];
+      const noteRows = notes ?? [];
+      const noteIds = noteRows.map((n) => n.id);
+      const compMap = new Map<string, Record<number, boolean>>();
+      if (noteIds.length) {
+        const { data: comps } = await supabase
+          .from("action_point_completions")
+          .select("session_note_id, action_point_index, completed")
+          .in("session_note_id", noteIds);
+        (comps ?? []).forEach((c) => {
+          const cur = compMap.get(c.session_note_id) ?? {};
+          cur[c.action_point_index] = c.completed;
+          compMap.set(c.session_note_id, cur);
+        });
+      }
+      const privRow = priv as { id: string; body: string } | null;
+      setNoteDraft(privRow?.body ?? "");
+      setOpen({
+        studentId,
+        name,
+        docs,
+        schools,
+        notes: noteRows.map((n) => ({
+          id: n.id,
+          summary: n.summary ?? "",
+          created_at: n.created_at,
+          action_points: Array.isArray(n.action_points) ? (n.action_points as string[]) : [],
+          completions: compMap.get(n.id) ?? {},
+        })),
+        privateNoteId: privRow?.id ?? null,
       });
+    } catch {
+      toast.error("Couldn't load this student.");
+    } finally {
+      setViewing(null);
     }
-    setOpen({
-      name,
-      docs,
-      schools,
-      notes: noteRows.map((n) => ({
-        id: n.id,
-        summary: n.summary ?? "",
-        created_at: n.created_at,
-        action_points: Array.isArray(n.action_points) ? (n.action_points as string[]) : [],
-        completions: compMap.get(n.id) ?? {},
-      })),
-    });
   };
+
+  // Net-new write: the mentor's private note about a student (never shown to the
+  // student). One freeform row per (mentor, student) — update if it exists, else
+  // insert; the new id is captured so a second save updates the same row.
+  const saveNote = useMutation({
+    mutationFn: async () => {
+      if (!open) throw new Error("No student selected");
+      const body = noteDraft.trim();
+      if (open.privateNoteId) {
+        if (!body) {
+          // Cleared note → delete the row (body is NOT NULL; empty = no note).
+          const { error } = await supabase
+            .from("mentor_private_notes")
+            .delete()
+            .eq("id", open.privateNoteId);
+          if (error) throw error;
+          return null;
+        }
+        const { error } = await supabase
+          .from("mentor_private_notes")
+          .update({ body, updated_at: new Date().toISOString() })
+          .eq("id", open.privateNoteId);
+        if (error) throw error;
+        return open.privateNoteId;
+      }
+      if (!body) return null; // nothing to save
+      const { data, error } = await supabase
+        .from("mentor_private_notes")
+        .insert({ mentor_id: mentorId, student_id: open.studentId, body })
+        .select("id")
+        .single();
+      if (error || !data) throw error ?? new Error("Save failed");
+      return data.id as string;
+    },
+    onSuccess: (newId) => {
+      toast.success("Private note saved.");
+      setOpen((cur) => (cur ? { ...cur, privateNoteId: newId } : cur));
+    },
+    onError: (err) => {
+      toast.error(err instanceof Error ? err.message : "Couldn't save your note.");
+    },
+  });
 
   return (
     <section id="section-students" className="scroll-mt-24">
@@ -153,9 +221,11 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
                   </div>
                   <button
                     onClick={() => view(r.id, r.full_name)}
-                    className="inline-flex h-9 items-center justify-center rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90"
+                    disabled={viewing === r.id}
+                    className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#C4907F] px-4 text-[12px] font-medium text-white hover:opacity-90 disabled:opacity-60"
                   >
-                    View Dashboard
+                    {viewing === r.id && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                    {viewing === r.id ? "Loading…" : "View Dashboard"}
                   </button>
                 </li>
               ))}
@@ -251,6 +321,35 @@ export function MyStudentsSection({ mentorId }: { mentorId: string }) {
                   </li>
                 ))}
               </ul>
+            </div>
+
+            <div className="mt-5">
+              <div className="flex items-center gap-1.5">
+                <Lock className="h-3.5 w-3.5 text-[#1A1A1A]/50" />
+                <p className="text-[13px] font-medium text-[#1A1A1A]">Private Notes</p>
+              </div>
+              <p className="mt-0.5 text-[11px] text-[#1A1A1A]/50">
+                Only you can see this — never shown to the student.
+              </p>
+              <textarea
+                value={noteDraft}
+                onChange={(e) => setNoteDraft(e.target.value)}
+                rows={4}
+                aria-label="Private notes about this student"
+                placeholder="Jot private reminders about this student…"
+                className="mt-2 w-full resize-none rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-3 py-2.5 text-[13px] text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
+              />
+              <div className="mt-2 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => saveNote.mutate()}
+                  disabled={saveNote.isPending}
+                  className="inline-flex h-9 items-center justify-center gap-1.5 rounded-full bg-[#1A1A1A] px-5 text-[12px] font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                >
+                  {saveNote.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+                  {saveNote.isPending ? "Saving…" : "Save note"}
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -59,14 +59,16 @@ export function PostSessionNotesSection({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("bookings")
-        .select("id, date, time_slot, student_id, status")
+        // Explicit safe columns only (bookings column-lock, P10a). duration is
+        // threaded so a 30-min session becomes note-eligible 30 min after start.
+        .select("id, date, time_slot, duration, student_id, status")
         .eq("mentor_id", mentorId)
         .in("status", ["confirmed", "completed"])
         .order("date", { ascending: false })
         .limit(50);
       if (error) throw error;
       const past = (data ?? []).filter((b) =>
-        isBookingEnded(b.date, (b.time_slot ?? "00:00").slice(0, 5)),
+        isBookingEnded(b.date, (b.time_slot ?? "00:00").slice(0, 5), b.duration ?? 60),
       );
       const ids = Array.from(
         new Set(past.map((r) => r.student_id).filter((v): v is string => !!v)),
