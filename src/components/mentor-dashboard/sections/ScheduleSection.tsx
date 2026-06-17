@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -9,7 +9,16 @@ import { endOfISTWeekSunday, startOfISTWeekMonday } from "@/lib/time";
 // mentor_availability.day_of_week stores ISO 8601 weekdays: 1=Mon..7=Sun.
 // DAYS is in Monday-first order so the label for an ISO day is DAYS[day_of_week - 1].
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const HOURS = Array.from({ length: 15 }, (_, i) => 8 + i); // 8..22
+const HOURS = Array.from({ length: 24 }, (_, i) => i); // 0..23 (full day)
+const fmtHour = (h: number) => `${String(h).padStart(2, "0")}:00`;
+// The Manage-Availability drawer groups the 24 hours so they stay scannable.
+// (Night wraps past midnight: 22,23,0,1,2,3,4.)
+const TIME_GROUPS: { label: string; hours: number[] }[] = [
+  { label: "Morning", hours: [5, 6, 7, 8, 9, 10, 11] },
+  { label: "Afternoon", hours: [12, 13, 14, 15, 16] },
+  { label: "Evening", hours: [17, 18, 19, 20, 21] },
+  { label: "Night", hours: [22, 23, 0, 1, 2, 3, 4] },
+];
 
 type Slot = { day_of_week: number; start_hour: number };
 type Booking = {
@@ -138,6 +147,16 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
     toggleMutation.mutate({ day, hour, hadIt });
   };
 
+  // Escape closes the availability drawer (it's a modal dialog).
+  useEffect(() => {
+    if (!panelOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setPanelOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [panelOpen]);
+
   return (
     <section id="section-schedule" className="scroll-mt-24">
       <div className="flex items-center justify-between gap-4">
@@ -164,46 +183,53 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
 
       <div className="mt-4 overflow-x-auto rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-4">
         <div className="min-w-[720px]">
-          <div className="grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1 text-[11px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
-            <div />
-            {DAYS.map((d) => (
-              <div key={d} className="text-center">
-                {d}
+          <div className="max-h-[460px] overflow-y-auto">
+            <div className="sticky top-0 z-10 grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1 bg-[#FFFCFB] pb-1 text-[11px] font-medium uppercase tracking-wide text-[#1A1A1A]/60">
+              <div />
+              {DAYS.map((d) => (
+                <div key={d} className="text-center">
+                  {d}
+                </div>
+              ))}
+            </div>
+            {HOURS.map((h) => (
+              <div key={h} className="mt-1 grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1">
+                <div className="flex items-center text-[11px] font-light text-[#1A1A1A]/60">
+                  {fmtHour(h)}
+                </div>
+                {DAYS.map((_, di) => {
+                  const key = `${di}-${h}`;
+                  const booked = bookingMap.get(key);
+                  const available = slotSet.has(key);
+                  return (
+                    <div
+                      key={key}
+                      className="flex h-9 items-center justify-center rounded-md text-[11px]"
+                      style={{
+                        backgroundColor: booked ? "#C4907F" : available ? "#EDE0DB" : "transparent",
+                        color: booked ? "#FFFCFB" : "#1A1A1A",
+                        border: booked || available ? "none" : "1px dashed #EDE0DB",
+                      }}
+                    >
+                      {booked ? <span className="truncate px-1">{booked}</span> : null}
+                    </div>
+                  );
+                })}
               </div>
             ))}
           </div>
-          {HOURS.map((h) => (
-            <div key={h} className="mt-1 grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1">
-              <div className="flex items-center text-[11px] font-light text-[#1A1A1A]/60">
-                {h}:00
-              </div>
-              {DAYS.map((_, di) => {
-                const key = `${di}-${h}`;
-                const booked = bookingMap.get(key);
-                const available = slotSet.has(key);
-                return (
-                  <div
-                    key={key}
-                    className="flex h-9 items-center justify-center rounded-md text-[11px]"
-                    style={{
-                      backgroundColor: booked ? "#C4907F" : available ? "#EDE0DB" : "transparent",
-                      color: booked ? "#FFFCFB" : "#1A1A1A",
-                      border: booked || available ? "none" : "1px dashed #EDE0DB",
-                    }}
-                  >
-                    {booked ? <span className="truncate px-1">{booked}</span> : null}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
         </div>
       </div>
 
       {panelOpen && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-[#1A1A1A]/40" onClick={() => setPanelOpen(false)} />
-          <aside className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-[#FFFCFB] p-6 shadow-2xl">
+          <aside
+            role="dialog"
+            aria-modal="true"
+            aria-label="Manage Availability"
+            className="absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto bg-[#FFFCFB] p-6 shadow-2xl"
+          >
             <div className="flex items-center justify-between">
               <h3 className="font-display text-[20px] font-semibold text-[#1A1A1A]">
                 Manage Availability
@@ -219,27 +245,38 @@ export function ScheduleSection({ mentorId }: { mentorId: string }) {
             <p className="mt-1 text-[13px] text-[#1A1A1A]/60">
               Tap a slot to toggle availability for that day & time.
             </p>
-            <div className="mt-5 space-y-5">
+            <div className="mt-5 space-y-6">
               {DAYS.map((d, di) => (
                 <div key={d}>
-                  <p className="text-[13px] font-medium text-[#1A1A1A]">{d}</p>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {HOURS.map((h) => {
-                      const active = slotSet.has(`${di}-${h}`);
-                      return (
-                        <button
-                          key={h}
-                          onClick={() => toggleSlot(di, h)}
-                          className="h-8 rounded-full px-3 text-[12px] font-medium transition"
-                          style={{
-                            backgroundColor: active ? "#C4907F" : "#EDE0DB",
-                            color: active ? "#FFFCFB" : "#1A1A1A",
-                          }}
-                        >
-                          {h}:00
-                        </button>
-                      );
-                    })}
+                  <p className="text-[13px] font-semibold text-[#1A1A1A]">{d}</p>
+                  <div className="mt-2 space-y-3">
+                    {TIME_GROUPS.map((group) => (
+                      <div key={group.label}>
+                        <p className="text-[10px] font-medium uppercase tracking-wide text-[#1A1A1A]/40">
+                          {group.label}
+                        </p>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          {group.hours.map((h) => {
+                            const active = slotSet.has(`${di}-${h}`);
+                            return (
+                              <button
+                                key={h}
+                                onClick={() => toggleSlot(di, h)}
+                                aria-pressed={active}
+                                aria-label={`${d} ${fmtHour(h)} ${active ? "available — tap to remove" : "unavailable — tap to add"}`}
+                                className="h-9 rounded-full px-3 text-[12px] font-medium transition"
+                                style={{
+                                  backgroundColor: active ? "#C4907F" : "#EDE0DB",
+                                  color: active ? "#FFFCFB" : "#1A1A1A",
+                                }}
+                              >
+                                {fmtHour(h)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ))}

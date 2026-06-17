@@ -30,7 +30,7 @@ import { sendBookingEmails } from "@/lib/email/booking.functions";
 
 const RAZORPAY_ORDERS_URL = "https://api.razorpay.com/v1/orders";
 
-type CreateOrderInput = { mentorId: string; date: string; timeSlot: string };
+type CreateOrderInput = { mentorId: string; date: string; timeSlot: string; duration: 30 | 60 };
 
 async function createRazorpayOrder(
   keyId: string,
@@ -61,13 +61,23 @@ async function createRazorpayOrder(
 
 export const createBookingOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: CreateOrderInput) => input)
+  .inputValidator((input: CreateOrderInput) => {
+    // Reject anything that isn't exactly 30 or 60 (book_session also re-validates
+    // _duration IN (30,60) and computes the authoritative scaled price — the
+    // client never supplies an amount).
+    if (input.duration !== 30 && input.duration !== 60) {
+      throw new Error("duration must be 30 or 60");
+    }
+    return input;
+  })
   .handler(async ({ data, context }) => {
-    // 1. Book through the caller's RLS-enforced client (all gates apply).
+    // 1. Book through the caller's RLS-enforced client (all gates apply). The
+    // server computes the duration-scaled price; the client never supplies it.
     const { data: bookingId, error: rpcErr } = await context.supabase.rpc("book_session", {
       _mentor_id: data.mentorId,
       _date: data.date,
       _time_slot: data.timeSlot,
+      _duration: data.duration,
     });
     if (rpcErr || !bookingId) {
       // book_session raises friendly messages (slot already booked, past slot,
