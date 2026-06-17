@@ -48,6 +48,7 @@ import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settin
 import { Route as DashboardSessionsRouteImport } from './routes/dashboard.sessions'
 import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
+import { Route as MentorDashboardStudentsStudentIdRouteImport } from './routes/mentor-dashboard.students_.$studentId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
@@ -247,6 +248,12 @@ const CallBookingIdRoute = CallBookingIdRouteImport.update({
   path: '/call/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MentorDashboardStudentsStudentIdRoute =
+  MentorDashboardStudentsStudentIdRouteImport.update({
+    id: '/students_/$studentId',
+    path: '/students/$studentId',
+    getParentRoute: () => MentorDashboardRoute,
+  } as any)
 const ApiPublicHooksSendRemindersRoute =
   ApiPublicHooksSendRemindersRouteImport.update({
     id: '/api/public/hooks/send-reminders',
@@ -306,6 +313,7 @@ export interface FileRoutesByFullPath {
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/mentor-dashboard/students/$studentId': typeof MentorDashboardStudentsStudentIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -348,6 +356,7 @@ export interface FileRoutesByTo {
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
+  '/mentor-dashboard/students/$studentId': typeof MentorDashboardStudentsStudentIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -393,6 +402,7 @@ export interface FileRoutesById {
   '/student-signup_/finalize': typeof StudentSignupFinalizeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/mentor-dashboard/students_/$studentId': typeof MentorDashboardStudentsStudentIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -439,6 +449,7 @@ export interface FileRouteTypes {
     | '/student-signup/finalize'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/mentor-dashboard/students/$studentId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -481,6 +492,7 @@ export interface FileRouteTypes {
     | '/student-signup/finalize'
     | '/dashboard'
     | '/mentor-dashboard'
+    | '/mentor-dashboard/students/$studentId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -525,6 +537,7 @@ export interface FileRouteTypes {
     | '/student-signup_/finalize'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/mentor-dashboard/students_/$studentId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -840,6 +853,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentor-dashboard/students_/$studentId': {
+      id: '/mentor-dashboard/students_/$studentId'
+      path: '/students/$studentId'
+      fullPath: '/mentor-dashboard/students/$studentId'
+      preLoaderRoute: typeof MentorDashboardStudentsStudentIdRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
     '/api/public/hooks/send-reminders': {
       id: '/api/public/hooks/send-reminders'
       path: '/api/public/hooks/send-reminders'
@@ -888,6 +908,7 @@ interface MentorDashboardRouteChildren {
   MentorDashboardSettingsRoute: typeof MentorDashboardSettingsRoute
   MentorDashboardStudentsRoute: typeof MentorDashboardStudentsRoute
   MentorDashboardIndexRoute: typeof MentorDashboardIndexRoute
+  MentorDashboardStudentsStudentIdRoute: typeof MentorDashboardStudentsStudentIdRoute
 }
 
 const MentorDashboardRouteChildren: MentorDashboardRouteChildren = {
@@ -896,6 +917,7 @@ const MentorDashboardRouteChildren: MentorDashboardRouteChildren = {
   MentorDashboardSettingsRoute: MentorDashboardSettingsRoute,
   MentorDashboardStudentsRoute: MentorDashboardStudentsRoute,
   MentorDashboardIndexRoute: MentorDashboardIndexRoute,
+  MentorDashboardStudentsStudentIdRoute: MentorDashboardStudentsStudentIdRoute,
 }
 
 const MentorDashboardRouteWithChildren = MentorDashboardRoute._addFileChildren(

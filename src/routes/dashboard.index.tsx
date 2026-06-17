@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { MyPlugsSection } from "@/components/dashboard/sections/MyPlugsSection";
 import { TopPicksSection } from "@/components/dashboard/sections/TopPicksSection";
+import { MySchoolsWidget } from "@/components/dashboard/sections/MySchoolsWidget";
 import { AwaitingConsentNotice } from "@/components/consent/AwaitingConsentNotice";
 import { useStudentDashboard } from "@/components/dashboard/DashboardContext";
 
@@ -42,6 +43,7 @@ function DashboardHome() {
       )}
       <MyPlugsSection studentId={userId} />
       <TopPicksSection studentId={userId} />
+      <MySchoolsWidget userId={userId} />
     </div>
   );
 }
