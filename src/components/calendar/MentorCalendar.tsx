@@ -260,9 +260,9 @@ export default function MentorCalendar({
         )}
 
         {!isLoading && !isError && datesWithAvail.size > 0 && (
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
-            {/* Month calendar */}
-            <div className="shrink-0">
+          <div className="flex flex-col gap-6">
+            {/* Month calendar (full card width, on top) */}
+            <div>
               <Calendar
                 mode="single"
                 defaultMonth={defaultMonth}
@@ -284,8 +284,8 @@ export default function MentorCalendar({
               />
             </div>
 
-            {/* Slots for the selected day */}
-            <div className="min-w-0 flex-1">
+            {/* Slots for the selected day — wrapping chip grid below the calendar */}
+            <div>
               {!selectedDate ? (
                 <p className="text-[13px] text-[#1A1A1A]/60">
                   Select a highlighted day to see open times.
@@ -295,7 +295,7 @@ export default function MentorCalendar({
                   <h4 className="font-display text-[16px] font-semibold text-[#1A1A1A]">
                     {formatBookingDate(selectedDate)}
                   </h4>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-3">
                     {daySlots.map((slot) => {
                       const key = `${slot.date}-${slot.time_slot}`;
                       if (slot.state === "booked") {
@@ -317,10 +317,9 @@ export default function MentorCalendar({
                             aria-disabled
                             aria-label={`${slot.time_slot} — not enough open time for a 60-minute session`}
                             title="Not enough open time for a 60-minute session"
-                            className="inline-flex h-11 cursor-not-allowed items-center justify-center gap-1 rounded-full border border-dashed border-[#EDE0DB] px-4 text-[13px] font-medium text-[#1A1A1A]/45"
+                            className="inline-flex h-11 cursor-not-allowed items-center justify-center rounded-full border border-dashed border-[#EDE0DB] px-4 text-[13px] font-medium text-[#1A1A1A]/60"
                           >
                             {slot.time_slot}
-                            <span className="text-[11px] font-normal">· no 60-min</span>
                           </span>
                         );
                       }
