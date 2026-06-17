@@ -4,7 +4,7 @@ import { BadgeCheck, Star } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import MentorCalendar from "@/components/calendar/MentorCalendar";
 import { ErrorBanner } from "@/components/ui/error-banner";
@@ -65,7 +65,6 @@ function MentorProfilePage() {
   const navigate = useNavigate();
   const [authReady, setAuthReady] = useState(!!ctx.userId);
   const [viewerId, setViewerId] = useState<string | null>(ctx.userId ?? null);
-  const [active, setActive] = useState<SectionKey>("browse");
   const [reviewOpen, setReviewOpen] = useState(false);
 
   // SSR / hard-refresh fallback (see dashboard.tsx for the rationale).
@@ -176,18 +175,12 @@ function MentorProfilePage() {
 
   const { data: consent } = useConsentStatus(viewerId);
 
-  const onSelectSection = (key: SectionKey) => {
-    setActive(key);
-    if (key === "browse") return;
-    navigate({ to: "/dashboard" });
-  };
-
   if (!authReady || isLoading) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
   if (isError) {
     return (
       <div className="min-h-screen bg-[#FFFCFB]">
-        <DashboardSidebar active={active} onSelect={onSelectSection} />
+        <DashboardSidebar />
         <main className="md:ml-[240px]">
           <div className="mx-auto max-w-2xl px-6 py-24">
             <ErrorBanner
@@ -196,7 +189,7 @@ function MentorProfilePage() {
             />
           </div>
         </main>
-        <MobileBottomNav active={active} onSelect={onSelectSection} />
+        <MobileBottomNav />
       </div>
     );
   }
@@ -204,7 +197,7 @@ function MentorProfilePage() {
   if (notFound || !mentor) {
     return (
       <div className="min-h-screen bg-[#FFFCFB]">
-        <DashboardSidebar active={active} onSelect={onSelectSection} />
+        <DashboardSidebar />
         <main className="md:ml-[240px]">
           <div className="mx-auto max-w-2xl px-6 py-24 text-center">
             <h1 className="font-display text-[28px] font-semibold text-[#1A1A1A]">
@@ -221,7 +214,7 @@ function MentorProfilePage() {
             </Link>
           </div>
         </main>
-        <MobileBottomNav active={active} onSelect={onSelectSection} />
+        <MobileBottomNav />
       </div>
     );
   }
@@ -243,7 +236,7 @@ function MentorProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
-      <DashboardSidebar active={active} onSelect={onSelectSection} />
+      <DashboardSidebar />
 
       <main className="pb-24 md:ml-[240px] md:pb-0">
         <section className="bg-[#1A1A1A] px-5 py-10 sm:px-8 md:px-12 md:py-14">
@@ -438,7 +431,7 @@ function MentorProfilePage() {
         </section>
       </main>
 
-      <MobileBottomNav active={active} onSelect={onSelectSection} />
+      <MobileBottomNav />
 
       {viewerId && (
         <ReviewForm

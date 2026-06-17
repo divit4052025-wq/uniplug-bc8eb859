@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home,
   Search,
@@ -21,23 +21,27 @@ export type SectionKey =
   | "messages"
   | "settings";
 
-interface Props {
-  active: SectionKey;
-  onSelect: (key: SectionKey) => void;
-}
+// Each nav item navigates to a REAL route. `exact` is set for the dashboard
+// index so it isn't highlighted while a child section (/dashboard/sessions …)
+// is active.
+type NavItem = { key: SectionKey; label: string; icon: typeof Home; to: string; exact?: boolean };
 
-const items: { key: SectionKey; label: string; icon: typeof Home }[] = [
-  { key: "home", label: "Home", icon: Home },
-  { key: "browse", label: "Browse Plugs", icon: Search },
-  { key: "sessions", label: "My Sessions", icon: CalendarClock },
-  { key: "documents", label: "My Documents", icon: FileText },
-  { key: "progress", label: "My Progress", icon: TrendingUp },
-  { key: "messages", label: "Messages", icon: MessageCircle },
-  { key: "settings", label: "Settings", icon: Settings },
+export const STUDENT_NAV: NavItem[] = [
+  { key: "home", label: "Home", icon: Home, to: "/dashboard", exact: true },
+  { key: "browse", label: "Browse Plugs", icon: Search, to: "/browse" },
+  { key: "sessions", label: "My Sessions", icon: CalendarClock, to: "/dashboard/sessions" },
+  { key: "documents", label: "My Documents", icon: FileText, to: "/dashboard/documents" },
+  { key: "progress", label: "My Progress", icon: TrendingUp, to: "/session-notes" },
+  { key: "messages", label: "Messages", icon: MessageCircle, to: "/messages" },
+  { key: "settings", label: "Settings", icon: Settings, to: "/dashboard/settings" },
 ];
 
-export function DashboardSidebar({ active, onSelect }: Props) {
-  const navigate = useNavigate();
+export function isNavActive(pathname: string, to: string, exact?: boolean): boolean {
+  return exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+}
+
+export function DashboardSidebar() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const signOut = async () => {
     await supabase.auth.signOut();
     window.location.href = "/";
@@ -48,27 +52,14 @@ export function DashboardSidebar({ active, onSelect }: Props) {
         <Logo variant="umark-dark" className="h-9 w-auto" />
       </Link>
       <nav className="mt-2 flex flex-1 flex-col">
-        {items.map((it) => {
-          const isActive = it.key === active;
+        {STUDENT_NAV.map((it) => {
+          const isActive = isNavActive(pathname, it.to, it.exact);
           const Icon = it.icon;
           return (
-            <button
+            <Link
               key={it.key}
-              onClick={() => {
-                if (it.key === "browse") {
-                  navigate({ to: "/browse" });
-                  return;
-                }
-                if (it.key === "progress") {
-                  navigate({ to: "/session-notes" });
-                  return;
-                }
-                if (it.key === "messages") {
-                  navigate({ to: "/messages" });
-                  return;
-                }
-                onSelect(it.key);
-              }}
+              to={it.to}
+              aria-current={isActive ? "page" : undefined}
               className={`relative flex items-center gap-3 px-6 py-3 text-left text-[14px] font-medium transition ${
                 isActive ? "text-white" : "text-white/60 hover:text-white"
               }`}
@@ -78,7 +69,7 @@ export function DashboardSidebar({ active, onSelect }: Props) {
               )}
               <Icon className="h-[18px] w-[18px]" />
               <span>{it.label}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>

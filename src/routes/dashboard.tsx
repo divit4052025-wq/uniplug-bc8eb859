@@ -1,50 +1,37 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
-import { MyPlugsSection } from "@/components/dashboard/sections/MyPlugsSection";
-import { TopPicksSection } from "@/components/dashboard/sections/TopPicksSection";
-import { UpcomingSessionsSection } from "@/components/dashboard/sections/UpcomingSessionsSection";
-import { PastSessionsSection } from "@/components/dashboard/sections/PastSessionsSection";
-import { MySchoolsSection } from "@/components/dashboard/sections/MySchoolsSection";
-import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
-import { SessionNotesSection } from "@/components/dashboard/sections/SessionNotesSection";
-import { ProfileSection } from "@/components/dashboard/sections/ProfileSection";
-import { AccountDataSection } from "@/components/settings/AccountDataSection";
-import { AwaitingConsentNotice } from "@/components/consent/AwaitingConsentNotice";
+import { StudentDashboardProvider } from "@/components/dashboard/DashboardContext";
 import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { resolveUserRole } from "@/lib/auth/role";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 import { finalizeSkippedThisSession } from "@/components/student-signup/gate";
 
+// Student dashboard LAYOUT route. Renders the persistent shell (sidebar, topbar,
+// mobile nav) once and an <Outlet/> for the per-section child routes. The auth
+// guard lives here so every child inherits it; the shell stays mounted across
+// section navigation, so switching pages never re-renders/re-fetches the chrome.
 export const Route = createFileRoute("/dashboard")({
   beforeLoad: () => clientAuthGuard({ signedOutTo: "/student-signup", requireRole: "student" }),
   head: () => ({
     meta: [{ title: "Dashboard — UniPlug" }],
   }),
-  component: Dashboard,
+  component: DashboardLayout,
 });
 
-const SECTION_TO_ANCHOR: Partial<Record<SectionKey, string>> = {
-  home: "section-plugs",
-  browse: "section-plugs",
-  sessions: "section-sessions",
-  documents: "section-documents",
-};
-
-function Dashboard() {
+function DashboardLayout() {
   const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(ctx.userId ?? null);
   const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(
     ctx.userMetadata ?? null,
   );
-  const [active, setActive] = useState<SectionKey>("home");
   const [ready, setReady] = useState(!!ctx.userId);
 
   // SSR / hard-refresh fallback: when beforeLoad was skipped on the server
@@ -76,7 +63,7 @@ function Dashboard() {
       const role = await resolveUserRole(session.user.id, session.user.email, meta);
       if (cancelled) return;
       if (role === "mentor") {
-        navigate({ to: "/mentor-dashboard", search: {} });
+        navigate({ to: "/mentor-dashboard" });
         return;
       }
       setUserId(session.user.id);
@@ -110,8 +97,8 @@ function Dashboard() {
 
   // P7 finalize gate: an authenticated student who hasn't completed their
   // profile is routed to the finalize step. "Skip for now" (per-session) drops
-  // them here with a soft nudge banner instead, so a legacy/backfill user is
-  // never trapped.
+  // them here with a soft nudge banner (rendered on the home child) instead, so
+  // a legacy/backfill user is never trapped.
   const profileIncomplete = !!profile && profile.profile_completed_at === null;
   useEffect(() => {
     if (profileIncomplete && !finalizeSkippedThisSession()) {
@@ -124,82 +111,24 @@ function Dashboard() {
   const fullName = profile?.full_name ?? userMetadata?.full_name ?? "";
   const firstName = fullName.split(" ")[0] ?? "";
 
-  const select = (key: SectionKey) => {
-    setActive(key);
-    if (key === "settings") {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    const anchor = SECTION_TO_ANCHOR[key];
-    if (anchor) {
-      const el = document.getElementById(anchor);
-      el?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-  };
-
   if (!ready || !userId) {
     return <div className="min-h-screen bg-[#FFFCFB]" />;
   }
 
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
-      <DashboardSidebar active={active} onSelect={select} />
+      <DashboardSidebar />
 
       <main className="md:ml-[240px]">
         <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
           <DashboardTopbar firstName={firstName} role="student" />
-          {active === "settings" ? (
-            <div className="mt-8 animate-hero-rise">
-              <h2 className="font-display text-[24px] font-semibold text-[#1A1A1A]">Settings</h2>
-              <p className="mt-1 text-[13px] text-[#1A1A1A]/60">
-                Edit your profile, and manage your data and account.
-              </p>
-              <div className="mt-8">
-                <ProfileSection studentId={userId} />
-              </div>
-              <div className="mt-12 border-t border-[#EDE0DB] pt-10">
-                <AccountDataSection />
-              </div>
-            </div>
-          ) : (
-            <div className="mt-8 space-y-12 animate-hero-rise">
-              {profileIncomplete && (
-                <div className="flex flex-col gap-3 rounded-2xl border border-[#C4907F]/30 bg-[#E8C4B8]/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-[#1A1A1A]">
-                      Finish setting up your profile
-                    </p>
-                    <p className="text-[13px] text-[#1A1A1A]/70">
-                      Add your subjects, targets and a photo for better mentor matches.
-                    </p>
-                  </div>
-                  {/* Near-black CTA: white-on-dusty-rose (#C4907F) fails WCAG AA
-                      contrast (~2.7:1); near-black clears it comfortably. */}
-                  <button
-                    type="button"
-                    onClick={() => navigate({ to: "/student-signup/finalize" })}
-                    className="shrink-0 rounded-full bg-[#1A1A1A] px-5 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-                  >
-                    Complete profile
-                  </button>
-                </div>
-              )}
-              {consent?.awaiting && (
-                <AwaitingConsentNotice studentId={userId} parentEmail={consent.parentEmail} />
-              )}
-              <MyPlugsSection studentId={userId} />
-              <TopPicksSection studentId={userId} />
-              <UpcomingSessionsSection studentId={userId} />
-              <PastSessionsSection studentId={userId} />
-              <SessionNotesSection studentId={userId} />
-              <MySchoolsSection userId={userId} />
-              <MyDocumentsSection userId={userId} />
-            </div>
-          )}
+          <StudentDashboardProvider value={{ userId, firstName, profileIncomplete, consent }}>
+            <Outlet />
+          </StudentDashboardProvider>
         </div>
       </main>
 
-      <MobileBottomNav active={active} onSelect={select} />
+      <MobileBottomNav />
     </div>
   );
 }

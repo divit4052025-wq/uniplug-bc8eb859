@@ -32,12 +32,21 @@ import { Route as BrowseRouteImport } from './routes/browse'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MentorDashboardIndexRouteImport } from './routes/mentor-dashboard.index'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as StudentSignupFinalizeRouteImport } from './routes/student-signup_.finalize'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
 import { Route as MessagesConversationIdRouteImport } from './routes/messages_.$conversationId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as MentorSignupFinalizeRouteImport } from './routes/mentor-signup_.finalize'
+import { Route as MentorDashboardStudentsRouteImport } from './routes/mentor-dashboard.students'
+import { Route as MentorDashboardSettingsRouteImport } from './routes/mentor-dashboard.settings'
+import { Route as MentorDashboardScheduleRouteImport } from './routes/mentor-dashboard.schedule'
+import { Route as MentorDashboardEarningsRouteImport } from './routes/mentor-dashboard.earnings'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
+import { Route as DashboardSessionsRouteImport } from './routes/dashboard.sessions'
+import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
@@ -158,6 +167,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MentorDashboardIndexRoute = MentorDashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const StudentSignupFinalizeRoute = StudentSignupFinalizeRouteImport.update({
   id: '/student-signup_/finalize',
   path: '/student-signup/finalize',
@@ -187,6 +206,41 @@ const MentorSignupFinalizeRoute = MentorSignupFinalizeRouteImport.update({
   id: '/mentor-signup_/finalize',
   path: '/mentor-signup/finalize',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MentorDashboardStudentsRoute = MentorDashboardStudentsRouteImport.update({
+  id: '/students',
+  path: '/students',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardSettingsRoute = MentorDashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardScheduleRoute = MentorDashboardScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardEarningsRoute = MentorDashboardEarningsRouteImport.update({
+  id: '/earnings',
+  path: '/earnings',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSessionsRoute = DashboardSessionsRouteImport.update({
+  id: '/sessions',
+  path: '/sessions',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDocumentsRoute = DashboardDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => DashboardRoute,
 } as any)
 const CallBookingIdRoute = CallBookingIdRouteImport.update({
   id: '/call/$bookingId',
@@ -219,11 +273,11 @@ export interface FileRoutesByFullPath {
   '/browse': typeof BrowseRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/cookie-policy': typeof CookiePolicyRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
-  '/mentor-dashboard': typeof MentorDashboardRoute
+  '/mentor-dashboard': typeof MentorDashboardRouteWithChildren
   '/mentor-signup': typeof MentorSignupRoute
   '/mentor-terms': typeof MentorTermsRoute
   '/messages': typeof MessagesRoute
@@ -237,12 +291,21 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/sessions': typeof DashboardSessionsRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
+  '/mentor-dashboard/schedule': typeof MentorDashboardScheduleRoute
+  '/mentor-dashboard/settings': typeof MentorDashboardSettingsRoute
+  '/mentor-dashboard/students': typeof MentorDashboardStudentsRoute
   '/mentor-signup/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/mentor-dashboard/': typeof MentorDashboardIndexRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -254,11 +317,9 @@ export interface FileRoutesByTo {
   '/browse': typeof BrowseRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/cookie-policy': typeof CookiePolicyRoute
-  '/dashboard': typeof DashboardRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
-  '/mentor-dashboard': typeof MentorDashboardRoute
   '/mentor-signup': typeof MentorSignupRoute
   '/mentor-terms': typeof MentorTermsRoute
   '/messages': typeof MessagesRoute
@@ -272,12 +333,21 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/sessions': typeof DashboardSessionsRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
+  '/mentor-dashboard/schedule': typeof MentorDashboardScheduleRoute
+  '/mentor-dashboard/settings': typeof MentorDashboardSettingsRoute
+  '/mentor-dashboard/students': typeof MentorDashboardStudentsRoute
   '/mentor-signup/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
+  '/dashboard': typeof DashboardIndexRoute
+  '/mentor-dashboard': typeof MentorDashboardIndexRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -290,11 +360,11 @@ export interface FileRoutesById {
   '/browse': typeof BrowseRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/cookie-policy': typeof CookiePolicyRoute
-  '/dashboard': typeof DashboardRoute
+  '/dashboard': typeof DashboardRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/how-it-works': typeof HowItWorksRoute
   '/login': typeof LoginRoute
-  '/mentor-dashboard': typeof MentorDashboardRoute
+  '/mentor-dashboard': typeof MentorDashboardRouteWithChildren
   '/mentor-signup': typeof MentorSignupRoute
   '/mentor-terms': typeof MentorTermsRoute
   '/messages': typeof MessagesRoute
@@ -308,12 +378,21 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/sessions': typeof DashboardSessionsRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
+  '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
+  '/mentor-dashboard/schedule': typeof MentorDashboardScheduleRoute
+  '/mentor-dashboard/settings': typeof MentorDashboardSettingsRoute
+  '/mentor-dashboard/students': typeof MentorDashboardStudentsRoute
   '/mentor-signup_/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages_/$conversationId': typeof MessagesConversationIdRoute
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup_/finalize': typeof StudentSignupFinalizeRoute
+  '/dashboard/': typeof DashboardIndexRoute
+  '/mentor-dashboard/': typeof MentorDashboardIndexRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -345,12 +424,21 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/dashboard/documents'
+    | '/dashboard/sessions'
+    | '/dashboard/settings'
+    | '/mentor-dashboard/earnings'
+    | '/mentor-dashboard/schedule'
+    | '/mentor-dashboard/settings'
+    | '/mentor-dashboard/students'
     | '/mentor-signup/finalize'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup/finalize'
+    | '/dashboard/'
+    | '/mentor-dashboard/'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -362,11 +450,9 @@ export interface FileRouteTypes {
     | '/browse'
     | '/community-guidelines'
     | '/cookie-policy'
-    | '/dashboard'
     | '/forgot-password'
     | '/how-it-works'
     | '/login'
-    | '/mentor-dashboard'
     | '/mentor-signup'
     | '/mentor-terms'
     | '/messages'
@@ -380,12 +466,21 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/dashboard/documents'
+    | '/dashboard/sessions'
+    | '/dashboard/settings'
+    | '/mentor-dashboard/earnings'
+    | '/mentor-dashboard/schedule'
+    | '/mentor-dashboard/settings'
+    | '/mentor-dashboard/students'
     | '/mentor-signup/finalize'
     | '/mentor/$id'
     | '/messages/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup/finalize'
+    | '/dashboard'
+    | '/mentor-dashboard'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -415,12 +510,21 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/dashboard/documents'
+    | '/dashboard/sessions'
+    | '/dashboard/settings'
+    | '/mentor-dashboard/earnings'
+    | '/mentor-dashboard/schedule'
+    | '/mentor-dashboard/settings'
+    | '/mentor-dashboard/students'
     | '/mentor-signup_/finalize'
     | '/mentor/$id'
     | '/messages_/$conversationId'
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup_/finalize'
+    | '/dashboard/'
+    | '/mentor-dashboard/'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -433,11 +537,11 @@ export interface RootRouteChildren {
   BrowseRoute: typeof BrowseRoute
   CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
   CookiePolicyRoute: typeof CookiePolicyRoute
-  DashboardRoute: typeof DashboardRoute
+  DashboardRoute: typeof DashboardRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HowItWorksRoute: typeof HowItWorksRoute
   LoginRoute: typeof LoginRoute
-  MentorDashboardRoute: typeof MentorDashboardRoute
+  MentorDashboardRoute: typeof MentorDashboardRouteWithChildren
   MentorSignupRoute: typeof MentorSignupRoute
   MentorTermsRoute: typeof MentorTermsRoute
   MessagesRoute: typeof MessagesRoute
@@ -624,6 +728,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentor-dashboard/': {
+      id: '/mentor-dashboard/'
+      path: '/'
+      fullPath: '/mentor-dashboard/'
+      preLoaderRoute: typeof MentorDashboardIndexRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/student-signup_/finalize': {
       id: '/student-signup_/finalize'
       path: '/student-signup/finalize'
@@ -666,6 +784,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentorSignupFinalizeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentor-dashboard/students': {
+      id: '/mentor-dashboard/students'
+      path: '/students'
+      fullPath: '/mentor-dashboard/students'
+      preLoaderRoute: typeof MentorDashboardStudentsRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/settings': {
+      id: '/mentor-dashboard/settings'
+      path: '/settings'
+      fullPath: '/mentor-dashboard/settings'
+      preLoaderRoute: typeof MentorDashboardSettingsRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/schedule': {
+      id: '/mentor-dashboard/schedule'
+      path: '/schedule'
+      fullPath: '/mentor-dashboard/schedule'
+      preLoaderRoute: typeof MentorDashboardScheduleRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/earnings': {
+      id: '/mentor-dashboard/earnings'
+      path: '/earnings'
+      fullPath: '/mentor-dashboard/earnings'
+      preLoaderRoute: typeof MentorDashboardEarningsRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/sessions': {
+      id: '/dashboard/sessions'
+      path: '/sessions'
+      fullPath: '/dashboard/sessions'
+      preLoaderRoute: typeof DashboardSessionsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/documents': {
+      id: '/dashboard/documents'
+      path: '/documents'
+      fullPath: '/dashboard/documents'
+      preLoaderRoute: typeof DashboardDocumentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/call/$bookingId': {
       id: '/call/$bookingId'
       path: '/call/$bookingId'
@@ -697,6 +864,44 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface DashboardRouteChildren {
+  DashboardDocumentsRoute: typeof DashboardDocumentsRoute
+  DashboardSessionsRoute: typeof DashboardSessionsRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardDocumentsRoute: DashboardDocumentsRoute,
+  DashboardSessionsRoute: DashboardSessionsRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
+  DashboardRouteChildren,
+)
+
+interface MentorDashboardRouteChildren {
+  MentorDashboardEarningsRoute: typeof MentorDashboardEarningsRoute
+  MentorDashboardScheduleRoute: typeof MentorDashboardScheduleRoute
+  MentorDashboardSettingsRoute: typeof MentorDashboardSettingsRoute
+  MentorDashboardStudentsRoute: typeof MentorDashboardStudentsRoute
+  MentorDashboardIndexRoute: typeof MentorDashboardIndexRoute
+}
+
+const MentorDashboardRouteChildren: MentorDashboardRouteChildren = {
+  MentorDashboardEarningsRoute: MentorDashboardEarningsRoute,
+  MentorDashboardScheduleRoute: MentorDashboardScheduleRoute,
+  MentorDashboardSettingsRoute: MentorDashboardSettingsRoute,
+  MentorDashboardStudentsRoute: MentorDashboardStudentsRoute,
+  MentorDashboardIndexRoute: MentorDashboardIndexRoute,
+}
+
+const MentorDashboardRouteWithChildren = MentorDashboardRoute._addFileChildren(
+  MentorDashboardRouteChildren,
+)
+
 interface SessionNotesRouteChildren {
   SessionNotesNoteIdRoute: typeof SessionNotesNoteIdRoute
 }
@@ -716,11 +921,11 @@ const rootRouteChildren: RootRouteChildren = {
   BrowseRoute: BrowseRoute,
   CommunityGuidelinesRoute: CommunityGuidelinesRoute,
   CookiePolicyRoute: CookiePolicyRoute,
-  DashboardRoute: DashboardRoute,
+  DashboardRoute: DashboardRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HowItWorksRoute: HowItWorksRoute,
   LoginRoute: LoginRoute,
-  MentorDashboardRoute: MentorDashboardRoute,
+  MentorDashboardRoute: MentorDashboardRouteWithChildren,
   MentorSignupRoute: MentorSignupRoute,
   MentorTermsRoute: MentorTermsRoute,
   MessagesRoute: MessagesRoute,

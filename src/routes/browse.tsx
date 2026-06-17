@@ -4,7 +4,7 @@ import { BadgeCheck, Filter, Search, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { DashboardSidebar, type SectionKey } from "@/components/dashboard/DashboardSidebar";
+import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
 import { ErrorBanner } from "@/components/ui/error-banner";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
@@ -89,7 +89,6 @@ function BrowsePage() {
   const navigate = useNavigate();
   const [authReady, setAuthReady] = useState(!!ctx.userId);
   const [userId, setUserId] = useState<string | null>(ctx.userId ?? null);
-  const [active, setActive] = useState<SectionKey>("browse");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const [search, setSearch] = useState("");
@@ -147,13 +146,6 @@ function BrowsePage() {
 
   const { data: consent } = useConsentStatus(userId);
 
-  const onSelectSection = (key: SectionKey) => {
-    setActive(key);
-    if (key === "home" || key === "sessions" || key === "documents") {
-      navigate({ to: "/dashboard" });
-    }
-  };
-
   const toggle = (list: string[], setter: (v: string[]) => void, val: string) =>
     setter(list.includes(val) ? list.filter((v) => v !== val) : [...list, val]);
 
@@ -205,7 +197,7 @@ function BrowsePage() {
 
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
-      <DashboardSidebar active={active} onSelect={onSelectSection} />
+      <DashboardSidebar />
 
       <main className="md:ml-[240px]">
         <div className="flex items-center justify-between border-b border-[#EDE0DB] px-5 py-4 md:hidden">
@@ -280,7 +272,7 @@ function BrowsePage() {
         </div>
       </main>
 
-      <MobileBottomNav active={active} onSelect={onSelectSection} />
+      <MobileBottomNav />
 
       {drawerOpen && (
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">

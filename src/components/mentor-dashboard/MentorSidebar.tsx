@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Home, CalendarClock, Users, Wallet, MessageCircle, Settings, LogOut } from "lucide-react";
 import { Logo } from "@/components/site/Logo";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,25 +11,32 @@ export type MentorSectionKey =
   | "earnings"
   | "settings";
 
-interface Props {
-  active: MentorSectionKey;
-  onSelect: (key: MentorSectionKey) => void;
-}
+type NavItem = {
+  key: MentorSectionKey;
+  label: string;
+  icon: typeof Home;
+  to: string;
+  exact?: boolean;
+};
 
-const items: { key: MentorSectionKey; label: string; icon: typeof Home }[] = [
-  { key: "home", label: "Home", icon: Home },
-  { key: "schedule", label: "My Schedule", icon: CalendarClock },
-  { key: "students", label: "My Students", icon: Users },
-  { key: "messages", label: "Messages", icon: MessageCircle },
-  { key: "earnings", label: "Earnings", icon: Wallet },
-  { key: "settings", label: "Settings", icon: Settings },
+export const MENTOR_NAV: NavItem[] = [
+  { key: "home", label: "Home", icon: Home, to: "/mentor-dashboard", exact: true },
+  { key: "schedule", label: "My Schedule", icon: CalendarClock, to: "/mentor-dashboard/schedule" },
+  { key: "students", label: "My Students", icon: Users, to: "/mentor-dashboard/students" },
+  { key: "messages", label: "Messages", icon: MessageCircle, to: "/messages" },
+  { key: "earnings", label: "Earnings", icon: Wallet, to: "/mentor-dashboard/earnings" },
+  { key: "settings", label: "Settings", icon: Settings, to: "/mentor-dashboard/settings" },
 ];
 
-export function MentorSidebar({ active, onSelect }: Props) {
-  const navigate = useNavigate();
+export function isMentorNavActive(pathname: string, to: string, exact?: boolean): boolean {
+  return exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`);
+}
+
+export function MentorSidebar() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const signOut = async () => {
     await supabase.auth.signOut();
-    navigate({ to: "/" });
+    window.location.href = "/";
   };
   return (
     <aside className="fixed left-0 top-0 z-30 hidden h-screen w-[240px] flex-col bg-[#1A1A1A] md:flex">
@@ -39,19 +46,14 @@ export function MentorSidebar({ active, onSelect }: Props) {
         </span>
       </Link>
       <nav className="mt-2 flex flex-1 flex-col">
-        {items.map((it) => {
-          const isActive = it.key === active;
+        {MENTOR_NAV.map((it) => {
+          const isActive = isMentorNavActive(pathname, it.to, it.exact);
           const Icon = it.icon;
           return (
-            <button
+            <Link
               key={it.key}
-              onClick={() => {
-                if (it.key === "messages") {
-                  navigate({ to: "/messages" });
-                  return;
-                }
-                onSelect(it.key);
-              }}
+              to={it.to}
+              aria-current={isActive ? "page" : undefined}
               className={`relative flex items-center gap-3 px-6 py-3 text-left text-[14px] font-medium transition ${
                 isActive ? "text-white" : "text-white/60 hover:text-white"
               }`}
@@ -61,7 +63,7 @@ export function MentorSidebar({ active, onSelect }: Props) {
               )}
               <Icon className="h-[18px] w-[18px]" />
               <span>{it.label}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>

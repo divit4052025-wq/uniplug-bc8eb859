@@ -56,26 +56,16 @@ export function MessagesLayout({
 
   if (!ctx) return <div className="min-h-screen bg-[#FFFCFB]" />;
 
-  const toDash = () => navigate({ to: ctx.role === "mentor" ? "/mentor-dashboard" : "/dashboard" });
-
   return (
     <div className="min-h-screen bg-[#FFFCFB]">
-      {ctx.role === "mentor" ? (
-        <MentorSidebar active="messages" onSelect={toDash} />
-      ) : (
-        <DashboardSidebar active="messages" onSelect={toDash} />
-      )}
+      {ctx.role === "mentor" ? <MentorSidebar /> : <DashboardSidebar />}
       <main className="md:ml-[240px]">
         <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
           <DashboardTopbar firstName={ctx.firstName} role={ctx.role} />
           <div className="mt-6">{children({ userId: ctx.userId, role: ctx.role })}</div>
         </div>
       </main>
-      {ctx.role === "mentor" ? (
-        <MentorMobileNav active="messages" onSelect={toDash} />
-      ) : (
-        <MobileBottomNav active="messages" onSelect={toDash} />
-      )}
+      {ctx.role === "mentor" ? <MentorMobileNav /> : <MobileBottomNav />}
     </div>
   );
 }
