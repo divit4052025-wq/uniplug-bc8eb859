@@ -1492,6 +1492,7 @@ export type Database = {
           size_bytes: number | null;
           storage_path: string;
           student_id: string;
+          visibility: string;
         };
         Insert: {
           created_at?: string;
@@ -1500,6 +1501,7 @@ export type Database = {
           size_bytes?: number | null;
           storage_path: string;
           student_id: string;
+          visibility?: string;
         };
         Update: {
           created_at?: string;
@@ -1508,6 +1510,7 @@ export type Database = {
           size_bytes?: number | null;
           storage_path?: string;
           student_id?: string;
+          visibility?: string;
         };
         Relationships: [];
       };

@@ -1,15 +1,21 @@
-// P7 — authenticated post-verification finalize step.
-//   - Stash present (just signed up on this device): show a summary of the saved
-//     selections + a photo upload; write the rich join-table rows silently on
-//     finish, then stamp completion.
-//   - Stash absent (different device / legacy "backfill" signup): collect the
-//     rich fields fresh (reusing the same typeahead/mascot components) + photo.
-// Either way: write rows → upload photo → finalize_student_profile() → dashboard.
-import { useEffect, useState } from "react";
+// Student-signup v2 — Act 5: authenticated, post-confirmation finalize at
+// /student-signup/finalize. Reproduces the cinematic continuity across the email
+// round-trip: "You're almost home." interstitial → finish (3 uploads) → "You're
+// in." payoff. The data path is unchanged from v1 — writeRichProfile (now
+// carrying uni tiers) → photo → finalize_student_profile() — PLUS the two new
+// document uploads (resume / personal statement) into the existing
+// student_documents table at visibility 'restricted'.
+//   - Stash present (same device): the rich selections were saved at signup;
+//     just collect the uploads.
+//   - Stash absent (different device): collect the rich fields fresh (same
+//     real ref-data components), then the uploads.
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Check, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
-import { AuthShell, Field, inputClass } from "@/components/site/AuthShell";
+import { Mascot } from "@/components/mascots/Mascot";
+import { MASCOTS } from "@/components/mascots/mascot-data";
+import { Logo } from "@/components/site/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -18,35 +24,54 @@ import { withRetry } from "@/lib/retry";
 import { ACCEPTED_IMAGE_INPUT, UNSUPPORTED_IMAGE_MESSAGE, isAcceptedImage } from "@/lib/images";
 import { ProjectsField } from "./fields/ProjectsField";
 import { RefMultiSelect } from "@/components/signup/RefMultiSelect";
-import { Caption } from "@/components/signup/Labeled";
 import { clearProfileDraft, draftHasData, loadProfileDraft } from "./draft";
-import { stampProfileComplete, writeRichProfile } from "./profileWrite";
+import { stampProfileComplete, uploadStudentDocument, writeRichProfile } from "./profileWrite";
 import { FINALIZE_SKIP_KEY } from "./gate";
-import type { ProfileDraft, ProjectDraft, RefItem } from "./types";
+import type { ProfileDraft, ProjectDraft, RefItem, UniPick } from "./types";
+import { SignupCursor } from "./v2/SignupCursor";
+import { FounderCompanion } from "./v2/FounderCompanion";
+import { ActInterstitial, type InterstitialWord } from "./v2/ActInterstitial";
+import { YoureInBeat } from "./v2/beats";
+import { UniversityTierField } from "./v2/UniversityTierField";
+import { MotionConfig } from "motion/react";
 
-type Phase = "loading" | "ready" | "saving";
+type Phase = "loading" | "interstitial" | "finish" | "saving" | "done";
+
+const PAPER = "var(--brand-paper)";
+const ALMOST_HOME: InterstitialWord[] = [
+  { text: "You’re", color: PAPER },
+  { text: "almost", color: PAPER },
+  { text: "home.", color: "var(--brand-rose)" },
+];
+
+const labelCls = "mb-1.5 block text-[13px] font-semibold text-brand-ink-soft";
 
 export function FinalizeProfile() {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>("loading");
   const [userId, setUserId] = useState<string | null>(null);
+  const [firstName, setFirstName] = useState("");
   const [draft, setDraft] = useState<ProfileDraft | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Photo (optional).
+  // Uploads (all optional / skippable).
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [statementFiles, setStatementFiles] = useState<File[]>([]);
+  const photoInput = useRef<HTMLInputElement>(null);
+  const resumeInput = useRef<HTMLInputElement>(null);
+  const statementInput = useRef<HTMLInputElement>(null);
 
   // Fresh-collection fields (only used when there's no stash).
   const [subjects, setSubjects] = useState<RefItem[]>([]);
-  const [targetUniversities, setTargetUniversities] = useState<RefItem[]>([]);
+  const [targetUniversities, setTargetUniversities] = useState<UniPick[]>([]);
   const [courses, setCourses] = useState<RefItem[]>([]);
   const [sports, setSports] = useState<RefItem[]>([]);
   const [cocurriculars, setCocurriculars] = useState<RefItem[]>([]);
   const [projects, setProjects] = useState<ProjectDraft[]>([]);
   const [bio, setBio] = useState("");
 
-  // Resolve the authenticated user + short-circuit if already finalized.
   useEffect(() => {
     let cancelled = false;
     void (async () => {
@@ -60,7 +85,7 @@ export function FinalizeProfile() {
       const uid = session.user.id;
       const { data: row } = await supabase
         .from("students")
-        .select("profile_completed_at")
+        .select("profile_completed_at, full_name")
         .eq("id", uid)
         .maybeSingle();
       if (cancelled) return;
@@ -69,8 +94,9 @@ export function FinalizeProfile() {
         return;
       }
       setUserId(uid);
+      setFirstName((row?.full_name ?? "").trim().split(" ")[0] ?? "");
       setDraft(loadProfileDraft());
-      setPhase("ready");
+      setPhase("interstitial");
     })();
     return () => {
       cancelled = true;
@@ -79,15 +105,10 @@ export function FinalizeProfile() {
 
   const hasStash = draftHasData(draft);
 
-  const onPhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const onPhoto = (file: File | undefined) => {
     if (!file) return;
-    // Guard BEFORE preview + staging-for-upload: reject non-renderable formats
-    // (e.g. HEIC) so they never become a broken preview or a stored-but-unshowable
-    // object.
     if (!isAcceptedImage(file)) {
       toast.error(UNSUPPORTED_IMAGE_MESSAGE);
-      e.target.value = "";
       return;
     }
     setPhotoFile(file);
@@ -102,7 +123,6 @@ export function FinalizeProfile() {
       .from("student-photos")
       .upload(path, photoFile, { contentType: photoFile.type, upsert: true });
     if (upErr) throw upErr;
-    // student-photos is private — store the PATH (P1 photo_url is a bucket key).
     const { error: dbErr } = await supabase
       .from("students")
       .update({ photo_url: path })
@@ -117,24 +137,18 @@ export function FinalizeProfile() {
     try {
       const toWrite: ProfileDraft = hasStash
         ? (draft as ProfileDraft)
-        : {
-            subjects,
-            targetUniversities,
-            courses,
-            sports,
-            cocurriculars,
-            projects,
-            savedAt: "",
-          };
+        : { subjects, targetUniversities, courses, sports, cocurriculars, projects, savedAt: "" };
       await writeRichProfile(userId, toWrite);
       if (!hasStash && bio.trim()) {
         await supabase.from("students").update({ bio: bio.trim() }).eq("id", userId);
       }
       await uploadPhoto(userId);
+      if (resumeFile) await uploadStudentDocument(userId, resumeFile, "resume");
+      for (const f of statementFiles) await uploadStudentDocument(userId, f, "statement");
       await stampProfileComplete();
       clearProfileDraft();
       if (typeof window !== "undefined") window.sessionStorage.removeItem(FINALIZE_SKIP_KEY);
-      navigate({ to: "/dashboard" });
+      setPhase("done");
     } catch (err) {
       const raw = err instanceof Error ? err.message : "Something went wrong";
       log.error({
@@ -143,8 +157,8 @@ export function FinalizeProfile() {
         kind: "student_finalize",
         error: raw,
       });
-      setError("We couldn't save everything. Please try again.");
-      setPhase("ready");
+      setError("We couldn’t save everything. Please try again.");
+      setPhase("finish");
     }
   }
 
@@ -153,147 +167,285 @@ export function FinalizeProfile() {
     navigate({ to: "/dashboard" });
   }
 
+  const goDashboard = () => navigate({ to: "/dashboard" });
+
+  // ── Cinematic overlays ──
   if (phase === "loading") {
     return (
-      <div className="signup-wizard flex min-h-screen items-center justify-center bg-background">
+      <div className="signup-wizard flex min-h-screen items-center justify-center bg-brand-paper">
         <Loader2 className="h-6 w-6 animate-spin text-primary" aria-label="Loading" />
       </div>
     );
   }
-
-  const photoBlock = (
-    <Caption label="Profile photo (optional)">
-      <div className="flex items-center gap-4">
-        <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary/40">
-          {photoPreview ? (
-            <img
-              src={photoPreview}
-              alt="Your selected profile"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <span className="text-xs text-muted-foreground">No photo</span>
-          )}
-        </div>
-        <label className="cursor-pointer rounded-full border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:border-primary/50 focus-within:ring-4 focus-within:ring-primary/15">
-          {photoFile ? "Change photo" : "Upload photo"}
-          <input type="file" accept={ACCEPTED_IMAGE_INPUT} className="sr-only" onChange={onPhoto} />
-        </label>
+  if (phase === "interstitial") {
+    return (
+      <div className="signup-wizard relative min-h-screen overflow-hidden bg-brand-paper">
+        <SignupCursor />
+        <ActInterstitial words={ALMOST_HOME} onDone={() => setPhase("finish")} />
       </div>
-    </Caption>
-  );
+    );
+  }
+  if (phase === "done") {
+    return (
+      <div className="signup-wizard relative min-h-screen overflow-hidden bg-brand-paper text-foreground">
+        <SignupCursor />
+        <MotionConfig reducedMotion="user">
+          <YoureInBeat firstName={firstName} onPrimary={goDashboard} onReplay={goDashboard} />
+        </MotionConfig>
+      </div>
+    );
+  }
+
+  const saving = phase === "saving";
+  const cardBase =
+    "flex cursor-none flex-col justify-center rounded-md border border-dashed bg-background p-5 transition";
 
   return (
-    <div className="signup-wizard">
-      <AuthShell
-        eyebrow="Almost there"
-        title="Finish your profile"
-        subtitle="A couple of finishing touches so we can match you with the right mentors."
-      >
-        <div className="space-y-6">
-          {hasStash ? (
-            <div className="rounded-2xl border border-primary/30 bg-secondary/20 p-4">
-              <p className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <Check className="h-4 w-4 text-primary" /> We saved your earlier choices
-              </p>
-              <p className="mt-1 text-[13px] font-light text-muted-foreground">
-                Your subjects, target universities and interests are ready to go. Just add a photo
-                to finish — or skip it for now.
-              </p>
+    <div className="signup-wizard relative min-h-screen overflow-hidden bg-brand-paper text-foreground">
+      <SignupCursor />
+      <Logo variant="wordmark-dark" size={32} className="absolute left-10 top-8 z-[5]" />
+
+      {/* hidden file inputs */}
+      <input
+        ref={photoInput}
+        type="file"
+        accept={ACCEPTED_IMAGE_INPUT}
+        className="sr-only"
+        onChange={(e) => onPhoto(e.target.files?.[0])}
+      />
+      <input
+        ref={resumeInput}
+        type="file"
+        accept=".pdf,.doc,.docx"
+        className="sr-only"
+        onChange={(e) => setResumeFile(e.target.files?.[0] ?? null)}
+      />
+      <input
+        ref={statementInput}
+        type="file"
+        accept=".pdf,.doc,.docx,.txt"
+        multiple
+        className="sr-only"
+        onChange={(e) => setStatementFiles((s) => [...s, ...Array.from(e.target.files ?? [])])}
+      />
+
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="hide-scrollbar flex max-h-screen w-full items-center justify-center overflow-y-auto px-8 py-20 sm:px-16">
+          <div className="flex w-full max-w-[920px] items-center justify-center gap-10 lg:gap-14">
+            <FounderCompanion
+              expression="happy"
+              size={168}
+              className="hidden shrink-0 self-center md:block"
+            />
+            <div className="w-full max-w-[600px] flex-1">
+              <div className="mb-7">
+                <div className="mb-2.5 text-[13px] font-semibold uppercase tracking-[0.16em] text-brand-ink-faint">
+                  Almost there
+                </div>
+                <h1 className="m-0 font-display text-[clamp(30px,4.5vw,42px)] font-extrabold leading-tight tracking-[-0.022em]">
+                  Finish your profile.
+                </h1>
+              </div>
+
+              {!hasStash && (
+                <div className="mb-6 flex flex-col gap-[18px]">
+                  <p className="text-[13px] text-brand-ink-soft">
+                    Add a few details so mentors get to know you. Everything here is optional.
+                  </p>
+                  <div>
+                    <span className={labelCls}>Subjects you take</span>
+                    <RefMultiSelect
+                      kind="subject"
+                      value={subjects}
+                      onChange={setSubjects}
+                      ariaLabel="Subjects you take"
+                      placeholder="Physics, Economics…"
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Target universities</span>
+                    <UniversityTierField
+                      value={targetUniversities}
+                      onChange={setTargetUniversities}
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Courses or majors</span>
+                    <RefMultiSelect
+                      kind="course"
+                      value={courses}
+                      onChange={setCourses}
+                      ariaLabel="Courses or majors"
+                      placeholder="Computer Science, Law…"
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Sports you play</span>
+                    <RefMultiSelect
+                      kind="sport"
+                      value={sports}
+                      onChange={setSports}
+                      ariaLabel="Sports you play"
+                      placeholder="Football, Tennis…"
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Co-curriculars &amp; clubs</span>
+                    <RefMultiSelect
+                      kind="cocurricular"
+                      value={cocurriculars}
+                      onChange={setCocurriculars}
+                      ariaLabel="Co-curriculars and clubs"
+                      placeholder="Debate, MUN, Music…"
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Academic / science projects</span>
+                    <ProjectsField value={projects} onChange={setProjects} />
+                  </div>
+                  <div>
+                    <span className={labelCls}>A short bio</span>
+                    <textarea
+                      className="min-h-[120px] w-full resize-y rounded-md border border-border bg-background px-4 py-3.5 text-[16px] font-medium leading-relaxed text-foreground outline-none placeholder:text-brand-ink-faint focus:border-primary"
+                      value={bio}
+                      onChange={(e) => setBio(e.target.value)}
+                      placeholder="Tell mentors a little about yourself."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* uploads */}
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <button
+                  type="button"
+                  data-mag
+                  data-hov
+                  onClick={() => photoInput.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    onPhoto(e.dataTransfer.files?.[0]);
+                  }}
+                  className={`${cardBase} sm:col-span-2 flex-row items-center gap-[18px]`}
+                  style={{ borderColor: photoFile ? "#9AD6C6" : "rgba(26,26,26,.22)" }}
+                >
+                  <span
+                    className="flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden rounded-full border border-foreground/10 bg-brand-blush text-[26px] text-primary"
+                    style={
+                      photoPreview
+                        ? {
+                            backgroundImage: `url(${photoPreview})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                          }
+                        : undefined
+                    }
+                  >
+                    {photoPreview ? "" : "+"}
+                  </span>
+                  <span className="text-left">
+                    <span className="block font-display text-[17px] font-extrabold">
+                      Profile photo
+                    </span>
+                    <span className="mt-0.5 block text-[13px] text-brand-ink-soft">
+                      {photoFile ? photoFile.name : "Drop an image or click to upload"}
+                    </span>
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  data-mag
+                  data-hov
+                  onClick={() => resumeInput.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setResumeFile(e.dataTransfer.files?.[0] ?? null);
+                  }}
+                  className={`${cardBase} min-h-[128px] items-start text-left`}
+                  style={{ borderColor: resumeFile ? "#9AD6C6" : "rgba(26,26,26,.22)" }}
+                >
+                  <Mascot
+                    shape="quill"
+                    color={MASCOTS.quill.color}
+                    expression="happy"
+                    size={40}
+                    decorative
+                  />
+                  <span className="mt-2 block font-display text-[17px] font-extrabold">
+                    Resume / CV
+                  </span>
+                  <span className="mt-0.5 block text-[13px] text-brand-ink-soft">
+                    {resumeFile ? resumeFile.name : "PDF or Word · drop or click"}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  data-mag
+                  data-hov
+                  onClick={() => statementInput.current?.click()}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setStatementFiles((s) => [...s, ...Array.from(e.dataTransfer.files ?? [])]);
+                  }}
+                  className={`${cardBase} min-h-[128px] items-start text-left`}
+                  style={{ borderColor: statementFiles.length ? "#9AD6C6" : "rgba(26,26,26,.22)" }}
+                >
+                  <Mascot
+                    shape="lens"
+                    color={MASCOTS.lens.color}
+                    expression="thinking"
+                    size={40}
+                    decorative
+                  />
+                  <span className="mt-2 block font-display text-[17px] font-extrabold">
+                    Personal statement
+                  </span>
+                  <span className="mt-0.5 block text-[13px] text-brand-ink-soft">
+                    {statementFiles.length
+                      ? `${statementFiles.length} file(s) added`
+                      : "Drafts welcome · drop or click"}
+                  </span>
+                </button>
+              </div>
+
+              {error && (
+                <p role="alert" className="mt-4 text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+
+              <div className="mt-7 flex items-center gap-[18px]">
+                <button
+                  type="button"
+                  data-mag
+                  data-hov
+                  onClick={finish}
+                  disabled={saving}
+                  className="inline-flex cursor-none items-center gap-2.5 rounded-md bg-foreground px-8 py-4 text-[16px] font-bold text-brand-paper transition disabled:opacity-60"
+                >
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {saving ? "Saving…" : "Complete profile"}
+                  {!saving && <span className="text-[18px]">→</span>}
+                </button>
+                <button
+                  type="button"
+                  data-hov
+                  onClick={skipForNow}
+                  disabled={saving}
+                  className="cursor-none text-[14px] font-semibold text-brand-ink-faint disabled:opacity-60"
+                >
+                  Skip for now
+                </button>
+              </div>
             </div>
-          ) : (
-            <>
-              <p className="text-[13px] font-light text-muted-foreground">
-                Add a few details so mentors get to know you. Everything here is optional.
-              </p>
-              <Caption label="Subjects you take">
-                <RefMultiSelect
-                  kind="subject"
-                  value={subjects}
-                  onChange={setSubjects}
-                  ariaLabel="Subjects you take"
-                  placeholder="Add subjects…"
-                />
-              </Caption>
-              <Caption label="Target universities">
-                <RefMultiSelect
-                  kind="university"
-                  value={targetUniversities}
-                  onChange={setTargetUniversities}
-                  ariaLabel="Target universities"
-                  placeholder="Add universities…"
-                />
-              </Caption>
-              <Caption label="Courses / fields of study">
-                <RefMultiSelect
-                  kind="course"
-                  value={courses}
-                  onChange={setCourses}
-                  ariaLabel="Courses or fields of study"
-                  placeholder="Add courses…"
-                />
-              </Caption>
-              <Caption label="Sports">
-                <RefMultiSelect
-                  kind="sport"
-                  value={sports}
-                  onChange={setSports}
-                  ariaLabel="Sports"
-                  placeholder="Add sports…"
-                />
-              </Caption>
-              <Caption label="Co-curriculars">
-                <RefMultiSelect
-                  kind="cocurricular"
-                  value={cocurriculars}
-                  onChange={setCocurriculars}
-                  ariaLabel="Co-curriculars"
-                  placeholder="Add co-curriculars…"
-                />
-              </Caption>
-              <Caption label="Academic / science projects">
-                <ProjectsField value={projects} onChange={setProjects} />
-              </Caption>
-              <Field label="Short bio">
-                <textarea
-                  className={`${inputClass} min-h-[100px] resize-y`}
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  placeholder="Tell mentors a little about yourself."
-                />
-              </Field>
-            </>
-          )}
-
-          {photoBlock}
-
-          {error && (
-            <p role="alert" className="text-sm text-destructive">
-              {error}
-            </p>
-          )}
-
-          <div className="flex items-center justify-between gap-3 pt-2">
-            <button
-              type="button"
-              onClick={skipForNow}
-              disabled={phase === "saving"}
-              className="text-sm font-medium text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline disabled:opacity-60"
-            >
-              Skip for now
-            </button>
-            <button
-              type="button"
-              onClick={finish}
-              disabled={phase === "saving"}
-              className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-card transition hover:-translate-y-0.5 hover:opacity-95 disabled:translate-y-0 disabled:opacity-60"
-            >
-              {phase === "saving" && <Loader2 className="h-4 w-4 animate-spin" />}
-              {phase === "saving" ? "Saving…" : "Finish"}
-            </button>
           </div>
         </div>
-      </AuthShell>
+      </div>
     </div>
   );
 }

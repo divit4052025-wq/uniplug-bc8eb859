@@ -42,6 +42,11 @@
   --color-brand-brown: var(--brand-brown);
   --color-brand-cream: var(--brand-cream);
   --color-brand-blush: var(--brand-blush);
+  --color-brand-rose: var(--brand-rose);
+  --color-brand-paper: var(--brand-paper);
+  --color-brand-night: var(--brand-night);
+  --color-brand-ink-soft: var(--brand-ink-soft);
+  --color-brand-ink-faint: var(--brand-ink-faint);
 }
 
 :root {
@@ -76,11 +81,23 @@
   --brand-brown: oklch(0.68 0.07 35);
   --brand-cream: oklch(0.992 0.004 30);
   --brand-blush: oklch(0.92 0.018 40);
+
+  /* student-signup v2 — landing cinematic palette (exact landing hexes, used as
+     brand-* tokens so the redesign references tokens, never raw hex). */
+  --brand-rose: #f4b5aa; /* landing --rose: bright on-dark accent */
+  --brand-paper: #faf5ef; /* landing --paper: signup light page bg */
+  --brand-night: #171513; /* landing --night: dark cinematic beats */
+  --brand-ink-soft: #5a524b; /* landing --ink-soft: secondary body text */
+  --brand-ink-faint: #8b8178; /* landing --ink-faint: tertiary text / labels */
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html { scroll-behavior: smooth; }
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    scroll-behavior: smooth;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -88,7 +105,11 @@
     font-weight: 300;
     -webkit-font-smoothing: antialiased;
   }
-  h1, h2, h3, h4, h5 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     font-family: var(--font-display);
     font-weight: 600;
     letter-spacing: -0.02em;
@@ -96,15 +117,30 @@
 }
 
 @layer utilities {
-  .font-display { font-family: var(--font-display); }
-  .hide-scrollbar::-webkit-scrollbar { display: none; }
-  .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  .animate-hero-rise { animation: hero-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .animate-hero-rise {
+    animation: hero-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 }
 
 @keyframes hero-rise {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ── P7 student signup/finalize: scoped brand type (Gabarito display + Quicksand
@@ -120,4 +156,312 @@
 }
 .signup-wizard :is(h1, h2, h3, h4, h5) {
   font-family: var(--font-display);
+}
+
+/* ── student-signup v2: mascot + scene motion ───────────────────────────────
+   The React <Mascot> emits `mascot-anim` + `m-*` / `ax-*` classes (ported from
+   the landing prototype). These @keyframes give them life. Scoped to
+   .signup-wizard so NO existing screen (dashboards etc.) changes behaviour.
+   The animation rules sit under prefers-reduced-motion:no-preference, so a
+   reduced-motion user drops cleanly to the static, base-visible mascot. ── */
+@keyframes mFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes mSway {
+  0%,
+  100% {
+    transform: rotate(-2.6deg);
+  }
+  50% {
+    transform: rotate(2.6deg);
+  }
+}
+@keyframes mFlicker {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(0.985, 1.035);
+  }
+}
+@keyframes mBounce {
+  0%,
+  100% {
+    transform: translateY(0) scale(1.06, 0.9);
+  }
+  18% {
+    transform: translateY(-12px) scale(0.98, 1.03);
+  }
+  50% {
+    transform: translateY(-40px) scale(1, 1);
+  }
+  82% {
+    transform: translateY(-12px) scale(0.98, 1.03);
+  }
+}
+@keyframes mWobble {
+  0%,
+  100% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(4deg);
+  }
+}
+@keyframes mTwirl {
+  0%,
+  100% {
+    transform: rotate(-6deg) scale(1);
+  }
+  50% {
+    transform: rotate(6deg) scale(1.04);
+  }
+}
+@keyframes mJump {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  28% {
+    transform: translateY(-30px) rotate(-5deg);
+  }
+  55% {
+    transform: translateY(0) rotate(0);
+  }
+  72% {
+    transform: translateY(-12px);
+  }
+}
+@keyframes mShake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  20% {
+    transform: translateX(-4px) rotate(-1.6deg);
+  }
+  40% {
+    transform: translateX(4px) rotate(1.6deg);
+  }
+  60% {
+    transform: translateX(-3px) rotate(-1deg);
+  }
+  80% {
+    transform: translateX(3px) rotate(1deg);
+  }
+}
+@keyframes axBlink {
+  0%,
+  93%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.12);
+  }
+}
+@keyframes axSweat {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(28px);
+    opacity: 0;
+  }
+}
+@keyframes axConfetti {
+  0% {
+    transform: translateY(8px) scale(0.5);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-12px) scale(1.15);
+    opacity: 0;
+  }
+}
+@keyframes axSparkle {
+  0%,
+  100% {
+    transform: scale(0.7);
+    opacity: 0.35;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+@keyframes axRise {
+  0% {
+    transform: translateY(5px) scale(0.7);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-9px) scale(1.05);
+    opacity: 0;
+  }
+}
+@keyframes axFlame {
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  50% {
+    transform: scale(0.9, 1.12);
+  }
+}
+@keyframes axLeaves {
+  0%,
+  100% {
+    transform: rotate(-3.5deg);
+  }
+  50% {
+    transform: rotate(3.5deg);
+  }
+}
+@keyframes axMotion {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+@keyframes axHalo {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+}
+/* scene / celebration beats (Motion + GSAP drive the rest) */
+@keyframes upBloom {
+  0% {
+    transform: scale(0);
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(28);
+    opacity: 0;
+  }
+}
+@keyframes upCue {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.signup-wizard .mascot-anim {
+  display: inline-block;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .signup-wizard .m-float {
+    animation: mFloat 3.6s ease-in-out infinite;
+  }
+  .signup-wizard .m-sway {
+    animation: mSway 3.8s ease-in-out infinite;
+    transform-origin: 50% 92%;
+  }
+  .signup-wizard .m-flicker {
+    animation: mFlicker 1.7s ease-in-out infinite;
+    transform-origin: 50% 92%;
+  }
+  .signup-wizard .m-bounce {
+    animation: mBounce 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    transform-origin: 50% 92%;
+  }
+  .signup-wizard .m-wobble {
+    animation: mWobble 3.6s ease-in-out infinite;
+    transform-origin: 50% 80%;
+  }
+  .signup-wizard .m-twirl {
+    animation: mTwirl 3.6s ease-in-out infinite;
+    transform-origin: 50% 50%;
+  }
+  .signup-wizard .m-jump {
+    animation: mJump 1.5s cubic-bezier(0.4, 0, 0.3, 1) infinite;
+    transform-origin: 50% 92%;
+  }
+  .signup-wizard .m-shake {
+    animation: mShake 0.9s ease-in-out infinite;
+    transform-origin: 50% 50%;
+  }
+  .signup-wizard .ax-blink {
+    animation: axBlink 5.2s ease-in-out infinite;
+  }
+  .signup-wizard .ax-sweat {
+    animation: axSweat 1.8s ease-in infinite;
+  }
+  .signup-wizard .ax-confetti {
+    animation: axConfetti 1.6s ease-out infinite;
+  }
+  .signup-wizard .ax-sparkle {
+    animation: axSparkle 1.4s ease-in-out infinite;
+  }
+  .signup-wizard .ax-think circle {
+    animation: axRise 1.8s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .signup-wizard .ax-ember circle {
+    animation: axRise 2.2s ease-in infinite;
+    animation-delay: var(--d, 0s);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .signup-wizard .ax-flame {
+    animation: axFlame 0.9s ease-in-out infinite;
+  }
+  .signup-wizard .ax-leaves {
+    animation: axLeaves 3.6s ease-in-out infinite;
+  }
+  .signup-wizard .ax-twinkle path {
+    animation: axSparkle 1.6s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .signup-wizard .ax-motion {
+    animation: axMotion 1.5s ease-in-out infinite;
+  }
+  .signup-wizard .ax-halo {
+    animation: axHalo 2.8s ease-in-out infinite;
+  }
+}
+
+/* Hide the OS cursor inside the signup wizard ONLY while the custom magnetic
+   cursor is active (SignupCursor adds .up-cursor-active to <body> on fine
+   pointers, non-reduced-motion). Touch / reduced-motion keep the native cursor. */
+body.up-cursor-active .signup-wizard,
+body.up-cursor-active .signup-wizard * {
+  cursor: none !important;
 }
