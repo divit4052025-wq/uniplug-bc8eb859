@@ -21,7 +21,9 @@ function DarkBeat({ children, zClass }: { children: React.ReactNode; zClass: str
       data-dark
       className={`absolute inset-0 ${zClass} flex flex-col items-center justify-center overflow-hidden bg-brand-night text-center text-brand-paper`}
     >
-      <Logo variant="wordmark-offwhite" size={32} className="absolute left-10 top-8" />
+      <div className="absolute left-10 top-8">
+        <Logo variant="wordmark-offwhite" size={32} />
+      </div>
       {children}
     </div>
   );

@@ -295,7 +295,7 @@ export function SignupWizard() {
         email: email.trim(),
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/student-signup/finalize`,
+          emailRedirectTo: `${window.location.origin}/student-signup/finalize?welcome=1`,
           data: {
             role: "student",
             full_name: fullName.trim(),
@@ -322,8 +322,9 @@ export function SignupWizard() {
       microTimer.current = setTimeout(() => {
         setMicro(false);
         if (data.session) {
-          // Auto-confirmed (e.g. local dev) → straight to finalize (Act 5).
-          navigate({ to: "/student-signup/finalize" });
+          // Auto-confirmed (e.g. local dev) → finalize (Act 5). Hard nav so the
+          // ?welcome=1 lands the one-time "You're almost home." beat.
+          window.location.assign(`${window.location.origin}/student-signup/finalize?welcome=1`);
         } else {
           setPendingEmail(email.trim());
           setView("verify");
@@ -356,7 +357,7 @@ export function SignupWizard() {
     const { error } = await supabase.auth.resend({
       type: "signup",
       email: pendingEmail,
-      options: { emailRedirectTo: `${window.location.origin}/student-signup/finalize` },
+      options: { emailRedirectTo: `${window.location.origin}/student-signup/finalize?welcome=1` },
     });
     if (error) {
       log.error({
@@ -395,387 +396,118 @@ export function SignupWizard() {
   const pwLabel = ["Too short", "Weak", "Okay", "Good", "Strong"][pw];
 
   return (
-    <div className="signup-wizard relative min-h-screen overflow-hidden bg-brand-paper text-foreground">
+    <div className="signup-wizard relative h-dvh overflow-hidden overscroll-none bg-brand-paper text-foreground">
       <SignupCursor />
 
-      {/* persistent wordmark on light form scenes (dark beats sit above with their own) */}
-      <Logo variant="wordmark-dark" size={32} className="absolute left-10 top-8 z-[5]" />
+      {/* persistent wordmark on light form scenes (dark beats sit above with their own).
+          Wrapped in a positioned div so the Logo's own `relative` wrapper can't win
+          over the intended absolute placement. */}
+      <div className="absolute left-10 top-8 z-[5]">
+        <Logo variant="wordmark-dark" size={34} />
+      </div>
 
       {/* ── Light form layer (Acts 2–4 + verify) ── */}
       {inFlow && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="hide-scrollbar flex max-h-screen w-full items-center justify-center overflow-y-auto px-8 py-20 sm:px-16">
-            <div className="flex w-full max-w-[920px] items-center justify-center gap-10 lg:gap-14">
-              {/* persistent reactive Founder (kept mounted across scenes) */}
-              <FounderCompanion
-                expression={founderExpr}
-                size={168}
-                className="hidden shrink-0 self-center md:block"
-              />
+        <div className="absolute inset-0 flex items-center justify-center px-8 py-16 sm:px-16">
+          <div className="flex max-h-full w-full max-w-[920px] items-center gap-10 lg:gap-14">
+            {/* persistent reactive Founder — flex-none + self-center so it stays put
+                while the content column scrolls internally */}
+            <FounderCompanion
+              expression={founderExpr}
+              size={168}
+              className="hidden shrink-0 self-center md:block"
+            />
 
-              <div
-                className="w-full max-w-[600px] flex-1"
-                onFocusCapture={onFocusCapture}
-                onBlurCapture={onBlurCapture}
-              >
-                {/* off-screen live region — announce the first validation error to AT */}
-                <p aria-live="assertive" className="sr-only">
-                  {Object.values(errors).filter(Boolean)[0] ?? ""}
-                </p>
-                {/* scene head */}
-                <div className="mb-7">
-                  <div className="mb-2.5 text-[13px] font-semibold uppercase tracking-[0.16em] text-brand-ink-faint">
-                    {META[view]?.kicker}
-                  </div>
-                  <h1
-                    ref={headingRef}
-                    tabIndex={-1}
-                    className="m-0 text-balance font-display text-[clamp(30px,4.5vw,42px)] font-extrabold leading-tight tracking-[-0.022em] outline-none"
-                  >
-                    {personalTitle}
-                  </h1>
+            <div
+              className="hide-scrollbar max-h-full w-full max-w-[600px] flex-1 overflow-y-auto"
+              onFocusCapture={onFocusCapture}
+              onBlurCapture={onBlurCapture}
+            >
+              {/* off-screen live region — announce the first validation error to AT */}
+              <p aria-live="assertive" className="sr-only">
+                {Object.values(errors).filter(Boolean)[0] ?? ""}
+              </p>
+              {/* scene head */}
+              <div className="mb-7">
+                <div className="mb-2.5 text-[13px] font-semibold uppercase tracking-[0.16em] text-brand-ink-faint">
+                  {META[view]?.kicker}
                 </div>
+                <h1
+                  ref={headingRef}
+                  tabIndex={-1}
+                  className="m-0 text-balance font-display text-[clamp(30px,4.5vw,42px)] font-extrabold leading-tight tracking-[-0.022em] outline-none"
+                >
+                  {personalTitle}
+                </h1>
+              </div>
 
-                {/* ── BASICS ── */}
-                {view === "basics" && (
-                  <div className="flex flex-col gap-4">
+              {/* ── BASICS ── */}
+              {view === "basics" && (
+                <div className="flex flex-col gap-4">
+                  <label className="block">
+                    <span className={labelCls}>Full name</span>
+                    <input
+                      className={inputCls}
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Aanya Sharma"
+                    />
+                    {errors.fullName && <span className={errCls}>{errors.fullName}</span>}
+                  </label>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <label className="block">
-                      <span className={labelCls}>Full name</span>
+                      <span className={labelCls}>Email</span>
                       <input
                         className={inputCls}
-                        value={fullName}
-                        onChange={(e) => setFullName(e.target.value)}
-                        placeholder="Aanya Sharma"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@email.com"
                       />
-                      {errors.fullName && <span className={errCls}>{errors.fullName}</span>}
+                      {errors.email && <span className={errCls}>{errors.email}</span>}
                     </label>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <label className="block">
-                        <span className={labelCls}>Email</span>
-                        <input
-                          className={inputCls}
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="you@email.com"
-                        />
-                        {errors.email && <span className={errCls}>{errors.email}</span>}
-                      </label>
-                      <label className="block">
-                        <span className={labelCls}>Phone</span>
-                        <input
-                          className={inputCls}
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+91 98765 43210"
-                        />
-                        {errors.phone && <span className={errCls}>{errors.phone}</span>}
-                      </label>
-                    </div>
                     <label className="block">
-                      <span className={labelCls}>Date of birth</span>
+                      <span className={labelCls}>Phone</span>
                       <input
-                        className={`${inputCls} max-w-[240px]`}
-                        type="date"
-                        value={dob}
-                        onChange={(e) => setDob(e.target.value)}
+                        className={inputCls}
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="+91 98765 43210"
                       />
-                      <span className="mt-1.5 block text-[12px] text-brand-ink-faint">
-                        Only used to check whether a parent needs to approve.
-                      </span>
-                      {errors.dob && <span className={errCls}>{errors.dob}</span>}
+                      {errors.phone && <span className={errCls}>{errors.phone}</span>}
                     </label>
-                    {under18 && (
-                      <div className="rounded-md border border-dashed border-primary bg-primary/[0.07] p-[18px]">
-                        <div className="mb-1 flex items-center gap-2.5">
-                          <Mascot
-                            shape="mentor"
-                            color={MASCOTS.mentor.color}
-                            expression="guiding"
-                            size={34}
-                            decorative
-                          />
-                          <span className="font-display text-[16px] font-extrabold">
-                            A grown-up comes along
-                          </span>
-                        </div>
-                        <p className="mb-3.5 ml-11 text-[13px] leading-relaxed text-brand-ink-soft">
-                          You’re under 18, so we’ll email your parent or guardian for consent. Add
-                          their details.
-                        </p>
-                        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                          <label className="block">
-                            <span className={labelCls}>Parent’s email</span>
-                            <input
-                              className={inputCls}
-                              type="email"
-                              value={parentEmail}
-                              onChange={(e) => setParentEmail(e.target.value)}
-                              placeholder="parent@email.com"
-                            />
-                            {errors.parentEmail && (
-                              <span className={errCls}>{errors.parentEmail}</span>
-                            )}
-                          </label>
-                          <label className="block">
-                            <span className={labelCls}>Parent’s phone</span>
-                            <input
-                              className={inputCls}
-                              value={parentPhone}
-                              onChange={(e) => setParentPhone(e.target.value)}
-                              placeholder="+91 98765 43210"
-                            />
-                            {errors.parentPhone && (
-                              <span className={errCls}>{errors.parentPhone}</span>
-                            )}
-                          </label>
-                        </div>
-                      </div>
-                    )}
                   </div>
-                )}
-
-                {/* ── SCHOOL ── */}
-                {view === "school" && (
-                  <div className="flex flex-col gap-[18px]">
-                    <label className="block">
-                      <span className={labelCls}>School name</span>
-                      <SchoolTypeahead
-                        value={school}
-                        onChange={setSchool}
-                        ariaLabel="School name"
-                        placeholder="Start typing your school…"
-                      />
-                      {errors.school && <span className={errCls}>{errors.school}</span>}
-                    </label>
-                    <div>
-                      <span className={labelCls}>Examination board</span>
-                      <div className="flex flex-wrap gap-2.5">
-                        {BOARDS.map((b) => {
-                          const active = board === b;
-                          return (
-                            <button
-                              key={b}
-                              type="button"
-                              data-mag
-                              data-hov
-                              aria-pressed={active}
-                              onClick={() => setBoard(active ? "" : b)}
-                              className={`cursor-none rounded-md border px-[18px] py-2.5 text-[14px] font-semibold transition ${
-                                active
-                                  ? "border-foreground bg-foreground text-brand-paper"
-                                  : "border-border bg-background text-foreground"
-                              }`}
-                            >
-                              {b}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── GRADE ── */}
-                {view === "grade" && (
-                  <div>
-                    <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
-                      {GRADE_CARDS.map((g) => {
-                        const active = grade === g.value;
-                        return (
-                          <button
-                            key={g.value}
-                            type="button"
-                            data-mag
-                            data-hov
-                            aria-pressed={active}
-                            onClick={() => {
-                              setGrade(g.value);
-                              setErrors({});
-                              setFounderExpr("celebrating");
-                            }}
-                            className={`cursor-none rounded-md border px-2.5 pb-3.5 pt-[18px] text-center transition ${
-                              active
-                                ? "-translate-y-1 border-brand-rose bg-brand-rose/[0.16]"
-                                : "border-border bg-background"
-                            }`}
-                          >
-                            <div className="mx-auto flex h-[82px] w-[72px] items-end justify-center">
-                              <Mascot
-                                shape={g.shape}
-                                color={MASCOTS[g.shape].color}
-                                expression={g.expr}
-                                size={72}
-                                decorative
-                              />
-                            </div>
-                            <div className="mt-1.5 font-display text-[30px] font-extrabold leading-none">
-                              {g.label}
-                            </div>
-                            <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-ink-faint">
-                              {g.stage}
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                    {grade && (
-                      <p className="mt-6 text-center font-display text-[22px] font-extrabold tracking-[-0.01em]">
-                        {GRADE_BLURB[grade]}
-                      </p>
-                    )}
-                    {errors.grade && (
-                      <span className={`${errCls} text-center`}>{errors.grade}</span>
-                    )}
-                  </div>
-                )}
-
-                {/* ── UNIVERSITIES ── */}
-                {view === "universities" && (
-                  <div className="flex flex-col gap-4">
-                    <div>
-                      <span className={labelCls}>Add a university you’re aiming for</span>
-                      <UniversityTierField
-                        value={targetUniversities}
-                        onChange={setTargetUniversities}
-                      />
-                    </div>
-                    <div>
-                      <span className={labelCls}>Countries you’d consider (optional)</span>
-                      <div className="flex flex-wrap gap-2.5">
-                        {COUNTRIES.map((c) => {
-                          const active = countries.includes(c);
-                          return (
-                            <button
-                              key={c}
-                              type="button"
-                              data-mag
-                              data-hov
-                              aria-pressed={active}
-                              onClick={() =>
-                                setCountries(
-                                  active ? countries.filter((x) => x !== c) : [...countries, c],
-                                )
-                              }
-                              className={`cursor-none rounded-md border px-[18px] py-2.5 text-[14px] font-semibold transition ${
-                                active
-                                  ? "border-foreground bg-foreground text-brand-paper"
-                                  : "border-border bg-background text-foreground"
-                              }`}
-                            >
-                              {c}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* ── STUDY (subjects + courses) ── */}
-                {view === "study" && (
-                  <div className="flex flex-col gap-[22px]">
-                    <div>
-                      <span className={labelCls}>Subjects you take now</span>
-                      <RefMultiSelect
-                        kind="subject"
-                        value={subjects}
-                        onChange={setSubjects}
-                        ariaLabel="Subjects you take"
-                        placeholder="Physics, Economics…"
-                      />
-                    </div>
-                    <div>
-                      <span className={labelCls}>Courses or majors you’re considering</span>
-                      <RefMultiSelect
-                        kind="course"
-                        value={courses}
-                        onChange={setCourses}
-                        ariaLabel="Courses or majors"
-                        placeholder="Computer Science, Law…"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* ── SPORTS ── */}
-                {view === "sports" && (
-                  <div>
-                    <span className={labelCls}>Sports you play</span>
-                    <RefMultiSelect
-                      kind="sport"
-                      value={sports}
-                      onChange={setSports}
-                      ariaLabel="Sports you play"
-                      placeholder="Football, Tennis…"
-                    />
-                    <p className="mt-4 text-[13px] text-brand-ink-soft">
-                      No sports? No problem — skip ahead.
-                    </p>
-                  </div>
-                )}
-
-                {/* ── BEYOND (co-curriculars + projects) ── */}
-                {view === "beyond" && (
-                  <div className="flex flex-col gap-[22px]">
-                    <div>
-                      <span className={labelCls}>Co-curriculars &amp; clubs</span>
-                      <RefMultiSelect
-                        kind="cocurricular"
-                        value={cocurriculars}
-                        onChange={setCocurriculars}
-                        ariaLabel="Co-curriculars and clubs"
-                        placeholder="Debate, MUN, Music…"
-                      />
-                    </div>
-                    <div>
-                      <span className={labelCls}>Academic / science projects</span>
-                      <ProjectsField value={projects} onChange={setProjects} />
-                    </div>
-                  </div>
-                )}
-
-                {/* ── ABOUT ── */}
-                {view === "about" && (
-                  <div>
-                    <span className={labelCls}>A short bio, in your words</span>
-                    <textarea
-                      className={`${inputCls} min-h-[150px] resize-y leading-relaxed`}
-                      value={bio}
-                      onChange={(e) => setBio(e.target.value)}
-                      placeholder="What are you excited about? What are you working towards? A few honest lines beats a polished paragraph."
+                  <label className="block">
+                    <span className={labelCls}>Date of birth</span>
+                    <input
+                      className={`${inputCls} max-w-[240px]`}
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
                     />
                     <span className="mt-1.5 block text-[12px] text-brand-ink-faint">
-                      Optional — but mentors read this first.
+                      Only used to check whether a parent needs to approve.
                     </span>
-                  </div>
-                )}
-
-                {/* ── CONSENT (minor only) ── */}
-                {view === "consent" && (
-                  <div className="flex flex-col gap-[18px]">
-                    <div className="rounded-md border border-border p-[22px]">
-                      <div className="mb-2.5 flex items-center gap-3">
+                    {errors.dob && <span className={errCls}>{errors.dob}</span>}
+                  </label>
+                  {under18 && (
+                    <div className="rounded-md border border-dashed border-primary bg-primary/[0.07] p-[18px]">
+                      <div className="mb-1 flex items-center gap-2.5">
                         <Mascot
                           shape="mentor"
                           color={MASCOTS.mentor.color}
                           expression="guiding"
-                          size={46}
+                          size={34}
                           decorative
                         />
-                        <span className="font-display text-[19px] font-extrabold">
-                          A parent gives the green light — not you.
+                        <span className="font-display text-[16px] font-extrabold">
+                          A grown-up comes along
                         </span>
                       </div>
-                      <p className="m-0 text-[14.5px] leading-relaxed text-brand-ink-soft">
-                        The moment you create your account, we email{" "}
-                        <b className="text-foreground">{parentEmail || "your guardian"}</b> a secure
-                        consent link. They approve from their side — you never tick consent
-                        yourself. You can explore mentors right away; your first session unlocks
-                        once they say yes.
+                      <p className="mb-3.5 ml-11 text-[13px] leading-relaxed text-brand-ink-soft">
+                        You’re under 18, so we’ll email your parent or guardian for consent. Add
+                        their details.
                       </p>
-                    </div>
-                    {!under18 && (
                       <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
                         <label className="block">
                           <span className={labelCls}>Parent’s email</span>
@@ -803,174 +535,439 @@ export function SignupWizard() {
                           )}
                         </label>
                       </div>
-                    )}
-                    <div className="flex items-center gap-2.5 text-[13px] text-brand-ink-faint">
-                      <span className="h-2 w-2 rounded-full bg-primary" />
-                      Consent is collected parent-side, by secure link. Nothing for you to sign
-                      here.
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
+              )}
 
-                {/* ── ACCOUNT ── */}
-                {view === "account" && (
-                  <div className="flex flex-col gap-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                      <label className="block">
-                        <span className={labelCls}>Password</span>
-                        <input
-                          className={inputCls}
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="At least 8 characters"
-                          autoComplete="new-password"
-                        />
-                        {errors.password && <span className={errCls}>{errors.password}</span>}
-                      </label>
-                      <label className="block">
-                        <span className={labelCls}>Confirm password</span>
-                        <input
-                          className={inputCls}
-                          type="password"
-                          value={confirm}
-                          onChange={(e) => setConfirm(e.target.value)}
-                          placeholder="Re-enter password"
-                          autoComplete="new-password"
-                        />
-                        {errors.confirm && <span className={errCls}>{errors.confirm}</span>}
-                      </label>
-                    </div>
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-[5px] flex-1 overflow-hidden rounded-full bg-foreground/10">
-                        <div
-                          className="h-full rounded-full transition-all"
-                          style={{ width: pwW, background: pwColor }}
-                        />
-                      </div>
-                      <span className="min-w-[64px] text-[11.5px] font-semibold text-brand-ink-faint">
-                        {pwLabel}
-                      </span>
-                    </div>
-                    <button
-                      type="button"
-                      role="checkbox"
-                      aria-checked={agreed}
-                      aria-label="I agree to UniPlug’s Terms of Service, Privacy Policy, and Code of Conduct"
-                      data-mag
-                      data-hov
-                      onClick={() => {
-                        setAgreed((a) => !a);
-                        setErrors((e) => ({ ...e, agreed: "" }));
-                      }}
-                      className="flex cursor-none items-start gap-3 rounded-md border px-4 py-3.5 text-left transition"
-                      style={{ borderColor: agreed ? "var(--primary)" : "var(--border)" }}
-                    >
-                      <span
-                        className="mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] border text-[14px] text-brand-paper transition"
-                        style={{
-                          borderColor: agreed ? "var(--foreground)" : "rgba(26,26,26,.3)",
-                          background: agreed ? "var(--foreground)" : "transparent",
-                        }}
-                      >
-                        {agreed ? "✓" : ""}
-                      </span>
-                      <span className="text-[13.5px] leading-relaxed text-brand-ink-soft">
-                        I agree to UniPlug’s{" "}
-                        <b className="border-b-[1.5px] border-primary text-foreground">
-                          Terms of Service
-                        </b>
-                        ,{" "}
-                        <b className="border-b-[1.5px] border-primary text-foreground">
-                          Privacy Policy
-                        </b>
-                        , and{" "}
-                        <b className="border-b-[1.5px] border-primary text-foreground">
-                          Code of Conduct
-                        </b>
-                        .
-                      </span>
-                    </button>
-                    {errors.agreed && <span className={errCls}>{errors.agreed}</span>}
-                    {serverError && (
-                      <p role="alert" className="text-center text-xs text-destructive">
-                        {serverError}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                {/* ── VERIFY (terminal: email confirmation) ── */}
-                {view === "verify" && (
+              {/* ── SCHOOL ── */}
+              {view === "school" && (
+                <div className="flex flex-col gap-[18px]">
+                  <label className="block">
+                    <span className={labelCls}>School name</span>
+                    <SchoolTypeahead
+                      value={school}
+                      onChange={setSchool}
+                      ariaLabel="School name"
+                      placeholder="Start typing your school…"
+                    />
+                    {errors.school && <span className={errCls}>{errors.school}</span>}
+                  </label>
                   <div>
-                    <p className="m-0 text-[15.5px] leading-relaxed text-brand-ink-soft">
-                      We sent a confirmation link to{" "}
-                      <b className="text-foreground">{pendingEmail || email}</b>.{" "}
-                      {minor && "We’ve also emailed your guardian a consent request. "}
-                      Click it, then sign back in to finish your profile.
-                    </p>
-                    <div className="mt-6 flex items-center gap-[18px]">
-                      <button
-                        type="button"
-                        data-hov
-                        onClick={onResend}
-                        disabled={resendState !== "idle"}
-                        className="cursor-none border-b-[1.5px] border-primary text-[14px] font-semibold text-foreground disabled:opacity-60"
-                      >
-                        {resendState === "sending"
-                          ? "Resending…"
-                          : resendState === "sent"
-                            ? "Sent ✓"
-                            : "Resend email"}
-                      </button>
-                      <span role="status" aria-live="polite" className="sr-only">
-                        {resendState === "sent" ? "Confirmation email resent" : ""}
-                      </span>
+                    <span className={labelCls}>Examination board</span>
+                    <div className="flex flex-wrap gap-2.5">
+                      {BOARDS.map((b) => {
+                        const active = board === b;
+                        return (
+                          <button
+                            key={b}
+                            type="button"
+                            data-mag
+                            data-hov
+                            aria-pressed={active}
+                            onClick={() => setBoard(active ? "" : b)}
+                            className={`cursor-none rounded-md border px-[18px] py-2.5 text-[14px] font-semibold transition ${
+                              active
+                                ? "border-foreground bg-foreground text-brand-paper"
+                                : "border-border bg-background text-foreground"
+                            }`}
+                          >
+                            {b}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* ── NAV ── */}
-                {showNav && (
-                  <div className="mt-9 flex items-center gap-[18px]">
-                    {canBack && (
-                      <button
-                        type="button"
-                        data-hov
-                        onClick={onBack}
-                        className="cursor-none px-2 py-3.5 text-[15px] font-bold text-brand-ink-soft"
-                      >
-                        ← Back
-                      </button>
-                    )}
+              {/* ── GRADE ── */}
+              {view === "grade" && (
+                <div>
+                  <div className="grid grid-cols-2 gap-3.5 sm:grid-cols-4">
+                    {GRADE_CARDS.map((g) => {
+                      const active = grade === g.value;
+                      return (
+                        <button
+                          key={g.value}
+                          type="button"
+                          data-mag
+                          data-hov
+                          aria-pressed={active}
+                          onClick={() => {
+                            setGrade(g.value);
+                            setErrors({});
+                            setFounderExpr("celebrating");
+                          }}
+                          className={`cursor-none rounded-md border px-2.5 pb-3.5 pt-[18px] text-center transition ${
+                            active
+                              ? "-translate-y-1 border-brand-rose bg-brand-rose/[0.16]"
+                              : "border-border bg-background"
+                          }`}
+                        >
+                          <div className="mx-auto flex h-[82px] w-[72px] items-end justify-center">
+                            <Mascot
+                              shape={g.shape}
+                              color={MASCOTS[g.shape].color}
+                              expression={g.expr}
+                              size={72}
+                              decorative
+                            />
+                          </div>
+                          <div className="mt-1.5 font-display text-[30px] font-extrabold leading-none">
+                            {g.label}
+                          </div>
+                          <div className="mt-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-ink-faint">
+                            {g.stage}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {grade && (
+                    <p className="mt-6 text-center font-display text-[22px] font-extrabold tracking-[-0.01em]">
+                      {GRADE_BLURB[grade]}
+                    </p>
+                  )}
+                  {errors.grade && <span className={`${errCls} text-center`}>{errors.grade}</span>}
+                </div>
+              )}
+
+              {/* ── UNIVERSITIES ── */}
+              {view === "universities" && (
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <span className={labelCls}>Add a university you’re aiming for</span>
+                    <UniversityTierField
+                      value={targetUniversities}
+                      onChange={setTargetUniversities}
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Countries you’d consider (optional)</span>
+                    <div className="flex flex-wrap gap-2.5">
+                      {COUNTRIES.map((c) => {
+                        const active = countries.includes(c);
+                        return (
+                          <button
+                            key={c}
+                            type="button"
+                            data-mag
+                            data-hov
+                            aria-pressed={active}
+                            onClick={() =>
+                              setCountries(
+                                active ? countries.filter((x) => x !== c) : [...countries, c],
+                              )
+                            }
+                            className={`cursor-none rounded-md border px-[18px] py-2.5 text-[14px] font-semibold transition ${
+                              active
+                                ? "border-foreground bg-foreground text-brand-paper"
+                                : "border-border bg-background text-foreground"
+                            }`}
+                          >
+                            {c}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* ── STUDY (subjects + courses) ── */}
+              {view === "study" && (
+                <div className="flex flex-col gap-[22px]">
+                  <div>
+                    <span className={labelCls}>Subjects you take now</span>
+                    <RefMultiSelect
+                      kind="subject"
+                      value={subjects}
+                      onChange={setSubjects}
+                      ariaLabel="Subjects you take"
+                      placeholder="Physics, Economics…"
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Courses or majors you’re considering</span>
+                    <RefMultiSelect
+                      kind="course"
+                      value={courses}
+                      onChange={setCourses}
+                      ariaLabel="Courses or majors"
+                      placeholder="Computer Science, Law…"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ── SPORTS ── */}
+              {view === "sports" && (
+                <div>
+                  <span className={labelCls}>Sports you play</span>
+                  <RefMultiSelect
+                    kind="sport"
+                    value={sports}
+                    onChange={setSports}
+                    ariaLabel="Sports you play"
+                    placeholder="Football, Tennis…"
+                  />
+                  <p className="mt-4 text-[13px] text-brand-ink-soft">
+                    No sports? No problem — skip ahead.
+                  </p>
+                </div>
+              )}
+
+              {/* ── BEYOND (co-curriculars + projects) ── */}
+              {view === "beyond" && (
+                <div className="flex flex-col gap-[22px]">
+                  <div>
+                    <span className={labelCls}>Co-curriculars &amp; clubs</span>
+                    <RefMultiSelect
+                      kind="cocurricular"
+                      value={cocurriculars}
+                      onChange={setCocurriculars}
+                      ariaLabel="Co-curriculars and clubs"
+                      placeholder="Debate, MUN, Music…"
+                    />
+                  </div>
+                  <div>
+                    <span className={labelCls}>Academic / science projects</span>
+                    <ProjectsField value={projects} onChange={setProjects} />
+                  </div>
+                </div>
+              )}
+
+              {/* ── ABOUT ── */}
+              {view === "about" && (
+                <div>
+                  <span className={labelCls}>A short bio, in your words</span>
+                  <textarea
+                    className={`${inputCls} min-h-[150px] resize-y leading-relaxed`}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="What are you excited about? What are you working towards? A few honest lines beats a polished paragraph."
+                  />
+                  <span className="mt-1.5 block text-[12px] text-brand-ink-faint">
+                    Optional — but mentors read this first.
+                  </span>
+                </div>
+              )}
+
+              {/* ── CONSENT (minor only) ── */}
+              {view === "consent" && (
+                <div className="flex flex-col gap-[18px]">
+                  <div className="rounded-md border border-border p-[22px]">
+                    <div className="mb-2.5 flex items-center gap-3">
+                      <Mascot
+                        shape="mentor"
+                        color={MASCOTS.mentor.color}
+                        expression="guiding"
+                        size={46}
+                        decorative
+                      />
+                      <span className="font-display text-[19px] font-extrabold">
+                        A parent gives the green light — not you.
+                      </span>
+                    </div>
+                    <p className="m-0 text-[14.5px] leading-relaxed text-brand-ink-soft">
+                      The moment you create your account, we email{" "}
+                      <b className="text-foreground">{parentEmail || "your guardian"}</b> a secure
+                      consent link. They approve from their side — you never tick consent yourself.
+                      You can explore mentors right away; your first session unlocks once they say
+                      yes.
+                    </p>
+                  </div>
+                  {!under18 && (
+                    <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
+                      <label className="block">
+                        <span className={labelCls}>Parent’s email</span>
+                        <input
+                          className={inputCls}
+                          type="email"
+                          value={parentEmail}
+                          onChange={(e) => setParentEmail(e.target.value)}
+                          placeholder="parent@email.com"
+                        />
+                        {errors.parentEmail && <span className={errCls}>{errors.parentEmail}</span>}
+                      </label>
+                      <label className="block">
+                        <span className={labelCls}>Parent’s phone</span>
+                        <input
+                          className={inputCls}
+                          value={parentPhone}
+                          onChange={(e) => setParentPhone(e.target.value)}
+                          placeholder="+91 98765 43210"
+                        />
+                        {errors.parentPhone && <span className={errCls}>{errors.parentPhone}</span>}
+                      </label>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2.5 text-[13px] text-brand-ink-faint">
+                    <span className="h-2 w-2 rounded-full bg-primary" />
+                    Consent is collected parent-side, by secure link. Nothing for you to sign here.
+                  </div>
+                </div>
+              )}
+
+              {/* ── ACCOUNT ── */}
+              {view === "account" && (
+                <div className="flex flex-col gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <label className="block">
+                      <span className={labelCls}>Password</span>
+                      <input
+                        className={inputCls}
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="At least 8 characters"
+                        autoComplete="new-password"
+                      />
+                      {errors.password && <span className={errCls}>{errors.password}</span>}
+                    </label>
+                    <label className="block">
+                      <span className={labelCls}>Confirm password</span>
+                      <input
+                        className={inputCls}
+                        type="password"
+                        value={confirm}
+                        onChange={(e) => setConfirm(e.target.value)}
+                        placeholder="Re-enter password"
+                        autoComplete="new-password"
+                      />
+                      {errors.confirm && <span className={errCls}>{errors.confirm}</span>}
+                    </label>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-[5px] flex-1 overflow-hidden rounded-full bg-foreground/10">
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{ width: pwW, background: pwColor }}
+                      />
+                    </div>
+                    <span className="min-w-[64px] text-[11.5px] font-semibold text-brand-ink-faint">
+                      {pwLabel}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    role="checkbox"
+                    aria-checked={agreed}
+                    aria-label="I agree to UniPlug’s Terms of Service, Privacy Policy, and Code of Conduct"
+                    data-mag
+                    data-hov
+                    onClick={() => {
+                      setAgreed((a) => !a);
+                      setErrors((e) => ({ ...e, agreed: "" }));
+                    }}
+                    className="flex cursor-none items-start gap-3 rounded-md border px-4 py-3.5 text-left transition"
+                    style={{ borderColor: agreed ? "var(--primary)" : "var(--border)" }}
+                  >
+                    <span
+                      className="mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] border text-[14px] text-brand-paper transition"
+                      style={{
+                        borderColor: agreed ? "var(--foreground)" : "rgba(26,26,26,.3)",
+                        background: agreed ? "var(--foreground)" : "transparent",
+                      }}
+                    >
+                      {agreed ? "✓" : ""}
+                    </span>
+                    <span className="text-[13.5px] leading-relaxed text-brand-ink-soft">
+                      I agree to UniPlug’s{" "}
+                      <b className="border-b-[1.5px] border-primary text-foreground">
+                        Terms of Service
+                      </b>
+                      ,{" "}
+                      <b className="border-b-[1.5px] border-primary text-foreground">
+                        Privacy Policy
+                      </b>
+                      , and{" "}
+                      <b className="border-b-[1.5px] border-primary text-foreground">
+                        Code of Conduct
+                      </b>
+                      .
+                    </span>
+                  </button>
+                  {errors.agreed && <span className={errCls}>{errors.agreed}</span>}
+                  {serverError && (
+                    <p role="alert" className="text-center text-xs text-destructive">
+                      {serverError}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* ── VERIFY (terminal: email confirmation) ── */}
+              {view === "verify" && (
+                <div>
+                  <p className="m-0 text-[15.5px] leading-relaxed text-brand-ink-soft">
+                    We sent a confirmation link to{" "}
+                    <b className="text-foreground">{pendingEmail || email}</b>.{" "}
+                    {minor && "We’ve also emailed your guardian a consent request. "}
+                    Click it, then sign back in to finish your profile.
+                  </p>
+                  <div className="mt-6 flex items-center gap-[18px]">
                     <button
                       type="button"
-                      data-mag
+                      data-hov
+                      onClick={onResend}
+                      disabled={resendState !== "idle"}
+                      className="cursor-none border-b-[1.5px] border-primary text-[14px] font-semibold text-foreground disabled:opacity-60"
+                    >
+                      {resendState === "sending"
+                        ? "Resending…"
+                        : resendState === "sent"
+                          ? "Sent ✓"
+                          : "Resend email"}
+                    </button>
+                    <span role="status" aria-live="polite" className="sr-only">
+                      {resendState === "sent" ? "Confirmation email resent" : ""}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* ── NAV ── */}
+              {showNav && (
+                <div className="mt-9 flex items-center gap-[18px]">
+                  {canBack && (
+                    <button
+                      type="button"
+                      data-hov
+                      onClick={onBack}
+                      className="cursor-none px-2 py-3.5 text-[15px] font-bold text-brand-ink-soft"
+                    >
+                      ← Back
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    data-mag
+                    data-hov
+                    onClick={onNext}
+                    disabled={submitting}
+                    className="inline-flex cursor-none items-center gap-2.5 rounded-md bg-foreground px-[30px] py-4 text-[16px] font-bold text-brand-paper transition disabled:opacity-60"
+                  >
+                    {view === "account"
+                      ? submitting
+                        ? "Creating…"
+                        : "Create account"
+                      : "Continue"}{" "}
+                    <span className="text-[18px]">→</span>
+                  </button>
+                  {SKIPPABLE.has(view) && (
+                    <button
+                      type="button"
                       data-hov
                       onClick={onNext}
-                      disabled={submitting}
-                      className="inline-flex cursor-none items-center gap-2.5 rounded-md bg-foreground px-[30px] py-4 text-[16px] font-bold text-brand-paper transition disabled:opacity-60"
+                      className="cursor-none px-1.5 py-3.5 text-[14px] font-semibold text-brand-ink-faint"
                     >
-                      {view === "account"
-                        ? submitting
-                          ? "Creating…"
-                          : "Create account"
-                        : "Continue"}{" "}
-                      <span className="text-[18px]">→</span>
+                      Skip for now
                     </button>
-                    {SKIPPABLE.has(view) && (
-                      <button
-                        type="button"
-                        data-hov
-                        onClick={onNext}
-                        className="cursor-none px-1.5 py-3.5 text-[14px] font-semibold text-brand-ink-faint"
-                      >
-                        Skip for now
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
