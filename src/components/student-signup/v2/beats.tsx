@@ -22,7 +22,8 @@ function DarkBeat({ children, zClass }: { children: React.ReactNode; zClass: str
       className={`absolute inset-0 ${zClass} flex flex-col items-center justify-center overflow-hidden bg-brand-night text-center text-brand-paper`}
     >
       <div className="absolute left-10 top-8">
-        <Logo variant="wordmark-offwhite" size={32} />
+        {/* `-dark` = the light glyph FOR the dark cinematic beat (suffix = target bg) */}
+        <Logo variant="wordmark-dark" size={32} />
       </div>
       {children}
     </div>

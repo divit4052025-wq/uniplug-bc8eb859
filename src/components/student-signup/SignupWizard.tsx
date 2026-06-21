@@ -403,7 +403,9 @@ export function SignupWizard() {
           Wrapped in a positioned div so the Logo's own `relative` wrapper can't win
           over the intended absolute placement. */}
       <div className="absolute left-10 top-8 z-[5]">
-        <Logo variant="wordmark-dark" size={34} />
+        {/* `-offwhite` = the ink glyph FOR off-white/light backgrounds (suffix is
+            the target bg, not the glyph colour). */}
+        <Logo variant="wordmark-offwhite" size={34} />
       </div>
 
       {/* ── Light form layer (Acts 2–4 + verify) ── */}

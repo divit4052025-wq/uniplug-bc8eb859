@@ -218,7 +218,8 @@ export function FinalizeProfile() {
     <div className="signup-wizard relative h-dvh overflow-hidden overscroll-none bg-brand-paper text-foreground">
       <SignupCursor />
       <div className="absolute left-10 top-8 z-[5]">
-        <Logo variant="wordmark-dark" size={34} />
+        {/* ink glyph for the light/paper finalize surface (suffix = target bg) */}
+        <Logo variant="wordmark-offwhite" size={34} />
       </div>
 
       {/* hidden file inputs */}
