@@ -153,6 +153,10 @@
   --font-sans: "Quicksand", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Gabarito", ui-sans-serif, system-ui, sans-serif;
   font-family: var(--font-sans);
+  /* WCAG AA: bump the faint helper/label token from #8b8178 (~3.5:1 on the paper
+     bg) to ~5.5:1, SCOPED to the signup so the landing's own --ink-faint and every
+     other surface are untouched. */
+  --brand-ink-faint: #6b6259;
 }
 .signup-wizard :is(h1, h2, h3, h4, h5) {
   font-family: var(--font-display);

@@ -429,6 +429,10 @@ export function SignupWizard() {
               <p aria-live="assertive" className="sr-only">
                 {Object.values(errors).filter(Boolean)[0] ?? ""}
               </p>
+              {/* AT progress cue — announces position as scenes change */}
+              <p aria-live="polite" className="sr-only">
+                {showNav ? `Step ${idxIn(view) + 1} of ${contentScenes.length}` : ""}
+              </p>
               {/* scene head */}
               <div className="mb-7">
                 <div className="mb-2.5 text-[13px] font-semibold uppercase tracking-[0.16em] text-brand-ink-faint">
@@ -557,7 +561,11 @@ export function SignupWizard() {
                   </label>
                   <div>
                     <span className={labelCls}>Examination board</span>
-                    <div className="flex flex-wrap gap-2.5">
+                    <div
+                      className="flex flex-wrap gap-2.5"
+                      role="group"
+                      aria-label="Examination board"
+                    >
                       {BOARDS.map((b) => {
                         const active = board === b;
                         return (
@@ -647,7 +655,11 @@ export function SignupWizard() {
                   </div>
                   <div>
                     <span className={labelCls}>Countries you’d consider (optional)</span>
-                    <div className="flex flex-wrap gap-2.5">
+                    <div
+                      className="flex flex-wrap gap-2.5"
+                      role="group"
+                      aria-label="Countries you’d consider"
+                    >
                       {COUNTRIES.map((c) => {
                         const active = countries.includes(c);
                         return (

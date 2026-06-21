@@ -128,7 +128,7 @@ export function UniversityTierField({
                   </span>
                 )}
               </span>
-              <div className="flex gap-1">
+              <div className="flex gap-1" role="group" aria-label={`Tier for ${p.name}`}>
                 {TIERS.map((t) => {
                   const active = p.tier === t.key;
                   return (
