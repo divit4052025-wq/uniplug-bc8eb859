@@ -70,7 +70,15 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned, NOT `latest`: with `latest`, setup-cli resolves the newest
+          # release over the network on every run. That lookup returned 504
+          # Gateway Time-out and killed this job at setup in ~4s — the CLI was
+          # never installed, so the if:always() "Stop Supabase" step then hit
+          # `supabase: command not found` (exit 127). A pinned tag downloads
+          # the release directly (no latest-resolution call) and reproduces the
+          # exact local toolchain the dev-seeds were validated against
+          # (`supabase --version` -> 2.104.0). Bump deliberately, not to latest.
+          version: 2.104.0
 
       - name: Start local Supabase stack
         run: supabase start --exclude=studio,inbucket,realtime,storage-api,imgproxy,edge-runtime,vector
