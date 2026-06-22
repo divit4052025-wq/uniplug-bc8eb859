@@ -67,8 +67,11 @@ export function Logo({
   const wrapperHeight = size;
   const wrapperWidth = size * (m.wRatio / m.hRatio);
 
-  // Inner image is scaled so its rendered glyph height equals `size`.
-  const imageHeight = size / m.hRatio;
+  // Inner image scaled so the glyph fills ~94% of the wrapper. FIT < 1 leaves a
+  // small transparent margin so sub-pixel rounding never clips the glyph edges
+  // (the glyph previously filled the window exactly, which clipped at small sizes).
+  const FIT = 0.94;
+  const imageHeight = (size / m.hRatio) * FIT;
   const imageWidth = imageHeight; // canvas is square (2000x2000)
 
   // Translate the image so the glyph's center aligns with the wrapper's center.

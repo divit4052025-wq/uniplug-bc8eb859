@@ -5,6 +5,12 @@
 // signup metadata that handle_new_user reads.
 export const LEGAL_VERSION = "1.0";
 
+// Code of Conduct acceptance version, recorded into legal_acceptances
+// (doc_type='code_of_conduct') from the code_of_conduct_version signup metadata
+// that handle_new_user reads. Kept separate from LEGAL_VERSION so legal can bump
+// the CoC document independently — change this one line when the real CoC ships.
+export const CODE_OF_CONDUCT_VERSION = "1.0";
+
 export const COUNTRIES = [
   "India",
   "United Kingdom",

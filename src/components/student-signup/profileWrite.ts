@@ -62,13 +62,16 @@ export async function writeRichProfile(userId: string, draft: ProfileDraft): Pro
     fileUnresolved("cocurricular", draft.cocurriculars),
   ]);
 
-  // ── Target universities → student_schools (name + optional canonical link) ──
+  // ── Target universities → student_schools (name + tier + optional link) ──
+  // v2 writes the student-chosen tier (dream/target/safety) into category; the
+  // column's CHECK already permits all three. Unresolved (request-to-add) unis
+  // are still saved by name with a NULL ref_university_id.
   if (draft.targetUniversities.length > 0) {
     await supabase.from("student_schools").insert(
       draft.targetUniversities.map((u) => ({
         student_id: userId,
         name: u.name,
-        category: "target",
+        category: u.tier,
         ref_university_id: u.id,
       })),
     );
@@ -98,4 +101,39 @@ export async function writeRichProfile(userId: string, draft: ProfileDraft): Pro
 export async function stampProfileComplete(): Promise<void> {
   const { error } = await supabase.rpc("finalize_student_profile");
   if (error) throw error;
+}
+
+/** A finalize-step document upload. Resume vs personal statement is encoded in a
+ *  stable storage-path prefix (resume/ | statement/), never the raw filename. */
+export type StudentDocKind = "resume" | "statement";
+
+/** Upload one finalize-step document to the private student-documents bucket and
+ *  record it in student_documents. visibility is set to 'restricted' — the most
+ *  private value the column allows — so a (possibly minor) student's resume /
+ *  personal statement is NEVER auto-exposed to booked mentors; sharing stays
+ *  opt-in via the dashboard document-sharing UI. Owner-RLS (auth.uid() =
+ *  student_id) + owner-prefix storage policy gate both writes. Best-effort:
+ *  on a failed metadata insert the orphaned object is removed. */
+export async function uploadStudentDocument(
+  userId: string,
+  file: File,
+  kind: StudentDocKind,
+): Promise<void> {
+  const safeName = file.name.replace(/[^\w.-]+/g, "_");
+  const path = `${userId}/${kind}/${Date.now()}-${safeName}`;
+  const { error: upErr } = await supabase.storage
+    .from("student-documents")
+    .upload(path, file, { contentType: file.type || undefined, upsert: false });
+  if (upErr) throw upErr;
+  const { error: insErr } = await supabase.from("student_documents").insert({
+    student_id: userId,
+    file_name: file.name,
+    storage_path: path,
+    size_bytes: file.size,
+    visibility: "restricted",
+  });
+  if (insErr) {
+    await supabase.storage.from("student-documents").remove([path]);
+    throw insErr;
+  }
 }

@@ -1,6 +1,11 @@
 // P7 student-specific constants + the consent rule. LEGAL_VERSION / COUNTRIES /
 // isUnder18 are shared (re-exported from the signup module).
-export { LEGAL_VERSION, COUNTRIES, isUnder18 } from "@/components/signup/constants";
+export {
+  LEGAL_VERSION,
+  CODE_OF_CONDUCT_VERSION,
+  COUNTRIES,
+  isUnder18,
+} from "@/components/signup/constants";
 
 import { isUnder18 } from "@/components/signup/constants";
 

@@ -62,7 +62,7 @@ export function WizardShell({
       <Nav />
       <main className="mx-auto w-full max-w-2xl px-5 py-10 sm:px-8 sm:py-14">
         <div className="mb-6 flex items-center justify-between gap-4">
-          <Logo variant="wordmark-offwhite" className="h-12 w-auto sm:h-14" />
+          <Logo variant="wordmark-offwhite" size={44} />
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             {eyebrow}
           </p>

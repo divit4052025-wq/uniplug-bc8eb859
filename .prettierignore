@@ -5,3 +5,8 @@ dist
 pnpm-lock.yaml
 package-lock.json
 routeTree.gen.ts
+
+# Design handoff bundle (reference only)
+design/
+unconventional-signup-flow-design/
+Unconventional signup flow design-handoff.zip

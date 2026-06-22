@@ -44,3 +44,8 @@ scratch/
 
 # one-time legal source bundle — do not commit
 /files.zip
+
+# Design handoff bundle (reference only — never commit the zip or the unzipped prototype)
+/design/handoff/
+/unconventional-signup-flow-design/
+/Unconventional signup flow design-handoff.zip
