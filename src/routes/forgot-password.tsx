@@ -1,9 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
-import { AuthShell, Confirmation, Field, inputClass } from "@/components/site/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
 import { log, looksLikeEmailSendFailure } from "@/lib/log";
+import type { MascotExpression } from "@/components/mascots/Mascot";
+import {
+  AuthScreen,
+  authErrCls,
+  authInputCls,
+  authLabelCls,
+  authPrimaryBtnCls,
+} from "@/components/site/AuthScreen";
 
 export const Route = createFileRoute("/forgot-password")({
   head: () => ({
@@ -26,6 +33,19 @@ function ForgotPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [founderExpr, setFounderExpr] = useState<MascotExpression>("happy");
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstRender = useRef(true);
+
+  // Shift focus to the new headline when the screen changes (form → "check your
+  // email"), mirroring the signup wizard, so AT users aren't dropped on <body>.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [sentTo]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,10 +54,12 @@ function ForgotPasswordPage() {
     const res = schema.safeParse({ email: String(fd.get("email") || "") });
     if (!res.success) {
       setError(res.error.issues[0]?.message ?? "Enter a valid email");
+      setFounderExpr("confused");
       return;
     }
     const email = res.data.email;
     setSubmitting(true);
+    setFounderExpr("focused");
     try {
       // Supabase does not reveal whether the address has an account, so a
       // successful call is shown identically regardless — preventing email
@@ -58,6 +80,7 @@ function ForgotPasswordPage() {
         error: raw,
       });
       setError("We couldn't send the reset email right now. Please try again in a moment.");
+      setFounderExpr("confused");
     } finally {
       setSubmitting(false);
     }
@@ -65,51 +88,81 @@ function ForgotPasswordPage() {
 
   if (sentTo) {
     return (
-      <Confirmation
-        heading="Check your email"
-        body={`If an account exists for ${sentTo}, we've sent a link to reset your password. Click it to choose a new one.`}
+      <AuthScreen
+        founderExpr="celebrating"
+        title="Check your email"
+        subtitle={`If an account exists for ${sentTo}, we've sent a link to reset your password. Click it to choose a new one.`}
+        headingRef={headingRef}
       >
-        <Link to="/login" className="text-sm font-semibold text-primary hover:underline">
-          Back to log in
-        </Link>
-      </Confirmation>
+        <p className="text-center text-[13px] text-brand-ink-soft">
+          <Link
+            to="/login"
+            data-mag
+            className="border-b-[1.5px] border-primary font-semibold leading-none text-primary"
+          >
+            Back to log in
+          </Link>
+        </p>
+      </AuthScreen>
     );
   }
 
   return (
-    <AuthShell
-      eyebrow="Forgot your password?"
+    <AuthScreen
+      founderExpr={founderExpr}
       title="Reset password"
       subtitle="Enter the email you signed up with and we'll send you a link to set a new password."
+      headingRef={headingRef}
+      onFocusCapture={() => {
+        if (!submitting) setFounderExpr("thinking");
+      }}
+      onBlurCapture={() => {
+        if (!submitting) setFounderExpr("happy");
+      }}
     >
-      <form onSubmit={onSubmit} className="space-y-5" noValidate>
-        <Field label="Email">
+      <form
+        onSubmit={onSubmit}
+        noValidate
+        aria-busy={submitting}
+        className="flex flex-col gap-[15px]"
+      >
+        {/* off-screen live region — announces the error the moment it appears */}
+        <p aria-live="assertive" className="sr-only">
+          {error ?? ""}
+        </p>
+        <div>
+          <label htmlFor="forgot-email" className={authLabelCls}>
+            Email
+          </label>
           <input
+            id="forgot-email"
             name="email"
             type="email"
             autoComplete="email"
-            className={inputClass}
+            data-mag
+            aria-invalid={!!error}
+            aria-describedby={error ? "forgot-email-error" : undefined}
+            className={authInputCls}
             placeholder="you@school.com"
           />
-        </Field>
+          {error && (
+            <span id="forgot-email-error" className={authErrCls}>
+              {error}
+            </span>
+          )}
+        </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
-
-        <button
-          type="submit"
-          disabled={submitting}
-          className="inline-flex h-11 w-full items-center justify-center rounded-full bg-primary px-6 text-[13px] font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
-        >
+        <button type="submit" disabled={submitting} data-mag data-hov className={authPrimaryBtnCls}>
           {submitting ? "Sending…" : "Send reset link"}
         </button>
 
-        <p className="pt-2 text-center text-[13px] text-muted-foreground">
+        <p className="text-center text-[13px] text-brand-ink-soft">
           Remembered it?{" "}
-          <Link to="/login" className="font-medium text-primary hover:underline">
+          <Link to="/login" data-mag className="font-semibold text-primary">
             Back to log in
           </Link>
         </p>
       </form>
-    </AuthShell>
+    </AuthScreen>
   );
 }
