@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { log, looksLikeEmailSendFailure } from "@/lib/log";
@@ -34,6 +34,18 @@ function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
   const [founderExpr, setFounderExpr] = useState<MascotExpression>("happy");
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstRender = useRef(true);
+
+  // Shift focus to the new headline when the screen changes (form → "check your
+  // email"), mirroring the signup wizard, so AT users aren't dropped on <body>.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [sentTo]);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -80,6 +92,7 @@ function ForgotPasswordPage() {
         founderExpr="celebrating"
         title="Check your email"
         subtitle={`If an account exists for ${sentTo}, we've sent a link to reset your password. Click it to choose a new one.`}
+        headingRef={headingRef}
       >
         <p className="text-center text-[13px] text-brand-ink-soft">
           <Link
@@ -99,6 +112,7 @@ function ForgotPasswordPage() {
       founderExpr={founderExpr}
       title="Reset password"
       subtitle="Enter the email you signed up with and we'll send you a link to set a new password."
+      headingRef={headingRef}
       onFocusCapture={() => {
         if (!submitting) setFounderExpr("thinking");
       }}
@@ -106,7 +120,16 @@ function ForgotPasswordPage() {
         if (!submitting) setFounderExpr("happy");
       }}
     >
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[15px]">
+      <form
+        onSubmit={onSubmit}
+        noValidate
+        aria-busy={submitting}
+        className="flex flex-col gap-[15px]"
+      >
+        {/* off-screen live region — announces the error the moment it appears */}
+        <p aria-live="assertive" className="sr-only">
+          {error ?? ""}
+        </p>
         <div>
           <label htmlFor="forgot-email" className={authLabelCls}>
             Email

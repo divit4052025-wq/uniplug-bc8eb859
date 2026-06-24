@@ -1,4 +1,4 @@
-import type { FocusEventHandler, ReactNode } from "react";
+import type { FocusEventHandler, ReactNode, Ref } from "react";
 import { SignupCursor } from "@/components/student-signup/v2/SignupCursor";
 import { FounderCompanion } from "@/components/student-signup/v2/FounderCompanion";
 import { Logo } from "@/components/site/Logo";
@@ -30,6 +30,7 @@ export function AuthScreen({
   subtitle,
   onFocusCapture,
   onBlurCapture,
+  headingRef,
   children,
 }: {
   founderExpr?: MascotExpression;
@@ -37,6 +38,8 @@ export function AuthScreen({
   subtitle?: ReactNode;
   onFocusCapture?: FocusEventHandler<HTMLDivElement>;
   onBlurCapture?: FocusEventHandler<HTMLDivElement>;
+  /** Focused on state transitions so AT users land on the new headline. */
+  headingRef?: Ref<HTMLHeadingElement>;
   children?: ReactNode;
 }) {
   return (
@@ -62,7 +65,11 @@ export function AuthScreen({
               size={96}
               className="mb-3 flex justify-center"
             />
-            <h1 className="m-0 text-balance font-display text-[38px] font-extrabold leading-[1.05] tracking-[-0.022em]">
+            <h1
+              ref={headingRef}
+              tabIndex={-1}
+              className="m-0 text-balance font-display text-[38px] font-extrabold leading-[1.05] tracking-[-0.022em] outline-none"
+            >
               {title}
             </h1>
             {subtitle && <p className="mt-2.5 text-[15px] text-brand-ink-soft">{subtitle}</p>}

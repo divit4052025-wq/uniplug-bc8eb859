@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +51,19 @@ function ResetPasswordPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [founderExpr, setFounderExpr] = useState<MascotExpression>("happy");
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const firstRender = useRef(true);
+
+  // Shift focus to the new headline on each state transition (resolving → ready
+  // / invalid / success), mirroring the signup wizard, so AT users aren't
+  // dropped on <body> when the screen is replaced.
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    headingRef.current?.focus();
+  }, [status]);
 
   // Establish the recovery session from the URL. The Supabase client has
   // detectSessionInUrl on by default, so it parses the recovery tokens from
@@ -133,6 +146,7 @@ function ResetPasswordPage() {
         founderExpr="thinking"
         title="Set a new password"
         subtitle="Verifying your reset link…"
+        headingRef={headingRef}
       >
         <div className="flex min-h-[64px] items-center justify-center" role="status">
           <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
@@ -148,6 +162,7 @@ function ResetPasswordPage() {
         founderExpr="confused"
         title="This link has expired"
         subtitle="Password reset links can only be used once and expire after a short time. Request a fresh link to continue."
+        headingRef={headingRef}
       >
         <div className="flex flex-col items-center gap-4">
           <Link to="/forgot-password" data-mag data-hov className={authPrimaryBtnCls}>
@@ -171,6 +186,7 @@ function ResetPasswordPage() {
         founderExpr="celebrating"
         title="Password updated"
         subtitle="Your password has been changed. Log in with your new password to continue."
+        headingRef={headingRef}
       >
         <p className="text-center text-[13px] text-brand-ink-soft">
           <Link
@@ -191,6 +207,7 @@ function ResetPasswordPage() {
       founderExpr={founderExpr}
       title="Set a new password"
       subtitle="Choose a new password for your UniPlug account."
+      headingRef={headingRef}
       onFocusCapture={() => {
         if (!submitting) setFounderExpr("thinking");
       }}
@@ -198,7 +215,16 @@ function ResetPasswordPage() {
         if (!submitting) setFounderExpr("happy");
       }}
     >
-      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[15px]">
+      <form
+        onSubmit={onSubmit}
+        noValidate
+        aria-busy={submitting}
+        className="flex flex-col gap-[15px]"
+      >
+        {/* off-screen live region — announces the server error the moment it appears */}
+        <p aria-live="assertive" className="sr-only">
+          {serverError ?? ""}
+        </p>
         <div>
           <label htmlFor="reset-password" className={authLabelCls}>
             New password
@@ -242,11 +268,7 @@ function ResetPasswordPage() {
           )}
         </div>
 
-        {serverError && (
-          <p aria-live="polite" className="text-[13px] font-semibold text-destructive">
-            {serverError}
-          </p>
-        )}
+        {serverError && <p className="text-[13px] font-semibold text-destructive">{serverError}</p>}
 
         <button type="submit" disabled={submitting} data-mag data-hov className={authPrimaryBtnCls}>
           {submitting ? "Updating…" : "Update password"}
