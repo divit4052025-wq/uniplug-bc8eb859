@@ -11,6 +11,8 @@ export interface MentorDraft {
   /** Universities the mentor was admitted to (the matching anchor). */
   admits: RefItem[];
   specialty: SpecialtyKey;
+  /** Free-form "extra skills" chips, replayed into mentors.topics at finalize. */
+  skills: string[];
   savedAt: string;
 }
 
@@ -26,6 +28,7 @@ export function loadMentorDraft(): MentorDraft | null {
   return {
     admits: parsed.admits ?? [],
     specialty: (parsed.specialty ?? "general") as SpecialtyKey,
+    skills: parsed.skills ?? [],
     savedAt: parsed.savedAt ?? "",
   };
 }

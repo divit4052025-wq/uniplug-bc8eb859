@@ -12,20 +12,21 @@ export function FounderCompanion({
   expression,
   size = 168,
   className,
+  color = MASCOTS.founder.color,
 }: {
   expression: MascotExpression;
   size?: number;
   className?: string;
+  /**
+   * Body fill for the founder. Defaults to the canonical ink (#1A1A1A), which
+   * reads on the light student flow. The dark-dominant mentor flow passes the
+   * bright on-dark rose (#F4B5AA) so the ink founder isn't invisible on #171513.
+   */
+  color?: string;
 }) {
   return (
     <div className={className} aria-hidden>
-      <Mascot
-        shape="founder"
-        color={MASCOTS.founder.color}
-        expression={expression}
-        size={size}
-        decorative
-      />
+      <Mascot shape="founder" color={color} expression={expression} size={size} decorative />
     </div>
   );
 }

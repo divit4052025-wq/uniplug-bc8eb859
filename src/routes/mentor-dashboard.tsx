@@ -30,6 +30,7 @@ type MentorRow = {
   status: "pending" | "approved" | "rejected" | null;
   application_submitted_at: string | null;
   verification_notes: string | null;
+  college_email: string | null;
 };
 
 function MentorDashboardLayout() {
@@ -86,7 +87,7 @@ function MentorDashboardLayout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("mentors")
-        .select("full_name, status, application_submitted_at, verification_notes")
+        .select("full_name, status, application_submitted_at, verification_notes, college_email")
         .eq("id", mentorId as string)
         .maybeSingle();
       if (error) throw error;
@@ -95,6 +96,7 @@ function MentorDashboardLayout() {
         status: (data?.status as MentorRow["status"]) ?? null,
         application_submitted_at: data?.application_submitted_at ?? null,
         verification_notes: data?.verification_notes ?? null,
+        college_email: data?.college_email ?? null,
       };
     },
   });
@@ -139,6 +141,7 @@ function MentorDashboardLayout() {
         <RejectedScreen
           mentorId={mentorId}
           reason={mentorRow.verification_notes}
+          firstName={firstName}
           onResubmitted={() =>
             void qc.invalidateQueries({ queryKey: ["mentor-profile-header", mentorId] })
           }
@@ -150,7 +153,7 @@ function MentorDashboardLayout() {
     if (pendingUnsubmitted && !mentorFinalizeSkippedThisSession()) {
       return <div className="min-h-screen bg-[#FFFCFB]" />;
     }
-    return <UnderReviewScreen />;
+    return <UnderReviewScreen firstName={firstName} collegeEmail={mentorRow.college_email} />;
   }
 
   return (

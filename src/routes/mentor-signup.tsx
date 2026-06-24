@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { MentorSignupWizard } from "@/components/mentor-signup/MentorSignupWizard";
+import { MentorSignupWizardV2 } from "@/components/mentor-signup/v2/MentorSignupWizardV2";
 
 export const Route = createFileRoute("/mentor-signup")({
   head: () => ({
@@ -18,5 +18,5 @@ export const Route = createFileRoute("/mentor-signup")({
       },
     ],
   }),
-  component: MentorSignupWizard,
+  component: MentorSignupWizardV2,
 });
