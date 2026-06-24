@@ -159,9 +159,10 @@ function LoginPage() {
           onFocusCapture={onFocusCapture}
           onBlurCapture={onBlurCapture}
         >
-          {/* off-screen live region — announce the first error to assistive tech */}
+          {/* off-screen live region — announces the form-level auth error to AT.
+              Field-level errors are announced via each input's aria-describedby. */}
           <p aria-live="assertive" className="sr-only">
-            {error ?? fieldErrors.email ?? fieldErrors.password ?? ""}
+            {error ?? ""}
           </p>
 
           {/* header */}
@@ -179,18 +180,28 @@ function LoginPage() {
             </p>
           </div>
 
-          {/* form */}
-          <form onSubmit={onSubmit} className="flex flex-col gap-[15px]">
+          {/* form — noValidate so our custom inline validation (not the native
+              browser bubbles) drives the design's #C0392B field errors. */}
+          <form
+            onSubmit={onSubmit}
+            noValidate
+            aria-busy={busy}
+            className="flex flex-col gap-[15px]"
+          >
             {/* Email */}
-            <label className="block">
-              <span className={cn(labelCls, "mb-[7px]")}>Email</span>
+            <div>
+              <label htmlFor="login-email" className={cn(labelCls, "mb-[7px]")}>
+                Email
+              </label>
               <input
+                id="login-email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
                 data-mag
                 aria-invalid={!!fieldErrors.email}
+                aria-describedby={fieldErrors.email ? "login-email-error" : undefined}
                 onChange={() =>
                   fieldErrors.email && setFieldErrors((p) => ({ ...p, email: undefined }))
                 }
@@ -200,29 +211,37 @@ function LoginPage() {
                 )}
                 placeholder="you@email.com"
               />
-              {fieldErrors.email && <span className={errCls}>{fieldErrors.email}</span>}
-            </label>
+              {fieldErrors.email && (
+                <span id="login-email-error" className={errCls}>
+                  {fieldErrors.email}
+                </span>
+              )}
+            </div>
 
             {/* Password */}
-            <label className="block">
-              <span className="mb-[7px] flex items-center justify-between">
-                <span className={labelCls}>Password</span>
+            <div>
+              <div className="mb-[7px] flex items-center justify-between">
+                <label htmlFor="login-password" className={labelCls}>
+                  Password
+                </label>
                 <Link
                   to="/forgot-password"
                   data-mag
-                  className="border-b-[1.5px] border-primary text-[12.5px] font-semibold leading-none text-primary"
+                  className="-my-1.5 py-1.5 text-[12.5px] font-semibold leading-none text-foreground"
                 >
-                  Forgot?
+                  <span className="border-b-[1.5px] border-primary pb-px">Forgot?</span>
                 </Link>
-              </span>
-              <span className="relative block">
+              </div>
+              <div className="relative">
                 <input
+                  id="login-password"
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   required
                   data-mag
                   aria-invalid={!!fieldErrors.password}
+                  aria-describedby={fieldErrors.password ? "login-password-error" : undefined}
                   onChange={() =>
                     fieldErrors.password && setFieldErrors((p) => ({ ...p, password: undefined }))
                   }
@@ -237,14 +256,18 @@ function LoginPage() {
                   type="button"
                   data-mag
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-none text-[12.5px] font-semibold text-brand-ink-faint"
+                  className="absolute right-2 top-1/2 inline-flex min-h-[44px] -translate-y-1/2 cursor-none items-center px-1.5 text-[12.5px] font-semibold text-brand-ink-faint"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
-              </span>
-              {fieldErrors.password && <span className={errCls}>{fieldErrors.password}</span>}
-            </label>
+              </div>
+              {fieldErrors.password && (
+                <span id="login-password-error" className={errCls}>
+                  {fieldErrors.password}
+                </span>
+              )}
+            </div>
 
             {/* Keep me logged in */}
             <div className="mt-0.5">
@@ -263,7 +286,7 @@ function LoginPage() {
                     onChange={(e) => setRemember(e.target.checked)}
                     className="absolute inset-0 cursor-none opacity-0"
                   />
-                  {remember && <span aria-hidden>✓</span>}
+                  {remember && <span aria-hidden="true">✓</span>}
                 </span>
                 <span className="text-[13.5px] text-brand-ink-soft">Keep me logged in</span>
               </label>
@@ -274,11 +297,7 @@ function LoginPage() {
               )}
             </div>
 
-            {error && (
-              <p className="text-[13px] font-semibold text-destructive" role="alert">
-                {error}
-              </p>
-            )}
+            {error && <p className="text-[13px] font-semibold text-destructive">{error}</p>}
 
             <button
               type="submit"
@@ -291,7 +310,11 @@ function LoginPage() {
               )}
             >
               {ctaLabel}
-              {ctaArrow && <span className="text-[18px] leading-none">{ctaArrow}</span>}
+              {ctaArrow && (
+                <span aria-hidden="true" className="text-[18px] leading-none">
+                  {ctaArrow}
+                </span>
+              )}
             </button>
           </form>
 
