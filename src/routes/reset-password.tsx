@@ -2,8 +2,15 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { z } from "zod";
-import { AuthShell, Confirmation, Field, inputClass } from "@/components/site/AuthShell";
 import { supabase } from "@/integrations/supabase/client";
+import type { MascotExpression } from "@/components/mascots/Mascot";
+import {
+  AuthScreen,
+  authErrCls,
+  authInputCls,
+  authLabelCls,
+  authPrimaryBtnCls,
+} from "@/components/site/AuthScreen";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -26,12 +33,24 @@ const schema = z
 
 type LinkStatus = "resolving" | "ready" | "invalid" | "success";
 
+// Mirror login's treatment: map known auth errors to friendly copy, never leak a
+// raw Supabase message. Falls back to the original generic.
+function mapUpdateError(err: unknown): string {
+  const msg = err instanceof Error ? err.message : "";
+  if (/different from the old password|should be different/i.test(msg))
+    return "Your new password must be different from your old one.";
+  if (/at least|weak|password.*short|short.*password/i.test(msg))
+    return "Please choose a stronger password.";
+  return "Couldn't update your password. Please try again.";
+}
+
 function ResetPasswordPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<LinkStatus>("resolving");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [founderExpr, setFounderExpr] = useState<MascotExpression>("happy");
 
   // Establish the recovery session from the URL. The Supabase client has
   // detectSessionInUrl on by default, so it parses the recovery tokens from
@@ -81,10 +100,12 @@ function ResetPasswordPage() {
       const errs: Record<string, string> = {};
       res.error.issues.forEach((i) => (errs[i.path[0] as string] = i.message));
       setErrors(errs);
+      setFounderExpr("confused");
       return;
     }
     setErrors({});
     setSubmitting(true);
+    setFounderExpr("focused");
     try {
       const { error: updateError } = await supabase.auth.updateUser({
         password: res.data.password,
@@ -100,91 +121,137 @@ function ResetPasswordPage() {
         });
       }, 1800);
     } catch (err) {
-      setServerError(
-        err instanceof Error ? err.message : "Couldn't update your password. Please try again.",
-      );
+      setServerError(mapUpdateError(err));
+      setFounderExpr("confused");
       setSubmitting(false);
     }
   };
 
   if (status === "resolving") {
     return (
-      <AuthShell
-        eyebrow="Almost there"
+      <AuthScreen
+        founderExpr="thinking"
         title="Set a new password"
         subtitle="Verifying your reset link…"
       >
-        <div className="flex min-h-[120px] items-center justify-center" role="status">
+        <div className="flex min-h-[64px] items-center justify-center" role="status">
           <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
           <span className="sr-only">Verifying your reset link…</span>
         </div>
-      </AuthShell>
+      </AuthScreen>
     );
   }
 
   if (status === "invalid") {
     return (
-      <Confirmation
-        heading="This link has expired"
-        body="Password reset links can only be used once and expire after a short time. Request a fresh link to continue."
+      <AuthScreen
+        founderExpr="confused"
+        title="This link has expired"
+        subtitle="Password reset links can only be used once and expire after a short time. Request a fresh link to continue."
       >
-        <Link
-          to="/forgot-password"
-          className="inline-flex h-11 items-center justify-center rounded-full bg-primary px-6 text-[13px] font-medium text-primary-foreground transition hover:opacity-90"
-        >
-          Request a new link
-        </Link>
-      </Confirmation>
+        <div className="flex flex-col items-center gap-4">
+          <Link to="/forgot-password" data-mag data-hov className={authPrimaryBtnCls}>
+            Request a new link
+          </Link>
+          <Link
+            to="/login"
+            data-mag
+            className="border-b-[1.5px] border-primary text-[13px] font-semibold leading-none text-primary"
+          >
+            Back to log in
+          </Link>
+        </div>
+      </AuthScreen>
     );
   }
 
   if (status === "success") {
     return (
-      <Confirmation
-        heading="Password updated"
-        body="Your password has been changed. Log in with your new password to continue."
-      />
+      <AuthScreen
+        founderExpr="celebrating"
+        title="Password updated"
+        subtitle="Your password has been changed. Log in with your new password to continue."
+      >
+        <p className="text-center text-[13px] text-brand-ink-soft">
+          <Link
+            to="/login"
+            data-mag
+            className="border-b-[1.5px] border-primary font-semibold leading-none text-primary"
+          >
+            Back to log in
+          </Link>
+        </p>
+      </AuthScreen>
     );
   }
 
+  // status === "ready" — the new-password form
   return (
-    <AuthShell
-      eyebrow="Almost there"
+    <AuthScreen
+      founderExpr={founderExpr}
       title="Set a new password"
       subtitle="Choose a new password for your UniPlug account."
+      onFocusCapture={() => {
+        if (!submitting) setFounderExpr("thinking");
+      }}
+      onBlurCapture={() => {
+        if (!submitting) setFounderExpr("happy");
+      }}
     >
-      <form onSubmit={onSubmit} className="space-y-5" noValidate>
-        <Field label="New password">
+      <form onSubmit={onSubmit} noValidate className="flex flex-col gap-[15px]">
+        <div>
+          <label htmlFor="reset-password" className={authLabelCls}>
+            New password
+          </label>
           <input
+            id="reset-password"
             name="password"
             type="password"
             autoComplete="new-password"
-            className={inputClass}
+            data-mag
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? "reset-password-error" : undefined}
+            className={authInputCls}
             placeholder="At least 8 characters"
           />
-          {errors.password && <p className="mt-1 text-xs text-destructive">{errors.password}</p>}
-        </Field>
-        <Field label="Confirm new password">
+          {errors.password && (
+            <span id="reset-password-error" className={authErrCls}>
+              {errors.password}
+            </span>
+          )}
+        </div>
+        <div>
+          <label htmlFor="reset-confirm" className={authLabelCls}>
+            Confirm new password
+          </label>
           <input
+            id="reset-confirm"
             name="confirm"
             type="password"
             autoComplete="new-password"
-            className={inputClass}
+            data-mag
+            aria-invalid={!!errors.confirm}
+            aria-describedby={errors.confirm ? "reset-confirm-error" : undefined}
+            className={authInputCls}
             placeholder="Re-enter your new password"
           />
-          {errors.confirm && <p className="mt-1 text-xs text-destructive">{errors.confirm}</p>}
-        </Field>
+          {errors.confirm && (
+            <span id="reset-confirm-error" className={authErrCls}>
+              {errors.confirm}
+            </span>
+          )}
+        </div>
 
-        {serverError && <p className="text-sm text-destructive">{serverError}</p>}
+        {serverError && (
+          <p aria-live="polite" className="text-[13px] font-semibold text-destructive">
+            {serverError}
+          </p>
+        )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="inline-flex h-11 w-full items-center justify-center rounded-full bg-primary px-6 text-[13px] font-medium text-primary-foreground transition hover:opacity-90 disabled:opacity-60"
-        >
+        <button type="submit" disabled={submitting} data-mag data-hov className={authPrimaryBtnCls}>
           {submitting ? "Updating…" : "Update password"}
         </button>
       </form>
-    </AuthShell>
+    </AuthScreen>
   );
 }
