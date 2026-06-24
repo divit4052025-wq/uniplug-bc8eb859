@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import { createQueryClient } from "../lib/queryClient";
+import { enforceEphemeralOnColdStart } from "../lib/ephemeral-session";
 import { Toaster } from "../components/ui/sonner";
 import { NotFound } from "../components/site/NotFound";
 import appCss from "../styles.css?url";
@@ -73,6 +74,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const [queryClient] = useState(() => createQueryClient());
+
+  // Session-only logins ("Keep me logged in" left unchecked) are signed out on a
+  // cold browser start. Client-only + cross-tab safe; see lib/ephemeral-session.
+  useEffect(() => {
+    enforceEphemeralOnColdStart();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
