@@ -227,9 +227,9 @@ function LoginPage() {
                 <Link
                   to="/forgot-password"
                   data-mag
-                  className="-my-1.5 py-1.5 text-[12.5px] font-semibold leading-none text-foreground"
+                  className="border-b-[1.5px] border-primary text-[12.5px] font-semibold leading-none text-primary"
                 >
-                  <span className="border-b-[1.5px] border-primary pb-px">Forgot?</span>
+                  Forgot?
                 </Link>
               </div>
               <div className="relative">
