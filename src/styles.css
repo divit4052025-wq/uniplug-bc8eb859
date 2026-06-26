@@ -162,6 +162,22 @@
   font-family: var(--font-display);
 }
 
+/* ── Mentor HQ ("Headquarters") brand type scope. Mirrors the .signup-wizard
+   font swap (Gabarito display + Quicksand body — the decided brand fonts, already
+   loaded globally above) but DELIBERATELY omits the cursor:none rule: the 3D world
+   needs visible grab/grabbing/hover cursors for OrbitControls drag + building
+   hover. Additive, new selector — touches no existing rule, so no other screen
+   changes. The HQ surface is dark (--brand-night), so it pairs with the Logo
+   `wordmark-dark` (near-white glyph) variant. ── */
+.hq-shell {
+  --font-sans: "Quicksand", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Gabarito", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
+}
+.hq-shell :is(h1, h2, h3, h4, h5) {
+  font-family: var(--font-display);
+}
+
 /* ── student-signup v2: mascot + scene motion ───────────────────────────────
    The React <Mascot> emits `mascot-anim` + `m-*` / `ax-*` classes (ported from
    the landing prototype). These @keyframes give them life. Scoped to

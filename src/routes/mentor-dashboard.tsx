@@ -37,6 +37,7 @@ function MentorDashboardLayout() {
   const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const search = useRouterState({ select: (s) => s.location.search as { edit?: string } });
   const [mentorId, setMentorId] = useState<string | null>(ctx.userId ?? null);
   const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(
     ctx.userMetadata ?? null,
@@ -154,6 +155,23 @@ function MentorDashboardLayout() {
       return <div className="min-h-screen bg-[#FFFCFB]" />;
     }
     return <UnderReviewScreen firstName={firstName} collegeEmail={mentorRow.college_email} />;
+  }
+
+  // Index-in-place (decision Q2): an approved mentor on the exact home path gets
+  // the full-bleed 3D "Headquarters" — the layout drops its sidebar / topbar /
+  // 1100px box / mobile nav and lets the home render edge-to-edge. The guard +
+  // approval gates above still run, and the Outlet stays wrapped in
+  // MentorDashboardProvider so the home gets mentorId. Every OTHER child route
+  // (and the `?edit` session-note flow) keeps the normal shell below — additive,
+  // working pages untouched.
+  const isHqHome =
+    (pathname === "/mentor-dashboard" || pathname === "/mentor-dashboard/") && !search.edit;
+  if (isHqHome) {
+    return (
+      <MentorDashboardProvider value={{ mentorId }}>
+        <Outlet />
+      </MentorDashboardProvider>
+    );
   }
 
   return (
