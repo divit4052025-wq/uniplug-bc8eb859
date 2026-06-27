@@ -1,18 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { SettingsSection } from "@/components/mentor-dashboard/sections/SettingsSection";
-import { useMentorDashboard } from "@/components/mentor-dashboard/MentorDashboardContext";
-
-// Settings (/mentor-dashboard/settings) — allowlisted profile editor + account.
+// Legacy route → its Headquarters landmark. Profile / verification now live in
+// the dark HQ at The Forge. Old links / bookmarks keep working via this redirect.
 export const Route = createFileRoute("/mentor-dashboard/settings")({
-  component: MentorSettings,
+  beforeLoad: () => {
+    throw redirect({ to: "/mentor-dashboard/forge" });
+  },
 });
-
-function MentorSettings() {
-  const { mentorId } = useMentorDashboard();
-  return (
-    <div className="mt-8 animate-hero-rise">
-      <SettingsSection mentorId={mentorId} />
-    </div>
-  );
-}
