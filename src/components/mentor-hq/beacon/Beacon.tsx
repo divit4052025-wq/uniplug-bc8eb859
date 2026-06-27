@@ -10,11 +10,13 @@ import { useOptimisticMutation } from "@/lib/hooks/useOptimisticMutation";
 
 /**
  * Beacon — the persistent notification fixture for the mentor HQ. A bell marker
- * (pulsing when there's something unread) + a right-side slide-over panel,
- * reachable from every HQ surface. Reads the existing recipient-scoped
- * `notifications` table and reuses the canonical optimistic markAsRead pattern
- * (src/routes/notifications.tsx). NO realtime (decision Q4 skip d) — the badge
- * refreshes on open / navigation, which is a fully functional fallback.
+ * (pulsing when there's something unread) + a light slide-over panel, reachable
+ * from every HQ surface. Reads the existing recipient-scoped `notifications`
+ * table and reuses the canonical optimistic markAsRead pattern. NO realtime
+ * (decision Q4) — the badge refreshes on open / navigation.
+ *
+ * `tone` styles the bell for its surface: "dark" over the 3D world HUD, "light"
+ * in the (light paper) landmark page headers. The panel is always light.
  */
 
 type NotificationKind = "booking_confirmed" | "session_completed" | "new_message";
@@ -111,12 +113,11 @@ function useMentorNotifications(userId: string) {
   return { rows, unreadCount, markAsRead, markAllRead, refetch };
 }
 
-export function Beacon({ userId }: { userId: string }) {
+export function Beacon({ userId, tone = "dark" }: { userId: string; tone?: "light" | "dark" }) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { rows, unreadCount, markAsRead, markAllRead, refetch } = useMentorNotifications(userId);
 
-  // Refresh on open (the no-realtime fallback) + Escape to close.
   useEffect(() => {
     if (!open) return;
     void refetch();
@@ -125,25 +126,30 @@ export function Beacon({ userId }: { userId: string }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open, refetch]);
 
+  const bellCls =
+    tone === "light"
+      ? "border-[#EDE0DB] bg-[#FFFCFB] text-[#1A1A1A] hover:border-[#C4907F]/45 focus-visible:ring-[#C4907F]/40 focus-visible:ring-offset-[#FFFCFB]"
+      : "border-[rgba(250,245,239,0.16)] bg-[rgba(250,245,239,0.06)] text-[color:var(--brand-paper)] hover:border-[rgba(250,245,239,0.34)] focus-visible:ring-[color:var(--brand-rose)] focus-visible:ring-offset-[color:var(--brand-night)]";
+
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
-        className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(250,245,239,0.16)] bg-[rgba(250,245,239,0.06)] transition hover:border-[rgba(250,245,239,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--brand-night)]"
+        className={`relative flex h-9 w-9 items-center justify-center rounded-full border transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${bellCls}`}
       >
         <Bell className="h-4 w-4" aria-hidden="true" />
         {unreadCount > 0 ? (
           <>
             <span
-              className="absolute -top-0.5 -right-0.5 motion-safe:animate-ping rounded-full"
-              style={{ height: 10, width: 10, background: "var(--brand-rose)", opacity: 0.65 }}
+              className="absolute -top-0.5 -right-0.5 rounded-full motion-safe:animate-ping"
+              style={{ height: 10, width: 10, background: "#C4907F", opacity: 0.6 }}
               aria-hidden="true"
             />
             <span
-              className="absolute -top-0.5 -right-0.5 flex h-2.5 min-w-2.5 items-center justify-center rounded-full px-1 text-[9px] font-bold text-[#171513]"
-              style={{ background: "var(--brand-rose)" }}
+              className="absolute -top-0.5 -right-0.5 flex h-2.5 min-w-2.5 items-center justify-center rounded-full px-1 text-[9px] font-bold text-[#FFFCFB]"
+              style={{ background: "#C4907F" }}
             >
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
@@ -154,24 +160,20 @@ export function Beacon({ userId }: { userId: string }) {
       {open ? (
         <div className="fixed inset-0 z-50">
           <div
-            className="absolute inset-0 bg-black/45"
+            className="absolute inset-0 bg-[#1A1A1A]/35"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
           <div
             role="dialog"
             aria-label="Notifications"
-            className="hq-shell absolute top-0 right-0 flex h-dvh w-[min(420px,92vw)] flex-col border-l border-[rgba(250,245,239,0.1)] shadow-2xl"
-            style={{ background: "var(--brand-night)", color: "var(--brand-paper)" }}
+            className="hq-shell absolute top-0 right-0 flex h-dvh w-[min(420px,92vw)] flex-col border-l border-[#EDE0DB] bg-[#FFFCFB] text-[#1A1A1A] shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-[rgba(250,245,239,0.1)] px-5 py-4">
+            <div className="flex items-center justify-between border-b border-[#EDE0DB] px-5 py-4">
               <div className="flex items-center gap-2">
                 <span className="font-display text-lg font-bold">The Beacon</span>
                 {unreadCount > 0 ? (
-                  <span
-                    className="rounded-full px-2 py-0.5 text-[11px] font-semibold text-[#171513]"
-                    style={{ background: "var(--brand-rose)" }}
-                  >
+                  <span className="rounded-full bg-[#F3E3DC] px-2 py-0.5 text-[11px] font-semibold text-[#8a5638]">
                     {unreadCount} new
                   </span>
                 ) : null}
@@ -181,8 +183,7 @@ export function Beacon({ userId }: { userId: string }) {
                   <button
                     type="button"
                     onClick={markAllRead}
-                    className="text-[12px] font-semibold underline underline-offset-2"
-                    style={{ color: "var(--brand-rose)" }}
+                    className="text-[12px] font-semibold text-[#C4907F] underline underline-offset-2 hover:opacity-80"
                   >
                     Mark all read
                   </button>
@@ -191,7 +192,7 @@ export function Beacon({ userId }: { userId: string }) {
                   type="button"
                   onClick={() => setOpen(false)}
                   aria-label="Close notifications"
-                  className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-[rgba(250,245,239,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-[#1A1A1A]/70 hover:bg-[#EDE0DB]/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/40"
                 >
                   <X className="h-4 w-4" aria-hidden="true" />
                 </button>
@@ -200,10 +201,7 @@ export function Beacon({ userId }: { userId: string }) {
 
             <div className="flex-1 overflow-y-auto px-2 py-2">
               {rows.length === 0 ? (
-                <p
-                  className="px-4 py-10 text-center text-sm"
-                  style={{ color: "var(--brand-ink-faint)" }}
-                >
+                <p className="px-4 py-10 text-center text-[14px] font-light text-[#1A1A1A]/60">
                   No notifications yet. You'll be notified here when a student books a session with
                   you.
                 </p>
@@ -223,19 +221,18 @@ export function Beacon({ userId }: { userId: string }) {
                             });
                           }
                         }}
-                        className={`flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-[rgba(250,245,239,0.06)] ${n.read_at ? "opacity-55" : ""}`}
+                        className={`flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-[#EDE0DB]/40 ${n.read_at ? "opacity-55" : ""}`}
                       >
                         <span
                           className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
-                          style={{ background: n.read_at ? "transparent" : "var(--brand-rose)" }}
+                          style={{ background: n.read_at ? "transparent" : "#C4907F" }}
                           aria-hidden="true"
                         />
                         <span className="min-w-0 flex-1">
-                          <span className="block text-sm font-medium">{renderHeadline(n)}</span>
-                          <span
-                            className="mt-0.5 block text-[12px]"
-                            style={{ color: "var(--brand-ink-faint)" }}
-                          >
+                          <span className="block text-sm font-medium text-[#1A1A1A]">
+                            {renderHeadline(n)}
+                          </span>
+                          <span className="mt-0.5 block text-[12px] text-[#1A1A1A]/55">
                             {n.kind === "new_message"
                               ? "Tap to open the conversation"
                               : n.booking_date && n.booking_time_slot

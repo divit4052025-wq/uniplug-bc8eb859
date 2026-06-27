@@ -152,7 +152,7 @@ export function MentorHqHome() {
                       <span
                         aria-disabled="true"
                         title={`${item.landmark} opens once you're approved`}
-                        className="flex min-h-11 cursor-default flex-col justify-center rounded-2xl border border-dashed border-[rgba(250,245,239,0.14)] px-4 py-2 opacity-45"
+                        className="flex min-h-11 cursor-default flex-col justify-center rounded-2xl border border-[rgba(250,245,239,0.12)] px-4 py-2 opacity-45"
                       >
                         <span className="font-display text-sm font-semibold whitespace-nowrap">
                           {item.landmark}
