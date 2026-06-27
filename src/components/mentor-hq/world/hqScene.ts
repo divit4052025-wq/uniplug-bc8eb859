@@ -121,6 +121,15 @@ export function initHqScene(mount: HTMLElement, opts: HqSceneOpts = {}): HqScene
   const W = () => mount.clientWidth || innerWidth;
   const H = () => mount.clientHeight || innerHeight;
 
+  // Match the prototype's (three r128) colour pipeline. Modern three (r152+)
+  // enables ColorManagement by default, which converts every sRGB hex albedo to
+  // linear before lighting — that darkens the warm tan/cream/green palette into
+  // the muddy olive-brown we were getting. The prototype rendered the palette
+  // as-is, which is what makes its golden hour read bright + sunny. Turning CM
+  // off (paired with the sRGB output transform below) reproduces that exact look
+  // without altering a single palette value or light intensity.
+  T.ColorManagement.enabled = false;
+
   const renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(W(), H());
