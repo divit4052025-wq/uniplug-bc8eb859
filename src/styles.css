@@ -178,6 +178,129 @@
   font-family: var(--font-display);
 }
 
+/* ── Mentor HQ 3D label overlay (floating building tags + hover-peek card).
+   Ported from the prototype hud.css onto the real --brand-* tokens. The engine
+   (world/hqScene.ts) creates these DOM nodes inside the canvas mount; they are
+   pointer-events:none so canvas drag stays unblocked, and sit above the canvas
+   but below the React HUD/dock. ── */
+.hq-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+.hq-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(23, 21, 19, 0.82);
+  color: var(--brand-paper);
+  font-family: "Gabarito", ui-sans-serif, system-ui, sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 246, 236, 0.14);
+  transition: opacity 0.25s ease;
+}
+.hq-tag.locked {
+  background: rgba(23, 21, 19, 0.6);
+  color: rgba(255, 246, 236, 0.7);
+}
+.hq-tag .ct-lock {
+  color: var(--brand-rose);
+  font-size: 10px;
+}
+.hq-tag::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(23, 21, 19, 0.82);
+}
+.hq-preview {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 270px;
+  z-index: 8;
+  pointer-events: none;
+  transform-origin: top left;
+  background: var(--brand-paper);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(23, 21, 19, 0.06);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  will-change: transform, opacity;
+  font-family: "Quicksand", ui-sans-serif, system-ui, sans-serif;
+}
+.hq-preview.show {
+  opacity: 1;
+}
+.hq-preview .cp-kind {
+  font-family: "Gabarito", ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.hq-preview .cp-name {
+  font-family: "Gabarito", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--brand-dark);
+  margin: 4px 0 8px;
+  letter-spacing: -0.01em;
+}
+.hq-preview .cp-blurb {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--brand-ink-soft);
+}
+.hq-preview .cp-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(23, 21, 19, 0.1);
+}
+.hq-preview .cp-stat b {
+  font-family: "Gabarito", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--brand-dark);
+}
+.hq-preview .cp-stat span {
+  font-size: 12px;
+  color: var(--brand-ink-faint);
+}
+.hq-preview .cp-enter {
+  margin-top: 12px;
+  font-family: "Gabarito", ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.hq-preview .cp-enter.locked {
+  color: var(--brand-ink-faint);
+}
+
 /* ── student-signup v2: mascot + scene motion ───────────────────────────────
    The React <Mascot> emits `mascot-anim` + `m-*` / `ax-*` classes (ported from
    the landing prototype). These @keyframes give them life. Scoped to
