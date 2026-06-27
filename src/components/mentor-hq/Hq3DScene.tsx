@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 
@@ -130,6 +131,16 @@ function Watchtower() {
 }
 
 export default function Hq3DScene({ reducedMotion = false }: { reducedMotion?: boolean }) {
+  // fiber mounts client-only (via the lazy boundary) into an already-laid-out
+  // container; react-use-measure can read 0 and miss the initial ResizeObserver
+  // callback, leaving the <canvas> stuck at its 300x150 default (invisible) until
+  // something fires a resize. Kick one re-measure on the next frame so it sizes to
+  // the container. (Caught in the Slice 0 browser walk — compile-clean hid it.)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
   return (
     <Canvas
       shadows
