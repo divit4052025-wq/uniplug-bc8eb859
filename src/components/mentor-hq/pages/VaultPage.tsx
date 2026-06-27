@@ -1,5 +1,3 @@
-import { Wallet } from "lucide-react";
-
 import {
   HqCard,
   HqEmpty,
@@ -50,7 +48,7 @@ function VaultContent({ mentorId }: { mentorId: string }) {
     >
       {isError ? (
         <HqCard>
-          <p className="text-sm" style={{ color: "var(--brand-ink-faint)" }}>
+          <p className="text-sm font-light text-[#1A1A1A]/60">
             Couldn't load your earnings right now. Please try again shortly.
           </p>
         </HqCard>
@@ -87,14 +85,7 @@ function VaultContent({ mentorId }: { mentorId: string }) {
             ) : null}
 
             {clawback > 0 ? (
-              <div
-                className="mt-3 rounded-xl border-l-2 px-4 py-3 text-[13px]"
-                style={{
-                  borderColor: "var(--brand-rose)",
-                  background: "rgba(244,181,170,0.08)",
-                  color: "var(--brand-paper)",
-                }}
-              >
+              <div className="mt-3 rounded-xl border-l-2 border-[#C4907F] bg-[#F3E3DC]/60 px-4 py-3 text-[13px] text-[#1A1A1A]">
                 {inr(clawback)} from refunded sessions will be adjusted against a future payout.
               </div>
             ) : null}
@@ -106,20 +97,12 @@ function VaultContent({ mentorId }: { mentorId: string }) {
               Session earnings
             </HqSectionTitle>
             {sessions.length === 0 ? (
-              <HqEmpty icon={<Wallet className="h-6 w-6" aria-hidden="true" />}>
-                No earnings yet. Completed paid sessions will appear here.
-              </HqEmpty>
+              <HqEmpty>No earnings yet. Completed paid sessions will appear here.</HqEmpty>
             ) : (
-              <div className="overflow-hidden rounded-2xl border border-[rgba(250,245,239,0.1)]">
+              <div className="overflow-hidden rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB]">
                 <table className="w-full text-left text-[13px]">
                   <thead>
-                    <tr
-                      className="text-[11px] font-semibold uppercase tracking-wide"
-                      style={{
-                        background: "rgba(250,245,239,0.04)",
-                        color: "var(--brand-ink-faint)",
-                      }}
-                    >
+                    <tr className="bg-[#EDE0DB]/50 text-[11px] font-semibold uppercase tracking-wide text-[#1A1A1A]/60">
                       <th className="px-4 py-3">Date</th>
                       <th className="px-4 py-3">Status</th>
                       <th className="px-4 py-3 text-right">Your share</th>
@@ -130,12 +113,10 @@ function VaultContent({ mentorId }: { mentorId: string }) {
                       <tr
                         key={s.booking_id}
                         style={{
-                          borderTop: i === 0 ? "none" : "1px solid rgba(250,245,239,0.08)",
+                          borderTop: i === 0 ? "none" : "1px solid #EDE0DB",
                         }}
                       >
-                        <td className="px-4 py-3" style={{ color: "var(--brand-paper)" }}>
-                          {formatBookingDate(s.date)}
-                        </td>
+                        <td className="px-4 py-3 text-[#1A1A1A]/80">{formatBookingDate(s.date)}</td>
                         <td className="px-4 py-3">
                           <StatusChip state={s.payout_state} />
                         </td>

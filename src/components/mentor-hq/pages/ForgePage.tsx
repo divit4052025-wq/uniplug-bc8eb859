@@ -134,7 +134,7 @@ export function ForgePage() {
   });
 
   const inputClass =
-    "w-full rounded-xl border border-[rgba(250,245,239,0.14)] bg-[rgba(250,245,239,0.04)] px-4 py-2.5 text-[14px] text-[color:var(--brand-paper)] placeholder:text-[color:var(--brand-ink-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]";
+    "w-full rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-4 py-3 text-[14px] text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20";
 
   return (
     <HqPageShell
@@ -157,10 +157,7 @@ export function ForgePage() {
               <ReadOnlyField label="Year" value={identity?.year} />
               <ReadOnlyField label="Specialty" value={identity?.specialty} />
             </div>
-            <p
-              className="mt-4 flex items-center gap-1.5 text-[12px]"
-              style={{ color: "var(--brand-ink-faint)" }}
-            >
+            <p className="mt-4 flex items-center gap-1.5 text-[12px] text-[#1A1A1A]/55">
               <Lock className="h-3.5 w-3.5" aria-hidden="true" />
               Verified — not editable. Changing these needs re-verification.
             </p>
@@ -175,10 +172,7 @@ export function ForgePage() {
 
           {isLoading || !initialized ? (
             <HqCard>
-              <div
-                className="flex items-center gap-2 text-sm"
-                style={{ color: "var(--brand-ink-faint)" }}
-              >
+              <div className="flex items-center gap-2 text-sm text-[#1A1A1A]/60">
                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
                 Loading your profile…
               </div>
@@ -188,27 +182,25 @@ export function ForgePage() {
               {/* Photo */}
               <HqCard>
                 <p className="text-sm font-semibold">Profile photo</p>
-                <p className="mt-0.5 text-[12px]" style={{ color: "var(--brand-ink-faint)" }}>
-                  JPEG, PNG or WebP · max 5 MB
-                </p>
+                <p className="mt-0.5 text-[12px] text-[#1A1A1A]/55">JPEG, PNG or WebP · max 5 MB</p>
                 <div className="mt-4 flex items-center gap-5">
                   <div className="relative h-20 w-20 shrink-0">
                     {photoUrl ? (
                       <img
                         src={photoUrl}
                         alt="Profile"
-                        className="h-20 w-20 rounded-full object-cover ring-2 ring-[rgba(250,245,239,0.14)]"
+                        className="h-20 w-20 rounded-full object-cover ring-2 ring-[#EDE0DB]"
                       />
                     ) : (
-                      <div className="grid h-20 w-20 place-content-center rounded-full bg-[rgba(250,245,239,0.06)] font-display text-[22px] font-bold">
+                      <div className="grid h-20 w-20 place-content-center rounded-full bg-[#EDE0DB] font-display text-[22px] font-bold">
                         —
                       </div>
                     )}
                     {photoUploading ? (
-                      <div className="absolute inset-0 flex items-center justify-center rounded-full bg-[rgba(8,7,6,0.6)]">
+                      <div className="absolute inset-0 flex items-center justify-center rounded-full bg-[#FFFCFB]/70">
                         <Loader2
                           className="h-5 w-5 animate-spin"
-                          style={{ color: "var(--brand-rose)" }}
+                          style={{ color: "#C4907F" }}
                           aria-hidden="true"
                         />
                       </div>
@@ -223,7 +215,7 @@ export function ForgePage() {
                       onChange={(e) => handlePhoto(e.target.files)}
                       disabled={photoUploading}
                     />
-                    <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(250,245,239,0.16)] px-4 py-2 text-[13px] font-semibold transition hover:border-[rgba(250,245,239,0.34)]">
+                    <span className="inline-flex items-center gap-2 rounded-md border border-[#1A1A1A]/15 px-4 py-2 text-[13px] font-semibold text-[#1A1A1A] transition hover:border-[#1A1A1A]/30">
                       <UploadCloud className="h-4 w-4" aria-hidden="true" />
                       {photoUrl ? "Change photo" : "Upload photo"}
                     </span>
@@ -232,8 +224,7 @@ export function ForgePage() {
                     <button
                       type="button"
                       onClick={() => setPhotoUrl(null)}
-                      className="text-[12px] underline underline-offset-2"
-                      style={{ color: "var(--brand-ink-faint)" }}
+                      className="text-[12px] text-[#1A1A1A]/55 underline underline-offset-2"
                     >
                       Remove
                     </button>
@@ -246,7 +237,7 @@ export function ForgePage() {
                 <label htmlFor="forge-bio" className="text-sm font-semibold">
                   About me
                 </label>
-                <p className="mt-0.5 text-[12px]" style={{ color: "var(--brand-ink-faint)" }}>
+                <p className="mt-0.5 text-[12px] text-[#1A1A1A]/55">
                   Shown as the “About me” section on your public profile.
                 </p>
                 <textarea
@@ -259,7 +250,7 @@ export function ForgePage() {
                 />
                 <p
                   className="mt-1 text-right text-[11px]"
-                  style={{ color: bio.length >= BIO_MAX ? "#F4B5AA" : "var(--brand-ink-faint)" }}
+                  style={{ color: bio.length >= BIO_MAX ? "#C0392B" : "rgba(26,26,26,0.55)" }}
                 >
                   {bio.length}/{BIO_MAX}
                 </p>
@@ -268,7 +259,7 @@ export function ForgePage() {
               {/* Topics */}
               <HqCard>
                 <p className="text-sm font-semibold">I can help with</p>
-                <p className="mt-0.5 text-[12px]" style={{ color: "var(--brand-ink-faint)" }}>
+                <p className="mt-0.5 text-[12px] text-[#1A1A1A]/55">
                   Tags shown in the “I can help you with” section of your profile.
                 </p>
                 {topics.length > 0 ? (
@@ -276,14 +267,14 @@ export function ForgePage() {
                     {topics.map((t) => (
                       <span
                         key={t}
-                        className="inline-flex items-center gap-1.5 rounded-full border border-[rgba(250,245,239,0.16)] bg-[rgba(250,245,239,0.06)] px-3 py-1 text-[12px] font-semibold"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-[#EDE0DB] bg-[#FFFCFB] px-3 py-1 text-[12px] font-semibold"
                       >
                         {t}
                         <button
                           type="button"
                           onClick={() => setTopics((prev) => prev.filter((x) => x !== t))}
                           aria-label={`Remove ${t}`}
-                          className="rounded-full p-0.5 hover:bg-[rgba(250,245,239,0.12)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+                          className="rounded-full p-0.5 hover:bg-[#EDE0DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30"
                         >
                           <X className="h-3 w-3" aria-hidden="true" />
                         </button>
@@ -311,8 +302,7 @@ export function ForgePage() {
                     onClick={addTopic}
                     disabled={!topicInput.trim()}
                     aria-label="Add topic"
-                    className="inline-flex h-11 w-11 items-center justify-center rounded-xl text-[color:var(--brand-night)] transition hover:opacity-90 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
-                    style={{ background: "var(--brand-rose)" }}
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-md bg-[#1A1A1A] text-[#FAF5EF] transition hover:opacity-90 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30"
                   >
                     <Plus className="h-4 w-4" aria-hidden="true" />
                   </button>
@@ -324,7 +314,7 @@ export function ForgePage() {
                 <label htmlFor="forge-phone" className="text-sm font-semibold">
                   Contact phone
                 </label>
-                <p className="mt-0.5 text-[12px]" style={{ color: "var(--brand-ink-faint)" }}>
+                <p className="mt-0.5 text-[12px] text-[#1A1A1A]/55">
                   Private — used by UniPlug to reach you about sessions. Never shown to students.
                 </p>
                 <input
@@ -342,8 +332,7 @@ export function ForgePage() {
                 type="button"
                 onClick={() => saveMutation.mutate()}
                 disabled={saveMutation.isPending}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-8 text-[14px] font-semibold text-[color:var(--brand-night)] transition hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--brand-night)]"
-                style={{ background: "var(--brand-rose)" }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#1A1A1A] px-6 text-[14px] font-bold text-[#FAF5EF] transition hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCFB]"
               >
                 {saveMutation.isPending ? (
                   <>
@@ -365,10 +354,7 @@ export function ForgePage() {
 function ReadOnlyField({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p
-        className="text-[11px] font-semibold uppercase tracking-[0.12em]"
-        style={{ color: "var(--brand-ink-faint)" }}
-      >
+      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#1A1A1A]/55">
         {label}
       </p>
       <p className="mt-1 text-sm font-medium">{value && value.trim() ? value : "—"}</p>
@@ -381,11 +367,11 @@ function VerificationPanel() {
 
   if (verifiedAt) {
     return (
-      <HqCard className="border-[rgba(244,181,170,0.28)] bg-[rgba(244,181,170,0.07)]">
+      <HqCard className="border-[#C4907F]/40 bg-[#F3E3DC]/50">
         <div className="flex items-start gap-3">
           <BadgeCheck
             className="mt-0.5 h-5 w-5 shrink-0"
-            style={{ color: "var(--brand-rose)" }}
+            style={{ color: "#C4907F" }}
             aria-hidden="true"
           />
           <div>
@@ -393,7 +379,7 @@ function VerificationPanel() {
               <p className="font-display text-base font-semibold">You're a Verified Plug</p>
               <VerifiedBadge />
             </div>
-            <p className="mt-1 text-[13px]" style={{ color: "var(--brand-ink-faint)" }}>
+            <p className="mt-1 text-[13px] text-[#1A1A1A]/70">
               Your college ID has been verified. Students see the verified badge on your profile.
             </p>
           </div>
@@ -404,28 +390,21 @@ function VerificationPanel() {
 
   if (status === "rejected") {
     return (
-      <HqCard className="border-[rgba(216,67,42,0.3)] bg-[rgba(216,67,42,0.08)]">
+      <HqCard className="border-[#D8432A]/40 bg-[#D8432A]/[0.06]">
         <div className="flex items-start gap-3">
           <ShieldAlert
             className="mt-0.5 h-5 w-5 shrink-0"
-            style={{ color: "#F4B5AA" }}
+            style={{ color: "#C0392B" }}
             aria-hidden="true"
           />
           <div>
             <p className="font-display text-base font-semibold">Verification needs changes</p>
-            <div
-              className="mt-2 rounded-lg border-l-2 px-3 py-2 text-[13px]"
-              style={{
-                borderColor: "#D8432A",
-                background: "rgba(216,67,42,0.1)",
-                color: "var(--brand-paper)",
-              }}
-            >
+            <div className="mt-2 rounded-lg border-l-2 border-[#D8432A] bg-[#D8432A]/[0.07] px-3 py-2 text-[13px] text-[#1A1A1A]">
               {verificationNotes && verificationNotes.trim()
                 ? verificationNotes
                 : "Re-check that your college ID is current, clear, and matches your enrolment details."}
             </div>
-            <p className="mt-2 text-[13px]" style={{ color: "var(--brand-ink-faint)" }}>
+            <p className="mt-2 text-[13px] text-[#1A1A1A]/70">
               Update your details and re-upload your college ID to be re-reviewed. Reach out to
               support if you need a hand.
             </p>
@@ -437,16 +416,16 @@ function VerificationPanel() {
 
   // pending / under review
   return (
-    <HqCard className="border-[rgba(244,181,170,0.28)] bg-[rgba(244,181,170,0.06)]">
+    <HqCard className="border-[#C4907F]/40 bg-[#F3E3DC]/50">
       <div className="flex items-start gap-3">
         <Loader2
           className="mt-0.5 h-5 w-5 shrink-0 animate-spin"
-          style={{ color: "var(--brand-rose)" }}
+          style={{ color: "#C4907F" }}
           aria-hidden="true"
         />
         <div>
           <p className="font-display text-base font-semibold">Verification in review</p>
-          <p className="mt-1 text-[13px]" style={{ color: "var(--brand-ink-faint)" }}>
+          <p className="mt-1 text-[13px] text-[#1A1A1A]/70">
             We're checking your college ID to confirm you're a current student (India model — a
             student ID, not a .edu email or references). You'll be notified once you're approved.
           </p>

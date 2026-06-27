@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { LifeBuoy, Phone, ShieldAlert, Loader2, Scale } from "lucide-react";
+import { LifeBuoy, Phone, ShieldAlert, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { HqCard, HqEmpty, HqLoading, HqPageShell } from "@/components/mentor-hq/HqPageShell";
@@ -85,23 +85,16 @@ function SafetyReportSection() {
         Report a safety concern
       </HqSectionTitle>
 
-      <HqCard className="border-[rgba(244,181,170,0.3)] bg-[rgba(244,181,170,0.07)]">
+      <HqCard className="border-[#C4907F]/40 bg-[#F3E3DC]/50">
         <div className="flex items-start gap-3">
           <ShieldAlert
             className="mt-0.5 h-5 w-5 shrink-0"
-            style={{ color: "var(--brand-rose)" }}
+            style={{ color: "#C4907F" }}
             aria-hidden="true"
           />
           <div className="min-w-0 flex-1">
             {/* Honest gating notice — do NOT imply 24/7 monitoring is live. */}
-            <div
-              className="rounded-xl border-l-2 px-3.5 py-2.5 text-[13px]"
-              style={{
-                borderColor: "var(--brand-rose)",
-                background: "rgba(244,181,170,0.08)",
-                color: "var(--brand-paper)",
-              }}
-            >
+            <div className="rounded-xl border-l-2 border-[#C4907F] bg-[#F3E3DC]/60 px-3.5 py-2.5 text-[13px] text-[#1A1A1A]">
               We're bringing this safeguarding channel online. Reports are recorded now, and will be
               monitored and actioned once UniPlug's safeguarding response is fully confirmed — this
               is
@@ -110,15 +103,11 @@ function SafetyReportSection() {
             </div>
 
             {/* Standing escalation — always visible, static. */}
-            <div className="mt-3 flex items-center gap-2.5 rounded-xl border border-[rgba(250,245,239,0.14)] bg-[rgba(250,245,239,0.04)] px-3.5 py-2.5">
-              <Phone
-                className="h-4 w-4 shrink-0"
-                style={{ color: "var(--brand-rose)" }}
-                aria-hidden="true"
-              />
+            <div className="mt-3 flex items-center gap-2.5 rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-3.5 py-2.5">
+              <Phone className="h-4 w-4 shrink-0" style={{ color: "#C4907F" }} aria-hidden="true" />
               <p className="text-[13px]">
                 <span className="font-semibold">Childline 1098</span>{" "}
-                <span style={{ color: "var(--brand-ink-faint)" }}>
+                <span className="text-[#1A1A1A]/55">
                   — India's 24/7 free helpline for children in need of care and protection.
                 </span>
               </p>
@@ -129,8 +118,7 @@ function SafetyReportSection() {
               <div>
                 <label
                   htmlFor="safety-category"
-                  className="text-[12px] font-semibold uppercase tracking-[0.1em]"
-                  style={{ color: "var(--brand-ink-faint)" }}
+                  className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#1A1A1A]/60"
                 >
                   Category
                 </label>
@@ -138,7 +126,7 @@ function SafetyReportSection() {
                   id="safety-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="mt-1.5 h-11 w-full rounded-xl border border-[rgba(250,245,239,0.14)] bg-[rgba(23,21,19,0.9)] px-3 text-[14px] text-[color:var(--brand-paper)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+                  className="mt-1.5 h-11 w-full rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-3 text-[14px] text-[#1A1A1A] focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
                 >
                   <option value="">— choose a category —</option>
                   {SAFETY_CATEGORIES.map((c) => (
@@ -152,8 +140,7 @@ function SafetyReportSection() {
               <div>
                 <label
                   htmlFor="safety-body"
-                  className="text-[12px] font-semibold uppercase tracking-[0.1em]"
-                  style={{ color: "var(--brand-ink-faint)" }}
+                  className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#1A1A1A]/60"
                 >
                   What happened
                 </label>
@@ -163,22 +150,16 @@ function SafetyReportSection() {
                   onChange={(e) => setBody(e.target.value.slice(0, 5000))}
                   rows={5}
                   placeholder="Describe what you saw or experienced. Include names, dates and session details if you can."
-                  className="mt-1.5 w-full resize-none rounded-xl border border-[rgba(250,245,239,0.14)] bg-[rgba(250,245,239,0.04)] px-4 py-3 text-[14px] text-[color:var(--brand-paper)] placeholder:text-[color:var(--brand-ink-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+                  className="mt-1.5 w-full resize-none rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-4 py-3 text-[14px] text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
                 />
-                <p
-                  className="mt-1 text-right text-[11px]"
-                  style={{ color: "var(--brand-ink-faint)" }}
-                >
-                  {body.length}/5000
-                </p>
+                <p className="mt-1 text-right text-[11px] text-[#1A1A1A]/55">{body.length}/5000</p>
               </div>
 
               <button
                 type="button"
                 onClick={submit}
                 disabled={submitting}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full px-6 text-[13px] font-semibold text-[color:var(--brand-night)] transition hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--brand-night)]"
-                style={{ background: "var(--brand-rose)" }}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#1A1A1A] px-6 text-[14px] font-bold text-[#FAF5EF] transition hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCFB]"
               >
                 {submitting ? (
                   <>
@@ -276,7 +257,7 @@ function DisputesSection() {
       {isLoading ? (
         <HqLoading rows={2} />
       ) : disputes.length === 0 ? (
-        <HqEmpty icon={<Scale className="h-6 w-6" aria-hidden="true" />}>No open disputes.</HqEmpty>
+        <HqEmpty>No open disputes.</HqEmpty>
       ) : (
         <ul className="space-y-3">
           {disputes.map((d) => (
@@ -284,10 +265,8 @@ function DisputesSection() {
               <HqCard>
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm" style={{ color: "var(--brand-paper)" }}>
-                      {d.reason}
-                    </p>
-                    <p className="mt-1 text-[12px]" style={{ color: "var(--brand-ink-faint)" }}>
+                    <p className="text-sm text-[#1A1A1A]">{d.reason}</p>
+                    <p className="mt-1 text-[12px] text-[#1A1A1A]/55">
                       Opened {formatBookingDate((d.created_at ?? "").slice(0, 10))}
                     </p>
                   </div>
@@ -306,8 +285,7 @@ function DisputesSection() {
           <div>
             <label
               htmlFor="dispute-booking"
-              className="text-[12px] font-semibold uppercase tracking-[0.1em]"
-              style={{ color: "var(--brand-ink-faint)" }}
+              className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#1A1A1A]/60"
             >
               Session
             </label>
@@ -315,7 +293,7 @@ function DisputesSection() {
               id="dispute-booking"
               value={bookingId}
               onChange={(e) => setBookingId(e.target.value)}
-              className="mt-1.5 h-11 w-full rounded-xl border border-[rgba(250,245,239,0.14)] bg-[rgba(23,21,19,0.9)] px-3 text-[14px] text-[color:var(--brand-paper)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+              className="mt-1.5 h-11 w-full rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-3 text-[14px] text-[#1A1A1A] focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
             >
               <option value="">— pick a session —</option>
               {bookingOptions.map((b) => (
@@ -325,7 +303,7 @@ function DisputesSection() {
               ))}
             </select>
             {bookingOptions.length === 0 ? (
-              <p className="mt-1.5 text-[12px]" style={{ color: "var(--brand-ink-faint)" }}>
+              <p className="mt-1.5 text-[12px] text-[#1A1A1A]/55">
                 You have no sessions to dispute yet.
               </p>
             ) : null}
@@ -334,8 +312,7 @@ function DisputesSection() {
           <div>
             <label
               htmlFor="dispute-reason"
-              className="text-[12px] font-semibold uppercase tracking-[0.1em]"
-              style={{ color: "var(--brand-ink-faint)" }}
+              className="text-[12px] font-semibold uppercase tracking-[0.1em] text-[#1A1A1A]/60"
             >
               What's wrong
             </label>
@@ -345,7 +322,7 @@ function DisputesSection() {
               onChange={(e) => setReason(e.target.value)}
               rows={4}
               placeholder="Explain the issue with this session."
-              className="mt-1.5 w-full resize-none rounded-xl border border-[rgba(250,245,239,0.14)] bg-[rgba(250,245,239,0.04)] px-4 py-3 text-[14px] text-[color:var(--brand-paper)] placeholder:text-[color:var(--brand-ink-faint)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+              className="mt-1.5 w-full resize-none rounded-xl border border-[#EDE0DB] bg-[#FFFCFB] px-4 py-3 text-[14px] text-[#1A1A1A] placeholder:text-[#1A1A1A]/40 focus:border-[#C4907F] focus:outline-none focus:ring-2 focus:ring-[#C4907F]/20"
             />
           </div>
 
@@ -353,7 +330,7 @@ function DisputesSection() {
             type="button"
             onClick={() => openDispute.mutate()}
             disabled={!canSubmit}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-[rgba(250,245,239,0.18)] px-6 text-[13px] font-semibold transition hover:border-[rgba(250,245,239,0.34)] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md border border-[#1A1A1A]/15 px-6 text-[13px] font-semibold text-[#1A1A1A] transition hover:border-[#1A1A1A]/30 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30"
           >
             {openDispute.isPending ? (
               <>
@@ -378,7 +355,7 @@ function SupportSection() {
         <div className="flex items-start gap-3">
           <LifeBuoy
             className="mt-0.5 h-5 w-5 shrink-0"
-            style={{ color: "var(--brand-rose)" }}
+            style={{ color: "#C4907F" }}
             aria-hidden="true"
           />
           <div>
@@ -388,7 +365,7 @@ function SupportSection() {
             </p>
             <a
               href="mailto:support@uniplug.app"
-              className="mt-2 inline-flex h-10 items-center rounded-full border border-[rgba(250,245,239,0.16)] px-4 text-[13px] font-semibold transition hover:border-[rgba(250,245,239,0.34)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+              className="mt-2 inline-flex h-10 items-center rounded-md border border-[#1A1A1A]/15 px-4 text-[13px] font-semibold text-[#1A1A1A] transition hover:border-[#1A1A1A]/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30"
             >
               support@uniplug.app
             </a>

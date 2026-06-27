@@ -161,8 +161,7 @@ function SundialContent({ mentorId }: { mentorId: string }) {
     <button
       type="button"
       onClick={() => setPanelOpen(true)}
-      className="inline-flex h-11 items-center rounded-full px-5 text-[13px] font-semibold text-[color:var(--brand-night)] transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)] focus-visible:ring-offset-2 focus-visible:ring-offset-[color:var(--brand-night)]"
-      style={{ background: "var(--brand-rose)" }}
+      className="inline-flex h-11 items-center rounded-md bg-[#1A1A1A] px-5 text-[13px] font-semibold text-[#FAF5EF] transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCFB]"
     >
       Manage availability
     </button>
@@ -176,9 +175,9 @@ function SundialContent({ mentorId }: { mentorId: string }) {
       headerRight={headerRight}
     >
       {slots.length === 0 ? (
-        <HqCard className="mb-6 border-[rgba(244,181,170,0.28)] bg-[rgba(244,181,170,0.08)]">
+        <HqCard className="mb-6 border-[#C4907F]/40 bg-[#F3E3DC]/50">
           <p className="font-display text-base font-semibold">No open hours yet</p>
-          <p className="mt-1 text-[13px]" style={{ color: "var(--brand-ink-faint)" }}>
+          <p className="mt-1 text-[13px] text-[#1A1A1A]/70">
             Students can't book you until you open at least one hour. Tap “Manage availability” to
             add your first slot.
           </p>
@@ -186,27 +185,16 @@ function SundialContent({ mentorId }: { mentorId: string }) {
       ) : null}
 
       {/* Legend */}
-      <div
-        className="mb-4 flex flex-wrap items-center gap-4 text-[12px]"
-        style={{ color: "var(--brand-ink-faint)" }}
-      >
-        <Legend swatch="rgba(244,181,170,0.22)" border="rgba(244,181,170,0.4)" label="Open" />
-        <Legend swatch="var(--brand-rose)" label="Booked" />
-        <Legend
-          swatch="rgba(244,181,170,0.12)"
-          border="rgba(244,181,170,0.45)"
-          dashed
-          label="Held (mid-checkout)"
-        />
+      <div className="mb-4 flex flex-wrap items-center gap-4 text-[12px] text-[#1A1A1A]/60">
+        <Legend swatch="#F3E3DC" border="#EDE0DB" label="Open" />
+        <Legend swatch="#C4907F" label="Booked" />
+        <Legend swatch="#EDE0DB" border="#C4907F" label="Held (mid-checkout)" />
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-[rgba(250,245,239,0.1)] bg-[rgba(250,245,239,0.03)] p-4">
+      <div className="overflow-x-auto rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-4">
         <div className="min-w-[720px]">
           <div className="max-h-[460px] overflow-y-auto">
-            <div
-              className="sticky top-0 z-10 grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1 pb-1 text-[11px] font-semibold uppercase tracking-wide"
-              style={{ background: "var(--brand-night)", color: "var(--brand-ink-faint)" }}
-            >
+            <div className="sticky top-0 z-10 grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1 bg-[#FFFCFB] pb-1 text-[11px] font-semibold uppercase tracking-wide text-[#1A1A1A]/60">
               <div />
               {DAYS.map((d) => (
                 <div key={d} className="text-center">
@@ -216,12 +204,7 @@ function SundialContent({ mentorId }: { mentorId: string }) {
             </div>
             {HOURS.map((h) => (
               <div key={h} className="mt-1 grid grid-cols-[60px_repeat(7,_minmax(0,1fr))] gap-1">
-                <div
-                  className="flex items-center text-[11px]"
-                  style={{ color: "var(--brand-ink-faint)" }}
-                >
-                  {fmtHour(h)}
-                </div>
+                <div className="flex items-center text-[11px] text-[#1A1A1A]/55">{fmtHour(h)}</div>
                 {DAYS.map((_, di) => {
                   const key = `${di}-${h}`;
                   const booked = bookingMap.get(key);
@@ -235,25 +218,25 @@ function SundialContent({ mentorId }: { mentorId: string }) {
                         booked
                           ? held
                             ? {
-                                backgroundColor: "rgba(244,181,170,0.12)",
-                                color: "var(--brand-rose)",
-                                border: "1px dashed rgba(244,181,170,0.45)",
+                                backgroundColor: "#EDE0DB",
+                                color: "#8a5638",
+                                border: "1px solid #C4907F",
                               }
                             : {
-                                backgroundColor: "var(--brand-rose)",
-                                color: "var(--brand-night)",
+                                backgroundColor: "#C4907F",
+                                color: "#FFFCFB",
                                 border: "none",
                               }
                           : available
                             ? {
-                                backgroundColor: "rgba(244,181,170,0.22)",
-                                color: "var(--brand-paper)",
-                                border: "1px solid rgba(244,181,170,0.4)",
+                                backgroundColor: "#F3E3DC",
+                                color: "#1A1A1A",
+                                border: "1px solid #EDE0DB",
                               }
                             : {
                                 backgroundColor: "transparent",
-                                color: "var(--brand-ink-faint)",
-                                border: "1px dashed rgba(250,245,239,0.1)",
+                                color: "#1A1A1A",
+                                border: "1px solid #EDE0DB",
                               }
                       }
                     >
@@ -270,8 +253,7 @@ function SundialContent({ mentorId }: { mentorId: string }) {
       {panelOpen ? (
         <div className="fixed inset-0 z-50">
           <div
-            className="absolute inset-0"
-            style={{ background: "rgba(8,7,6,0.66)" }}
+            className="absolute inset-0 bg-[#1A1A1A]/40"
             onClick={() => setPanelOpen(false)}
             aria-hidden="true"
           />
@@ -279,8 +261,7 @@ function SundialContent({ mentorId }: { mentorId: string }) {
             role="dialog"
             aria-modal="true"
             aria-label="Manage availability"
-            className="hq-shell absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto border-l border-[rgba(250,245,239,0.12)] p-6 shadow-2xl"
-            style={{ background: "#1f1c19", color: "var(--brand-paper)" }}
+            className="hq-shell absolute right-0 top-0 h-full w-full max-w-md overflow-y-auto border-l border-[#EDE0DB] bg-[#FFFCFB] p-6 text-[#1A1A1A] shadow-2xl"
           >
             <div className="flex items-center justify-between">
               <h3 className="font-display text-xl font-bold">Manage availability</h3>
@@ -288,12 +269,12 @@ function SundialContent({ mentorId }: { mentorId: string }) {
                 type="button"
                 onClick={() => setPanelOpen(false)}
                 aria-label="Close"
-                className="rounded-full p-1.5 transition hover:bg-[rgba(250,245,239,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
+                className="rounded-full p-1.5 text-[#1A1A1A]/60 transition hover:bg-[#EDE0DB] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30"
               >
                 <X className="h-5 w-5" aria-hidden="true" />
               </button>
             </div>
-            <p className="mt-1 text-[13px]" style={{ color: "var(--brand-ink-faint)" }}>
+            <p className="mt-1 text-[13px] text-[#1A1A1A]/60">
               Tap a whole-hour slot to open or close it. UniPlug sets the price — you only set when
               you're free.
             </p>
@@ -304,10 +285,7 @@ function SundialContent({ mentorId }: { mentorId: string }) {
                   <div className="mt-2 space-y-3">
                     {TIME_GROUPS.map((group) => (
                       <div key={group.label}>
-                        <p
-                          className="text-[10px] font-semibold uppercase tracking-wide"
-                          style={{ color: "var(--brand-ink-faint)" }}
-                        >
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-[#1A1A1A]/55">
                           {group.label}
                         </p>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -320,19 +298,11 @@ function SundialContent({ mentorId }: { mentorId: string }) {
                                 onClick={() => toggleSlot(di, h)}
                                 aria-pressed={active}
                                 aria-label={`${d} ${fmtHour(h)} ${active ? "open — tap to close" : "closed — tap to open"}`}
-                                className="h-9 rounded-full px-3 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--brand-rose)]"
-                                style={
-                                  active
-                                    ? {
-                                        backgroundColor: "var(--brand-rose)",
-                                        color: "var(--brand-night)",
-                                      }
-                                    : {
-                                        backgroundColor: "rgba(250,245,239,0.06)",
-                                        color: "var(--brand-paper)",
-                                        border: "1px solid rgba(250,245,239,0.14)",
-                                      }
-                                }
+                                className="h-9 rounded-full px-3 text-[12px] font-semibold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30"
+                                style={{
+                                  backgroundColor: active ? "#C4907F" : "#EDE0DB",
+                                  color: active ? "#FFFCFB" : "#1A1A1A",
+                                }}
                               >
                                 {fmtHour(h)}
                               </button>
@@ -352,24 +322,14 @@ function SundialContent({ mentorId }: { mentorId: string }) {
   );
 }
 
-function Legend({
-  swatch,
-  border,
-  dashed,
-  label,
-}: {
-  swatch: string;
-  border?: string;
-  dashed?: boolean;
-  label: string;
-}) {
+function Legend({ swatch, border, label }: { swatch: string; border?: string; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
       <span
         className="inline-block h-3.5 w-3.5 rounded-[4px]"
         style={{
           background: swatch,
-          border: border ? `1px ${dashed ? "dashed" : "solid"} ${border}` : "none",
+          border: border ? `1px solid ${border}` : "none",
         }}
       />
       {label}
