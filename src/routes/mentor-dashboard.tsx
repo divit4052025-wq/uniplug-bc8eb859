@@ -1,42 +1,48 @@
-import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { RejectedScreen, UnderReviewScreen } from "@/components/mentor-signup/MentorStatusScreens";
 import { mentorFinalizeSkippedThisSession } from "@/components/mentor-signup/gate";
-import { MentorSidebar } from "@/components/mentor-dashboard/MentorSidebar";
-import { MentorMobileNav } from "@/components/mentor-dashboard/MentorMobileNav";
-import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
-import { MentorDashboardProvider } from "@/components/mentor-dashboard/MentorDashboardContext";
+import {
+  MentorDashboardProvider,
+  type MentorStatus,
+} from "@/components/mentor-dashboard/MentorDashboardContext";
 import { resolveUserRole } from "@/lib/auth/role";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
 import { withRetry } from "@/lib/retry";
 
-// Mentor dashboard LAYOUT route. Renders the persistent shell (sidebar, topbar,
-// mobile nav, the "no availability" banner, and the application-status gates)
-// once + an <Outlet/> for the per-section child routes. Guard + gates live here
-// so no child mounts for a signed-out / wrong-role / non-approved mentor.
+// Mentor "Headquarters" LAYOUT route. Resolves the authenticated mentor + their
+// verification status (guard context or the SSR/hard-refresh getSession
+// fallback), then renders the full-bleed dark HQ via an <Outlet/>: the 3D world
+// at the index and the seven landmark pages beneath it. The guard + the
+// finalize gate live here so no child mounts for a signed-out / wrong-role /
+// never-submitted mentor. The three verification world-states (pending /
+// approved / rejected) are driven by `status`, passed down through context — a
+// pending-but-submitted or rejected mentor still enters the world (in its
+// under-construction / stalled state); the old Under-Review / Rejected screens
+// and the 2D sidebar shell are retired (their messaging now lives in the
+// Watchtower + the Forge).
 export const Route = createFileRoute("/mentor-dashboard")({
   beforeLoad: () => clientAuthGuard({ signedOutTo: "/mentor-signup", requireRole: "mentor" }),
   head: () => ({
-    meta: [{ title: "Mentor Dashboard — UniPlug" }],
+    meta: [{ title: "Headquarters — UniPlug" }],
   }),
   component: MentorDashboardLayout,
 });
 
 type MentorRow = {
   full_name: string | null;
-  status: "pending" | "approved" | "rejected" | null;
+  status: MentorStatus | null;
   application_submitted_at: string | null;
   verification_notes: string | null;
   college_email: string | null;
+  verified_at: string | null;
 };
 
 function MentorDashboardLayout() {
   const ctx = Route.useRouteContext() as AuthContext;
   const navigate = useNavigate();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [mentorId, setMentorId] = useState<string | null>(ctx.userId ?? null);
   const [userMetadata, setUserMetadata] = useState<{ role?: string; full_name?: string } | null>(
     ctx.userMetadata ?? null,
@@ -87,7 +93,9 @@ function MentorDashboardLayout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("mentors")
-        .select("full_name, status, application_submitted_at, verification_notes, college_email")
+        .select(
+          "full_name, status, application_submitted_at, verification_notes, college_email, verified_at",
+        )
         .eq("id", mentorId as string)
         .maybeSingle();
       if (error) throw error;
@@ -97,30 +105,17 @@ function MentorDashboardLayout() {
         application_submitted_at: data?.application_submitted_at ?? null,
         verification_notes: data?.verification_notes ?? null,
         college_email: data?.college_email ?? null,
+        verified_at: data?.verified_at ?? null,
       };
-    },
-  });
-
-  const { data: availabilityCount } = useQuery<number>({
-    queryKey: ["mentor-availability-count", mentorId],
-    enabled: !!mentorId,
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from("mentor_availability")
-        .select("id", { count: "exact", head: true })
-        .eq("mentor_id", mentorId as string);
-      if (error) throw error;
-      return count ?? 0;
     },
   });
 
   const fullName = mentorRow?.full_name ?? userMetadata?.full_name ?? "";
   const firstName = fullName.split(" ")[0] ?? "";
-  const status: MentorRow["status"] = mentorRow?.status ?? null;
+  const status: MentorStatus | null = mentorRow?.status ?? null;
 
-  // P8 application gate: a pending mentor who hasn't submitted their documents is
-  // routed to the finalize step (unless they chose "Finish later" this session).
-  const qc = useQueryClient();
+  // A pending mentor who has never submitted their application is routed to the
+  // finalize step (unless they chose "Finish later" this session).
   const pendingUnsubmitted =
     !!mentorRow && status === "pending" && mentorRow.application_submitted_at == null;
   useEffect(() => {
@@ -129,70 +124,26 @@ function MentorDashboardLayout() {
     }
   }, [pendingUnsubmitted, navigate]);
 
+  // Dark loading shell (prevents a white flash before the dark HQ paints).
   if (!ready || !mentorId) {
-    return <div className="min-h-screen bg-[#FFFCFB]" />;
+    return <div className="min-h-dvh bg-[var(--brand-night)]" />;
   }
-
-  // Mentor application gate — route the non-approved states (approved falls
-  // through to the dashboard children). The loading shell above prevents a flash.
-  if (mentorRow && status !== "approved") {
-    if (status === "rejected") {
-      return (
-        <RejectedScreen
-          mentorId={mentorId}
-          reason={mentorRow.verification_notes}
-          firstName={firstName}
-          onResubmitted={() =>
-            void qc.invalidateQueries({ queryKey: ["mentor-profile-header", mentorId] })
-          }
-        />
-      );
-    }
-    // pending + unsubmitted (+ not skipped) → the effect redirects to finalize;
-    // render a blank shell meanwhile. Otherwise (submitted / skipped) → review.
-    if (pendingUnsubmitted && !mentorFinalizeSkippedThisSession()) {
-      return <div className="min-h-screen bg-[#FFFCFB]" />;
-    }
-    return <UnderReviewScreen firstName={firstName} collegeEmail={mentorRow.college_email} />;
+  if (pendingUnsubmitted && !mentorFinalizeSkippedThisSession()) {
+    return <div className="min-h-dvh bg-[var(--brand-night)]" />;
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFCFB]">
-      <MentorSidebar />
-
-      <main className="md:ml-[240px]">
-        <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
-          <DashboardTopbar firstName={firstName} role="mentor" />
-          {/* The no-availability nudge is hidden on the schedule editor (where
-              you're already setting it) and on settings (matching the prior
-              active!=="settings" behaviour). */}
-          {availabilityCount === 0 &&
-            !pathname.startsWith("/mentor-dashboard/schedule") &&
-            !pathname.startsWith("/mentor-dashboard/settings") && (
-              <div className="mt-6 flex flex-col gap-4 rounded-r-2xl border-l-4 border-[#C4907F] bg-[#EDE0DB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-                <div>
-                  <h3 className="font-display text-[18px] font-semibold text-[#1A1A1A]">
-                    Your profile is live but students cannot book you yet.
-                  </h3>
-                  <p className="mt-1 text-[13px] text-[#1A1A1A]/80">
-                    Add your weekly availability to start receiving sessions.
-                  </p>
-                </div>
-                <Link
-                  to="/mentor-dashboard/schedule"
-                  className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-[#1A1A1A] px-5 font-display text-[13px] font-semibold text-[#FFFCFB] transition hover:opacity-90"
-                >
-                  Set Availability
-                </Link>
-              </div>
-            )}
-          <MentorDashboardProvider value={{ mentorId }}>
-            <Outlet />
-          </MentorDashboardProvider>
-        </div>
-      </main>
-
-      <MentorMobileNav />
-    </div>
+    <MentorDashboardProvider
+      value={{
+        mentorId,
+        status,
+        firstName,
+        verificationNotes: mentorRow?.verification_notes ?? null,
+        collegeEmail: mentorRow?.college_email ?? null,
+        verifiedAt: mentorRow?.verified_at ?? null,
+      }}
+    >
+      <Outlet />
+    </MentorDashboardProvider>
   );
 }

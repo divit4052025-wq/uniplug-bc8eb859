@@ -1159,6 +1159,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      safety_reports: {
+        Row: {
+          admin_notes: string | null;
+          body: string;
+          booking_id: string | null;
+          category: string;
+          created_at: string;
+          handled_at: string | null;
+          handled_by: string | null;
+          id: string;
+          reporter_id: string;
+          status: string;
+          subject_user_id: string | null;
+        };
+        Insert: {
+          admin_notes?: string | null;
+          body: string;
+          booking_id?: string | null;
+          category: string;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          reporter_id: string;
+          status?: string;
+          subject_user_id?: string | null;
+        };
+        Update: {
+          admin_notes?: string | null;
+          body?: string;
+          booking_id?: string | null;
+          category?: string;
+          created_at?: string;
+          handled_at?: string | null;
+          handled_by?: string | null;
+          id?: string;
+          reporter_id?: string;
+          status?: string;
+          subject_user_id?: string | null;
+        };
+        Relationships: [];
+      };
       session_action_points: {
         Row: {
           content: string;
@@ -1679,6 +1721,61 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      get_mentor_rating_summary: {
+        Args: { _mentor_id: string };
+        Returns: {
+          avg_rating: number | null;
+          review_count: number;
+          star1: number;
+          star2: number;
+          star3: number;
+          star4: number;
+          star5: number;
+        }[];
+      };
+      open_dispute: {
+        Args: { _booking_id: string; _reason: string };
+        Returns: string;
+      };
+      admin_list_disputes: {
+        Args: never;
+        Returns: {
+          id: string;
+          booking_id: string | null;
+          opened_by: string;
+          reason: string;
+          status: string;
+          admin_notes: string | null;
+          created_at: string;
+          resolved_at: string | null;
+        }[];
+      };
+      submit_safety_report: {
+        Args: {
+          _category: string;
+          _body: string;
+          _subject_user_id?: string;
+          _booking_id?: string;
+        };
+        Returns: string;
+      };
+      admin_list_safety_reports: {
+        Args: never;
+        Returns: {
+          id: string;
+          reporter_id: string;
+          subject_user_id: string | null;
+          booking_id: string | null;
+          category: string;
+          body: string;
+          status: string;
+          created_at: string;
+          handled_by: string | null;
+          handled_at: string | null;
+          admin_notes: string | null;
+        }[];
+      };
+      can_mentor_access_document: { Args: { _document_id: string }; Returns: boolean };
       admin_promote_ref_add_request: {
         Args: { _id: string };
         Returns: undefined;

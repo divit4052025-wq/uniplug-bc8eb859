@@ -18,6 +18,9 @@ export default tseslint.config(
       "public/welcome-design/**",
       "design/**",
       "unconventional-signup-flow-design/**",
+      // Claude Design handoff bundle (reference only, never committed into the
+      // app). Same posture as the other vendored design dirs above.
+      "uniplug-dashbaord/**",
     ],
   },
   {
