@@ -718,8 +718,21 @@ export function initHqScene(mount: HTMLElement, opts: HqSceneOpts = {}): HqScene
     scene.fog = new T.Fog(new T.Color(tp.fog), tp.fogNear, tp.fogFar);
     hemi.color.set(tp.hemiSky);
     hemi.groundColor.set(tp.hemiGround);
-    hemi.intensity = tp.hemiInt;
-    amb.intensity = tp.ambInt;
+    // r128→r185 lighting-model conversion. The prototype runs three r128 with
+    // LEGACY (non-physically-correct) lights, the r128 default. In that mode the
+    // shader multiplies indirect irradiance by PI:
+    //   getAmbientLightIrradiance:    #ifndef PHYSICALLY_CORRECT_LIGHTS irradiance *= PI;
+    //   getHemisphereLightIrradiance: #ifndef PHYSICALLY_CORRECT_LIGHTS irradiance *= PI;
+    // r165 removed legacy lights entirely, so r185 has no flag to restore this and
+    // renders indirect light PI× weaker for the SAME intensity — which crushed our
+    // shadows and let the warm sun over-saturate the scene. Re-apply that exact PI
+    // factor to the two indirect lights ONLY. Direct DirectionalLights (sun, fill,
+    // rim) are unchanged between r128 and r185, so their authored intensities and
+    // toneMappingExposure stay as-is. This reproduces the prototype's pipeline by
+    // construction rather than by re-tuning authored values.
+    const LEGACY_INDIRECT_PI = Math.PI;
+    hemi.intensity = tp.hemiInt * LEGACY_INDIRECT_PI;
+    amb.intensity = tp.ambInt * LEGACY_INDIRECT_PI;
     sun.color.set(tp.sunColor);
     sun.intensity = tp.sunInt;
     sun.position.set(tp.sunPos[0], tp.sunPos[1], tp.sunPos[2]);
