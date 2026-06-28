@@ -121,22 +121,18 @@ export function initHqScene(mount: HTMLElement, opts: HqSceneOpts = {}): HqScene
   const W = () => mount.clientWidth || innerWidth;
   const H = () => mount.clientHeight || innerHeight;
 
-  // Match the prototype's (three r128) colour pipeline. Modern three (r152+)
-  // enables ColorManagement by default, which converts every sRGB hex albedo to
-  // linear before lighting — that darkens the warm tan/cream/green palette into
-  // the muddy olive-brown we were getting. The prototype rendered the palette
-  // as-is, which is what makes its golden hour read bright + sunny. Turning CM
-  // off (paired with the sRGB output transform below) reproduces that exact look
-  // without altering a single palette value or light intensity.
-  T.ColorManagement.enabled = false;
-
+  // three is PINNED to r128 (the prototype's exact version) so the render
+  // pipeline is identical by construction — no cross-version emulation. r128 has
+  // no ColorManagement (sRGB hex albedos are used as-authored), legacy lights
+  // (ambient/hemisphere irradiance already ×PI internally), and a real
+  // PCFSoftShadowMap. So this block mirrors hq3d/scene.js line-for-line.
   const renderer = new T.WebGLRenderer({ antialias: true, alpha: false });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(W(), H());
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.toneMapping = T.ACESFilmicToneMapping;
-  renderer.outputColorSpace = T.SRGBColorSpace; // r152+ (was outputEncoding=sRGBEncoding)
+  renderer.outputEncoding = T.sRGBEncoding;
   mount.appendChild(renderer.domElement);
   renderer.domElement.style.display = "block";
 
@@ -264,7 +260,7 @@ export function initHqScene(mount: HTMLElement, opts: HqSceneOpts = {}): HqScene
     ctx.fillStyle = grd;
     ctx.fillRect(0, 0, 16, 256);
     const tx = new T.CanvasTexture(c);
-    tx.colorSpace = T.SRGBColorSpace;
+    tx.encoding = T.sRGBEncoding; // r128 (matches hq3d/scene.js)
     scene.background = tx;
   }
 
@@ -718,21 +714,12 @@ export function initHqScene(mount: HTMLElement, opts: HqSceneOpts = {}): HqScene
     scene.fog = new T.Fog(new T.Color(tp.fog), tp.fogNear, tp.fogFar);
     hemi.color.set(tp.hemiSky);
     hemi.groundColor.set(tp.hemiGround);
-    // r128→r185 lighting-model conversion. The prototype runs three r128 with
-    // LEGACY (non-physically-correct) lights, the r128 default. In that mode the
-    // shader multiplies indirect irradiance by PI:
-    //   getAmbientLightIrradiance:    #ifndef PHYSICALLY_CORRECT_LIGHTS irradiance *= PI;
-    //   getHemisphereLightIrradiance: #ifndef PHYSICALLY_CORRECT_LIGHTS irradiance *= PI;
-    // r165 removed legacy lights entirely, so r185 has no flag to restore this and
-    // renders indirect light PI× weaker for the SAME intensity — which crushed our
-    // shadows and let the warm sun over-saturate the scene. Re-apply that exact PI
-    // factor to the two indirect lights ONLY. Direct DirectionalLights (sun, fill,
-    // rim) are unchanged between r128 and r185, so their authored intensities and
-    // toneMappingExposure stay as-is. This reproduces the prototype's pipeline by
-    // construction rather than by re-tuning authored values.
-    const LEGACY_INDIRECT_PI = Math.PI;
-    hemi.intensity = tp.hemiInt * LEGACY_INDIRECT_PI;
-    amb.intensity = tp.ambInt * LEGACY_INDIRECT_PI;
+    // On r128 (legacy lights) the shader applies the ambient/hemisphere ×PI
+    // boost internally, so the authored intensities are used as-is — no manual
+    // conversion (that emulation hack was only needed under r185's physical lights
+    // and would double-apply here).
+    hemi.intensity = tp.hemiInt;
+    amb.intensity = tp.ambInt;
     sun.color.set(tp.sunColor);
     sun.intensity = tp.sunInt;
     sun.position.set(tp.sunPos[0], tp.sunPos[1], tp.sunPos[2]);

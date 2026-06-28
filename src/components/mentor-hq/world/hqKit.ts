@@ -595,6 +595,8 @@ export function cloth(w: number, h: number, color: string, o: MOpts = {}): THREE
   );
   m.castShadow = true;
   m.userData.cloth = true;
-  m.userData.base = g.attributes.position.array.slice();
+  // @types/three@0.128 types BufferAttribute.array as ArrayLike<number>; the
+  // runtime value is a Float32Array. Cast so .slice() type-checks on r128 types.
+  m.userData.base = (g.attributes.position.array as Float32Array).slice();
   return m;
 }
