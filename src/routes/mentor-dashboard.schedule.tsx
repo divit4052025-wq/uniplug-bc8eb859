@@ -1,18 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { ScheduleSection } from "@/components/mentor-dashboard/sections/ScheduleSection";
-import { useMentorDashboard } from "@/components/mentor-dashboard/MentorDashboardContext";
-
-// My Schedule (/mentor-dashboard/schedule) — weekly availability editor.
+// Legacy route → its Headquarters landmark. The 2D section shell is retired; the
+// availability editor now lives in the dark HQ at The Sundial. Old links /
+// bookmarks (and the /messages mentor sidebar) keep working via this redirect.
 export const Route = createFileRoute("/mentor-dashboard/schedule")({
-  component: MentorSchedule,
+  beforeLoad: () => {
+    throw redirect({ to: "/mentor-dashboard/sundial" });
+  },
 });
-
-function MentorSchedule() {
-  const { mentorId } = useMentorDashboard();
-  return (
-    <div className="mt-8 space-y-12 animate-hero-rise">
-      <ScheduleSection mentorId={mentorId} />
-    </div>
-  );
-}

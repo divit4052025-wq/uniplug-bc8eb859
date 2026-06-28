@@ -40,9 +40,16 @@ import { Route as ParentalConsentTokenRouteImport } from './routes/parental-cons
 import { Route as MessagesConversationIdRouteImport } from './routes/messages_.$conversationId'
 import { Route as MentorIdRouteImport } from './routes/mentor.$id'
 import { Route as MentorSignupFinalizeRouteImport } from './routes/mentor-signup_.finalize'
+import { Route as MentorDashboardWatchtowerRouteImport } from './routes/mentor-dashboard.watchtower'
+import { Route as MentorDashboardVaultRouteImport } from './routes/mentor-dashboard.vault'
+import { Route as MentorDashboardSundialRouteImport } from './routes/mentor-dashboard.sundial'
 import { Route as MentorDashboardStudentsRouteImport } from './routes/mentor-dashboard.students'
 import { Route as MentorDashboardSettingsRouteImport } from './routes/mentor-dashboard.settings'
 import { Route as MentorDashboardScheduleRouteImport } from './routes/mentor-dashboard.schedule'
+import { Route as MentorDashboardLaurelsRouteImport } from './routes/mentor-dashboard.laurels'
+import { Route as MentorDashboardForumRouteImport } from './routes/mentor-dashboard.forum'
+import { Route as MentorDashboardForgeRouteImport } from './routes/mentor-dashboard.forge'
+import { Route as MentorDashboardEmbassyRouteImport } from './routes/mentor-dashboard.embassy'
 import { Route as MentorDashboardEarningsRouteImport } from './routes/mentor-dashboard.earnings'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardSessionsRouteImport } from './routes/dashboard.sessions'
@@ -208,6 +215,22 @@ const MentorSignupFinalizeRoute = MentorSignupFinalizeRouteImport.update({
   path: '/mentor-signup/finalize',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MentorDashboardWatchtowerRoute =
+  MentorDashboardWatchtowerRouteImport.update({
+    id: '/watchtower',
+    path: '/watchtower',
+    getParentRoute: () => MentorDashboardRoute,
+  } as any)
+const MentorDashboardVaultRoute = MentorDashboardVaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardSundialRoute = MentorDashboardSundialRouteImport.update({
+  id: '/sundial',
+  path: '/sundial',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
 const MentorDashboardStudentsRoute = MentorDashboardStudentsRouteImport.update({
   id: '/students',
   path: '/students',
@@ -221,6 +244,26 @@ const MentorDashboardSettingsRoute = MentorDashboardSettingsRouteImport.update({
 const MentorDashboardScheduleRoute = MentorDashboardScheduleRouteImport.update({
   id: '/schedule',
   path: '/schedule',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardLaurelsRoute = MentorDashboardLaurelsRouteImport.update({
+  id: '/laurels',
+  path: '/laurels',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardForumRoute = MentorDashboardForumRouteImport.update({
+  id: '/forum',
+  path: '/forum',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardForgeRoute = MentorDashboardForgeRouteImport.update({
+  id: '/forge',
+  path: '/forge',
+  getParentRoute: () => MentorDashboardRoute,
+} as any)
+const MentorDashboardEmbassyRoute = MentorDashboardEmbassyRouteImport.update({
+  id: '/embassy',
+  path: '/embassy',
   getParentRoute: () => MentorDashboardRoute,
 } as any)
 const MentorDashboardEarningsRoute = MentorDashboardEarningsRouteImport.update({
@@ -302,9 +345,16 @@ export interface FileRoutesByFullPath {
   '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
+  '/mentor-dashboard/embassy': typeof MentorDashboardEmbassyRoute
+  '/mentor-dashboard/forge': typeof MentorDashboardForgeRoute
+  '/mentor-dashboard/forum': typeof MentorDashboardForumRoute
+  '/mentor-dashboard/laurels': typeof MentorDashboardLaurelsRoute
   '/mentor-dashboard/schedule': typeof MentorDashboardScheduleRoute
   '/mentor-dashboard/settings': typeof MentorDashboardSettingsRoute
   '/mentor-dashboard/students': typeof MentorDashboardStudentsRoute
+  '/mentor-dashboard/sundial': typeof MentorDashboardSundialRoute
+  '/mentor-dashboard/vault': typeof MentorDashboardVaultRoute
+  '/mentor-dashboard/watchtower': typeof MentorDashboardWatchtowerRoute
   '/mentor-signup/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
@@ -345,9 +395,16 @@ export interface FileRoutesByTo {
   '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
+  '/mentor-dashboard/embassy': typeof MentorDashboardEmbassyRoute
+  '/mentor-dashboard/forge': typeof MentorDashboardForgeRoute
+  '/mentor-dashboard/forum': typeof MentorDashboardForumRoute
+  '/mentor-dashboard/laurels': typeof MentorDashboardLaurelsRoute
   '/mentor-dashboard/schedule': typeof MentorDashboardScheduleRoute
   '/mentor-dashboard/settings': typeof MentorDashboardSettingsRoute
   '/mentor-dashboard/students': typeof MentorDashboardStudentsRoute
+  '/mentor-dashboard/sundial': typeof MentorDashboardSundialRoute
+  '/mentor-dashboard/vault': typeof MentorDashboardVaultRoute
+  '/mentor-dashboard/watchtower': typeof MentorDashboardWatchtowerRoute
   '/mentor-signup/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages/$conversationId': typeof MessagesConversationIdRoute
@@ -391,9 +448,16 @@ export interface FileRoutesById {
   '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
+  '/mentor-dashboard/embassy': typeof MentorDashboardEmbassyRoute
+  '/mentor-dashboard/forge': typeof MentorDashboardForgeRoute
+  '/mentor-dashboard/forum': typeof MentorDashboardForumRoute
+  '/mentor-dashboard/laurels': typeof MentorDashboardLaurelsRoute
   '/mentor-dashboard/schedule': typeof MentorDashboardScheduleRoute
   '/mentor-dashboard/settings': typeof MentorDashboardSettingsRoute
   '/mentor-dashboard/students': typeof MentorDashboardStudentsRoute
+  '/mentor-dashboard/sundial': typeof MentorDashboardSundialRoute
+  '/mentor-dashboard/vault': typeof MentorDashboardVaultRoute
+  '/mentor-dashboard/watchtower': typeof MentorDashboardWatchtowerRoute
   '/mentor-signup_/finalize': typeof MentorSignupFinalizeRoute
   '/mentor/$id': typeof MentorIdRoute
   '/messages_/$conversationId': typeof MessagesConversationIdRoute
@@ -438,9 +502,16 @@ export interface FileRouteTypes {
     | '/dashboard/sessions'
     | '/dashboard/settings'
     | '/mentor-dashboard/earnings'
+    | '/mentor-dashboard/embassy'
+    | '/mentor-dashboard/forge'
+    | '/mentor-dashboard/forum'
+    | '/mentor-dashboard/laurels'
     | '/mentor-dashboard/schedule'
     | '/mentor-dashboard/settings'
     | '/mentor-dashboard/students'
+    | '/mentor-dashboard/sundial'
+    | '/mentor-dashboard/vault'
+    | '/mentor-dashboard/watchtower'
     | '/mentor-signup/finalize'
     | '/mentor/$id'
     | '/messages/$conversationId'
@@ -481,9 +552,16 @@ export interface FileRouteTypes {
     | '/dashboard/sessions'
     | '/dashboard/settings'
     | '/mentor-dashboard/earnings'
+    | '/mentor-dashboard/embassy'
+    | '/mentor-dashboard/forge'
+    | '/mentor-dashboard/forum'
+    | '/mentor-dashboard/laurels'
     | '/mentor-dashboard/schedule'
     | '/mentor-dashboard/settings'
     | '/mentor-dashboard/students'
+    | '/mentor-dashboard/sundial'
+    | '/mentor-dashboard/vault'
+    | '/mentor-dashboard/watchtower'
     | '/mentor-signup/finalize'
     | '/mentor/$id'
     | '/messages/$conversationId'
@@ -526,9 +604,16 @@ export interface FileRouteTypes {
     | '/dashboard/sessions'
     | '/dashboard/settings'
     | '/mentor-dashboard/earnings'
+    | '/mentor-dashboard/embassy'
+    | '/mentor-dashboard/forge'
+    | '/mentor-dashboard/forum'
+    | '/mentor-dashboard/laurels'
     | '/mentor-dashboard/schedule'
     | '/mentor-dashboard/settings'
     | '/mentor-dashboard/students'
+    | '/mentor-dashboard/sundial'
+    | '/mentor-dashboard/vault'
+    | '/mentor-dashboard/watchtower'
     | '/mentor-signup_/finalize'
     | '/mentor/$id'
     | '/messages_/$conversationId'
@@ -797,6 +882,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentorSignupFinalizeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mentor-dashboard/watchtower': {
+      id: '/mentor-dashboard/watchtower'
+      path: '/watchtower'
+      fullPath: '/mentor-dashboard/watchtower'
+      preLoaderRoute: typeof MentorDashboardWatchtowerRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/vault': {
+      id: '/mentor-dashboard/vault'
+      path: '/vault'
+      fullPath: '/mentor-dashboard/vault'
+      preLoaderRoute: typeof MentorDashboardVaultRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/sundial': {
+      id: '/mentor-dashboard/sundial'
+      path: '/sundial'
+      fullPath: '/mentor-dashboard/sundial'
+      preLoaderRoute: typeof MentorDashboardSundialRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
     '/mentor-dashboard/students': {
       id: '/mentor-dashboard/students'
       path: '/students'
@@ -816,6 +922,34 @@ declare module '@tanstack/react-router' {
       path: '/schedule'
       fullPath: '/mentor-dashboard/schedule'
       preLoaderRoute: typeof MentorDashboardScheduleRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/laurels': {
+      id: '/mentor-dashboard/laurels'
+      path: '/laurels'
+      fullPath: '/mentor-dashboard/laurels'
+      preLoaderRoute: typeof MentorDashboardLaurelsRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/forum': {
+      id: '/mentor-dashboard/forum'
+      path: '/forum'
+      fullPath: '/mentor-dashboard/forum'
+      preLoaderRoute: typeof MentorDashboardForumRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/forge': {
+      id: '/mentor-dashboard/forge'
+      path: '/forge'
+      fullPath: '/mentor-dashboard/forge'
+      preLoaderRoute: typeof MentorDashboardForgeRouteImport
+      parentRoute: typeof MentorDashboardRoute
+    }
+    '/mentor-dashboard/embassy': {
+      id: '/mentor-dashboard/embassy'
+      path: '/embassy'
+      fullPath: '/mentor-dashboard/embassy'
+      preLoaderRoute: typeof MentorDashboardEmbassyRouteImport
       parentRoute: typeof MentorDashboardRoute
     }
     '/mentor-dashboard/earnings': {
@@ -904,18 +1038,32 @@ const DashboardRouteWithChildren = DashboardRoute._addFileChildren(
 
 interface MentorDashboardRouteChildren {
   MentorDashboardEarningsRoute: typeof MentorDashboardEarningsRoute
+  MentorDashboardEmbassyRoute: typeof MentorDashboardEmbassyRoute
+  MentorDashboardForgeRoute: typeof MentorDashboardForgeRoute
+  MentorDashboardForumRoute: typeof MentorDashboardForumRoute
+  MentorDashboardLaurelsRoute: typeof MentorDashboardLaurelsRoute
   MentorDashboardScheduleRoute: typeof MentorDashboardScheduleRoute
   MentorDashboardSettingsRoute: typeof MentorDashboardSettingsRoute
   MentorDashboardStudentsRoute: typeof MentorDashboardStudentsRoute
+  MentorDashboardSundialRoute: typeof MentorDashboardSundialRoute
+  MentorDashboardVaultRoute: typeof MentorDashboardVaultRoute
+  MentorDashboardWatchtowerRoute: typeof MentorDashboardWatchtowerRoute
   MentorDashboardIndexRoute: typeof MentorDashboardIndexRoute
   MentorDashboardStudentsStudentIdRoute: typeof MentorDashboardStudentsStudentIdRoute
 }
 
 const MentorDashboardRouteChildren: MentorDashboardRouteChildren = {
   MentorDashboardEarningsRoute: MentorDashboardEarningsRoute,
+  MentorDashboardEmbassyRoute: MentorDashboardEmbassyRoute,
+  MentorDashboardForgeRoute: MentorDashboardForgeRoute,
+  MentorDashboardForumRoute: MentorDashboardForumRoute,
+  MentorDashboardLaurelsRoute: MentorDashboardLaurelsRoute,
   MentorDashboardScheduleRoute: MentorDashboardScheduleRoute,
   MentorDashboardSettingsRoute: MentorDashboardSettingsRoute,
   MentorDashboardStudentsRoute: MentorDashboardStudentsRoute,
+  MentorDashboardSundialRoute: MentorDashboardSundialRoute,
+  MentorDashboardVaultRoute: MentorDashboardVaultRoute,
+  MentorDashboardWatchtowerRoute: MentorDashboardWatchtowerRoute,
   MentorDashboardIndexRoute: MentorDashboardIndexRoute,
   MentorDashboardStudentsStudentIdRoute: MentorDashboardStudentsStudentIdRoute,
 }

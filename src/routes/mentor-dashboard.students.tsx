@@ -1,18 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { MyStudentsSection } from "@/components/mentor-dashboard/sections/MyStudentsSection";
-import { useMentorDashboard } from "@/components/mentor-dashboard/MentorDashboardContext";
-
-// My Students (/mentor-dashboard/students) — roster + per-student private notes.
+// Legacy route → its Headquarters landmark. Sessions + students now live in the
+// dark HQ at The Forum. Old links / bookmarks keep working via this redirect.
 export const Route = createFileRoute("/mentor-dashboard/students")({
-  component: MentorStudents,
+  beforeLoad: () => {
+    throw redirect({ to: "/mentor-dashboard/forum" });
+  },
 });
-
-function MentorStudents() {
-  const { mentorId } = useMentorDashboard();
-  return (
-    <div className="mt-8 space-y-12 animate-hero-rise">
-      <MyStudentsSection mentorId={mentorId} />
-    </div>
-  );
-}
