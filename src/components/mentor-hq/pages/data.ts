@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { isBookingEnded, todayInIST } from "@/lib/time";
 
-// ── Upcoming sessions — reuse MentorUpcomingSessions (["mentor-upcoming-sessions"]).
+// ── Upcoming sessions (["mentor-upcoming-sessions"]). Reimplemented inline by the HQ pages.
 export type UpcomingRow = {
   id: string;
   date: string;
@@ -180,7 +180,7 @@ export function useExistingNotes(mentorId: string) {
   });
 }
 
-// ── Students roster — reuse MyStudentsSection (["my-students"]).
+// ── Students roster (["my-students"]). Reimplemented inline by the HQ pages.
 export type StudentRow = {
   id: string;
   full_name: string;
@@ -229,7 +229,7 @@ export function useMentorStudents(mentorId: string) {
   });
 }
 
-// ── Availability slots — reuse ScheduleSection (["mentor-availability"]).
+// ── Availability slots (["mentor-availability"]). Reimplemented inline by SundialPage.
 export type AvailabilitySlot = { day_of_week: number; start_hour: number };
 
 export function useMentorAvailability(mentorId: string) {
@@ -246,7 +246,7 @@ export function useMentorAvailability(mentorId: string) {
   });
 }
 
-// ── Earnings — reuse EarningsSection (["mentor-earnings"]). Authoritative,
+// ── Earnings (["mentor-earnings"]). Reimplemented inline by VaultPage. Authoritative,
 //    ledger-sourced (get_mentor_earnings). NEVER recomputed from bookings.price.
 export type PayoutState = "pending" | "scheduled" | "paid" | "refunded" | string;
 
