@@ -230,22 +230,32 @@ function NotificationsPage() {
             </p>
           ) : (
             <ul className="divide-y divide-[#EDE0DB]">
-              {rows.map((n) => (
-                <li
-                  key={n.id}
-                  onClick={() => {
-                    markAsRead(n.id);
-                    if (n.kind === "new_message" && n.conversation_id) {
-                      navigate({
-                        to: "/messages/$conversationId",
-                        params: { conversationId: n.conversation_id },
-                      });
-                    }
-                  }}
-                  className={`flex cursor-pointer items-start justify-between gap-4 px-5 py-4 transition hover:bg-[#EDE0DB]/40 ${
-                    n.read_at ? "opacity-60" : ""
-                  }`}
-                >
+              {rows.map((n) => {
+                const activate = () => {
+                  markAsRead(n.id);
+                  if (n.kind === "new_message" && n.conversation_id) {
+                    navigate({
+                      to: "/messages/$conversationId",
+                      params: { conversationId: n.conversation_id },
+                    });
+                  }
+                };
+                return (
+                  <li
+                    key={n.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={activate}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        activate();
+                      }
+                    }}
+                    className={`flex cursor-pointer items-start justify-between gap-4 px-5 py-4 transition hover:bg-[#EDE0DB]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/40 ${
+                      n.read_at ? "opacity-60" : ""
+                    }`}
+                  >
                   <div className="flex min-w-0 flex-1 items-start gap-3">
                     {!n.read_at ? (
                       <span
@@ -274,8 +284,9 @@ function NotificationsPage() {
                   <p className="shrink-0 text-[12px] text-[#1A1A1A]/50">
                     {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
                   </p>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

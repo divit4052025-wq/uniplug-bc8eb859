@@ -57,7 +57,7 @@ const COURSES = [
   "Other",
 ];
 const YEARS = ["1st Year", "2nd Year", "3rd Year", "Final Year"];
-const SORTS = ["Relevance", "Rating", "Price Low to High", "Price High to Low"];
+const SORTS = ["Relevance", "Price Low to High", "Price High to Low"];
 
 type Mentor = {
   id: string;
@@ -121,6 +121,7 @@ function BrowsePage() {
 
   const {
     data: mentors = [],
+    isLoading,
     isError,
     refetch,
   } = useQuery<Mentor[]>({
@@ -169,7 +170,6 @@ function BrowsePage() {
       if (years.length && !years.includes(m.year)) return false;
       return true;
     });
-    if (sort === "Rating") list = [...list];
     if (sort === "Price Low to High") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "Price High to Low") list = [...list].sort((a, b) => b.price - a.price);
     return list;
@@ -231,6 +231,16 @@ function BrowsePage() {
                 message="Couldn't load mentors right now."
                 onRetry={() => void refetch()}
               />
+            ) : isLoading ? (
+              <div
+                className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+                aria-busy="true"
+                aria-label="Loading mentors"
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-64 animate-pulse rounded-2xl bg-[#EDE0DB]/45" />
+                ))}
+              </div>
             ) : (
               <>
                 {consent?.awaiting && userId && (
@@ -254,19 +264,29 @@ function BrowsePage() {
                     />
                   ))}
                 </div>
-                {filtered.length === 0 && (
-                  <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
-                    <p className="font-display text-[18px] text-[#1A1A1A]">
-                      No mentors match those filters.
-                    </p>
-                    <button
-                      onClick={clearAll}
-                      className="mt-4 rounded-full bg-[#C4907F] px-5 py-2 text-[13px] font-medium text-[#FFFCFB]"
-                    >
-                      Clear filters
-                    </button>
-                  </div>
-                )}
+                {filtered.length === 0 &&
+                  (mentors.length === 0 ? (
+                    <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
+                      <p className="font-display text-[18px] text-[#1A1A1A]">
+                        No mentors are available yet.
+                      </p>
+                      <p className="mt-1 text-[14px] text-[#1A1A1A]/60">
+                        Check back soon — new Plugs are being verified.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
+                      <p className="font-display text-[18px] text-[#1A1A1A]">
+                        No mentors match those filters.
+                      </p>
+                      <button
+                        onClick={clearAll}
+                        className="mt-4 rounded-full bg-[#C4907F] px-5 py-2 text-[13px] font-medium text-[#FFFCFB]"
+                      >
+                        Clear filters
+                      </button>
+                    </div>
+                  ))}
               </>
             )}
           </section>
