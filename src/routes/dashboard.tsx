@@ -3,9 +3,6 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import { MobileBottomNav } from "@/components/dashboard/MobileBottomNav";
-import { DashboardTopbar } from "@/components/dashboard/DashboardTopbar";
 import { StudentDashboardProvider } from "@/components/dashboard/DashboardContext";
 import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { resolveUserRole } from "@/lib/auth/role";
@@ -115,20 +112,13 @@ function DashboardLayout() {
     return <div className="min-h-screen bg-[#FFFCFB]" />;
   }
 
+  // Index-in-place: the Quarter 3D world IS the dashboard home/nav, and each
+  // landmark renders full-bleed (its own QuarterPageShell chrome + "‹ Quarter"
+  // return). The old sidebar/topbar/mobile-nav shell is retired here. The guard
+  // + finalize gate + context stay; every child inherits them via the Outlet.
   return (
-    <div className="min-h-screen bg-[#FFFCFB]">
-      <DashboardSidebar />
-
-      <main className="md:ml-[240px]">
-        <div className="mx-auto max-w-[1100px] px-5 pb-28 pt-6 sm:px-8 md:px-10 md:pb-12 md:pt-10">
-          <DashboardTopbar firstName={firstName} role="student" />
-          <StudentDashboardProvider value={{ userId, firstName, profileIncomplete, consent }}>
-            <Outlet />
-          </StudentDashboardProvider>
-        </div>
-      </main>
-
-      <MobileBottomNav />
-    </div>
+    <StudentDashboardProvider value={{ userId, firstName, profileIncomplete, consent }}>
+      <Outlet />
+    </StudentDashboardProvider>
   );
 }
