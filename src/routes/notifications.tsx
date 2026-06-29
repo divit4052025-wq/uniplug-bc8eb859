@@ -256,34 +256,36 @@ function NotificationsPage() {
                       n.read_at ? "opacity-60" : ""
                     }`}
                   >
-                  <div className="flex min-w-0 flex-1 items-start gap-3">
-                    {!n.read_at ? (
-                      <span
-                        className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#C4907F]"
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <span className="mt-2 h-2 w-2 shrink-0" aria-hidden="true" />
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-[15px] font-medium text-[#1A1A1A]">{renderHeadline(n)}</p>
-                      {n.kind === "new_message" ? (
-                        <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
-                          Tap to open the conversation
-                        </p>
+                    <div className="flex min-w-0 flex-1 items-start gap-3">
+                      {!n.read_at ? (
+                        <span
+                          className="mt-2 h-2 w-2 shrink-0 rounded-full bg-[#C4907F]"
+                          aria-hidden="true"
+                        />
                       ) : (
-                        n.booking_date &&
-                        n.booking_time_slot && (
-                          <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
-                            {formatBookingDateTime(n.booking_date, n.booking_time_slot)}
-                          </p>
-                        )
+                        <span className="mt-2 h-2 w-2 shrink-0" aria-hidden="true" />
                       )}
+                      <div className="min-w-0">
+                        <p className="text-[15px] font-medium text-[#1A1A1A]">
+                          {renderHeadline(n)}
+                        </p>
+                        {n.kind === "new_message" ? (
+                          <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
+                            Tap to open the conversation
+                          </p>
+                        ) : (
+                          n.booking_date &&
+                          n.booking_time_slot && (
+                            <p className="mt-0.5 text-[13px] text-[#1A1A1A]/60">
+                              {formatBookingDateTime(n.booking_date, n.booking_time_slot)}
+                            </p>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <p className="shrink-0 text-[12px] text-[#1A1A1A]/50">
-                    {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
-                  </p>
+                    <p className="shrink-0 text-[12px] text-[#1A1A1A]/50">
+                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true })}
+                    </p>
                   </li>
                 );
               })}
