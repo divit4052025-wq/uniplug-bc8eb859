@@ -694,7 +694,6 @@ function UsersSection() {
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Joined</TableHead>
-                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -703,11 +702,6 @@ function UsersSection() {
                     <TableCell className="font-medium">{s.full_name}</TableCell>
                     <TableCell className="text-[#1A1A1A]/70">{s.email}</TableCell>
                     <TableCell>{new Date(s.created_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <span className="rounded-full bg-[#EDE0DB] px-2.5 py-0.5 text-[12px]">
-                        Active
-                      </span>
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

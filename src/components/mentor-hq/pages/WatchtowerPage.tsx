@@ -64,7 +64,7 @@ function ApprovedWatchtower() {
         <section>
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <HqStat
-              label="Sessions completed"
+              label="Paid sessions"
               value={earnings.isLoading ? "—" : (earnings.data?.summary.paid_session_count ?? 0)}
             />
             <HqStat

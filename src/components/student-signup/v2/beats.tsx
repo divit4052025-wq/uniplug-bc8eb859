@@ -167,11 +167,9 @@ const gatherItem: Variants = {
 export function YoureInBeat({
   firstName,
   onPrimary,
-  onReplay,
 }: {
   firstName: string;
   onPrimary: () => void;
-  onReplay: () => void;
 }) {
   return (
     <DarkBeat zClass="z-[80]">
@@ -229,14 +227,6 @@ export function YoureInBeat({
           className="inline-flex cursor-none items-center gap-2.5 rounded-md bg-primary px-8 py-[17px] text-[16px] font-bold text-[#1A1A1A]"
         >
           Find your Plug <span className="text-[18px]">→</span>
-        </button>
-        <button
-          type="button"
-          data-hov
-          onClick={onReplay}
-          className="inline-flex cursor-none items-center rounded-md px-[22px] py-[17px] text-[16px] font-bold text-brand-paper shadow-[inset_0_0_0_1.5px_rgba(255,252,251,0.3)]"
-        >
-          Replay
         </button>
       </motion.div>
     </DarkBeat>
