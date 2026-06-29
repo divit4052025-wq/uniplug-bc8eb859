@@ -25,10 +25,9 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.userId;
 
-    // Belt-and-suspenders: client must opt-in with a confirm string
-    // matching the user id. This prevents a clickjacked accidental
-    // delete; UI presents the user with their email and asks them to
-    // type their user id (or a fixed confirm string).
+    // Belt-and-suspenders: client must opt-in with the fixed confirm string
+    // "DELETE-MY-ACCOUNT". This prevents a clickjacked accidental delete; the
+    // UI shows the user their email and asks them to type that exact phrase.
     if (data.confirm !== "DELETE-MY-ACCOUNT") {
       return {
         ok: false as const,

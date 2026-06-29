@@ -1,8 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { studentBookingConfirmationEmail, mentorBookingAlertEmail } from "./templates";
-
-const FROM = "UniPlug <onboarding@resend.dev>";
+import { FROM } from "./from";
 
 async function sendViaResend(apiKey: string, to: string, subject: string, html: string) {
   const res = await fetch("https://api.resend.com/emails", {
@@ -23,15 +22,8 @@ async function sendViaResend(apiKey: string, to: string, subject: string, html: 
 export const sendBookingEmails = createServerFn({ method: "POST" })
   .inputValidator((input: { bookingId: string }) => input)
   .handler(async ({ data }) => {
-    console.log("[booking-emails] handler invoked for booking", data.bookingId);
     try {
       const apiKey = process.env.RESEND_API_KEY;
-      console.log(
-        "[booking-emails] RESEND_API_KEY present?",
-        Boolean(apiKey),
-        "length:",
-        apiKey?.length ?? 0,
-      );
       if (!apiKey) {
         console.error("[booking-emails] RESEND_API_KEY not set");
         return { ok: false, reason: "missing_api_key" };
@@ -39,17 +31,13 @@ export const sendBookingEmails = createServerFn({ method: "POST" })
 
       const { data: booking, error: bErr } = await supabaseAdmin
         .from("bookings")
-        .select("id, mentor_id, student_id, date, time_slot")
+        .select("id, mentor_id, student_id, date, time_slot, duration")
         .eq("id", data.bookingId)
         .maybeSingle();
       if (bErr || !booking) {
         console.error("[booking-emails] booking not found", bErr);
         return { ok: false, reason: "booking_not_found" };
       }
-      console.log("[booking-emails] booking loaded", {
-        mentor_id: booking.mentor_id,
-        student_id: booking.student_id,
-      });
 
       // Bookings have ON DELETE SET NULL on mentor_id and student_id, so an
       // orphaned booking can legitimately have either field null after a
@@ -81,12 +69,11 @@ export const sendBookingEmails = createServerFn({ method: "POST" })
         console.error("[booking-emails] missing mentor or student");
         return { ok: false, reason: "missing_party" };
       }
-      console.log("[booking-emails] sending to student:", student.email, "mentor:", mentor.email);
-
       const studentEmail = studentBookingConfirmationEmail({
         mentorName: mentor.full_name,
         date: booking.date,
         timeSlot: booking.time_slot,
+        durationMinutes: booking.duration ?? 60,
       });
       const mentorEmail = mentorBookingAlertEmail({
         studentName: student.full_name,
@@ -105,8 +92,6 @@ export const sendBookingEmails = createServerFn({ method: "POST" })
             `[booking-emails] send ${who} failed:`,
             r.reason instanceof Error ? r.reason.message : r.reason,
           );
-        } else {
-          console.log(`[booking-emails] send ${who} ok:`, r.value);
         }
       });
 

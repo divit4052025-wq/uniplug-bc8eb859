@@ -1,5 +1,5 @@
-// P9 — in-dashboard student profile editor. Rendered inside the dashboard
-// Settings branch (mirrors the mentor SettingsSection shape). Edits only the
+// P9 — in-dashboard student profile editor. Rendered in the Quarter Dorm
+// (/dashboard/dorm). Edits only the
 // consent_column_lock-allowlisted students columns + the owner-RLS interest
 // join-tables (row-level INSERT/DELETE). See profileEdit.ts for the column/RLS
 // contract this UI is bound to.

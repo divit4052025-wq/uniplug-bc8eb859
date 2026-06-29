@@ -81,6 +81,7 @@ export function studentBookingConfirmationEmail(p: {
   mentorName: string;
   date: string;
   timeSlot: string;
+  durationMinutes?: number;
 }) {
   return {
     subject: "Your session is booked — UniPlug",
@@ -93,12 +94,12 @@ export function studentBookingConfirmationEmail(p: {
           ["Mentor", p.mentorName],
           ["Date", formatDate(p.date)],
           ["Time", p.timeSlot],
-          ["Duration", "60 minutes"],
+          ["Duration", `${p.durationMinutes ?? 60} minutes`],
         ])}
         <p style="margin:0;">Your video call link will be sent to you 30 minutes before your session. You can also find it in your dashboard.</p>
       `,
       ctaLabel: "View Dashboard",
-      ctaUrl: "https://uniplug.lovable.app/dashboard",
+      ctaUrl: "https://uniplug.app/dashboard",
     }),
   };
 }
@@ -123,7 +124,7 @@ export function mentorBookingAlertEmail(p: {
         <p style="margin:0;">Log into your dashboard to prepare for the session and view the student's profile and documents.</p>
       `,
       ctaLabel: "View Dashboard",
-      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+      ctaUrl: "https://uniplug.app/mentor-dashboard",
     }),
   };
 }
@@ -144,7 +145,7 @@ export function studentReminderEmail(p: { mentorName: string; date: string; time
         <p style="margin:0;">Your video call link will be sent 30 minutes before the session. You can also find it in your dashboard.</p>
       `,
       ctaLabel: "View Dashboard",
-      ctaUrl: "https://uniplug.lovable.app/dashboard",
+      ctaUrl: "https://uniplug.app/dashboard",
     }),
   };
 }
@@ -165,7 +166,7 @@ export function mentorReminderEmail(p: { studentName: string; date: string; time
         <p style="margin:0;">Log into your dashboard to prepare and review the student's profile.</p>
       `,
       ctaLabel: "View Dashboard",
-      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+      ctaUrl: "https://uniplug.app/mentor-dashboard",
     }),
   };
 }
@@ -192,7 +193,7 @@ export function studentBookingCancelledEmail(p: {
         <p style="margin:0;">You can browse and book another mentor any time from your dashboard.</p>
       `,
       ctaLabel: "Browse Mentors",
-      ctaUrl: "https://uniplug.lovable.app/browse",
+      ctaUrl: "https://uniplug.app/browse",
     }),
   };
 }
@@ -217,7 +218,7 @@ export function mentorBookingCancelledEmail(p: {
         <p style="margin:0;">The slot is now free again on your calendar.</p>
       `,
       ctaLabel: "View Schedule",
-      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+      ctaUrl: "https://uniplug.app/mentor-dashboard",
     }),
   };
 }
@@ -243,7 +244,7 @@ export function studentSessionCompletedEmail(p: {
         <p style="margin:0;">Take a minute to leave a review — it helps future students find the right mentor.</p>
       `,
       ctaLabel: "Leave a Review",
-      ctaUrl: `https://uniplug.lovable.app/dashboard?review=${p.bookingId}`,
+      ctaUrl: `https://uniplug.app/dashboard?review=${p.bookingId}`,
     }),
   };
 }
@@ -269,7 +270,7 @@ export function mentorSessionCompletedEmail(p: {
         <p style="margin:0;">Add your session notes and action points while the conversation is fresh.</p>
       `,
       ctaLabel: "Add Notes",
-      ctaUrl: `https://uniplug.lovable.app/mentor-dashboard?notes=${p.bookingId}`,
+      ctaUrl: `https://uniplug.app/mentor-dashboard?notes=${p.bookingId}`,
     }),
   };
 }
@@ -295,7 +296,7 @@ export function mentorReviewReceivedEmail(p: {
         <p style="margin:18px 0 0 0;">Reviews build your reputation and help new students find you.</p>
       `,
       ctaLabel: "View Reviews",
-      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+      ctaUrl: "https://uniplug.app/mentor-dashboard",
     }),
   };
 }
@@ -312,7 +313,7 @@ export function mentorApprovedEmail(p: { mentorName: string }) {
         <p style="margin:14px 0 0 0;">Next up: complete the safeguarding + code-of-conduct training (required before your first session), then head to your dashboard to set your availability.</p>
       `,
       ctaLabel: "Open Dashboard",
-      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+      ctaUrl: "https://uniplug.app/mentor-dashboard",
     }),
   };
 }
@@ -348,7 +349,7 @@ export function mentorReReviewClearedEmail(p: { mentorName: string }) {
         <p style="margin:14px 0 0 0;">We've finished reviewing the recent changes to your profile — everything checks out and your profile is fully live again. No action needed.</p>
       `,
       ctaLabel: "Open Dashboard",
-      ctaUrl: "https://uniplug.lovable.app/mentor-dashboard",
+      ctaUrl: "https://uniplug.app/mentor-dashboard",
     }),
   };
 }

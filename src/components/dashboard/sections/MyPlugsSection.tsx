@@ -1,4 +1,3 @@
-import { BadgeCheck } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -65,13 +64,8 @@ export function MyPlugsSection({ studentId }: { studentId: string }) {
                 key={p.id}
                 className="flex items-start gap-3 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-5"
               >
-                <div className="relative">
-                  <div className="grid h-14 w-14 place-content-center rounded-full bg-[#FAF5EF] font-display text-[18px] font-semibold text-[#1A1A1A]">
-                    {initials}
-                  </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#FFFCFB]">
-                    <BadgeCheck className="h-3 w-3 text-[#FFFCFB]" />
-                  </span>
+                <div className="grid h-14 w-14 place-content-center rounded-full bg-[#FAF5EF] font-display text-[18px] font-semibold text-[#1A1A1A]">
+                  {initials}
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="font-display text-[16px] font-bold leading-tight text-[#1A1A1A]">

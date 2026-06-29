@@ -1,4 +1,4 @@
-// P10e — data layer for the mentor profile editor (SettingsSection), mirroring
+// P10e — data layer for the mentor profile editor (the HQ ForgePage), mirroring
 // the student-side profileEdit.ts allowlist discipline.
 //
 // THE RULE: the `mentors` table has 29 columns, most of which are

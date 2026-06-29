@@ -16,10 +16,9 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * one-by-one via the admin UI on request.
  *
  * Auth: requireSupabaseAuth middleware gives us context.userId.
- * Rate-limit: 1/day per user via a simple in-process check on the
- * caller's last export timestamp (recorded on auth.users.app_metadata
- * — but for V1 we just rely on the size of the dump being self-rate-
- * limiting and add a soft 1/day via a dedicated table in a follow-up).
+ * Rate-limit: NONE yet. V1 relies on the size of the dump being self-rate-
+ * limiting; a per-user throttle (e.g. 1/day via a dedicated table) is a
+ * follow-up. Do not claim a limit that isn't enforced.
  */
 
 export const exportMyData = createServerFn({ method: "POST" })

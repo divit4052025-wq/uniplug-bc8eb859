@@ -282,12 +282,18 @@ function MentorProfilePage() {
             <div className="flex flex-col gap-4">
               <div className="flex flex-wrap gap-2">
                 <StatPill
-                  icon={<Star className="h-3.5 w-3.5 fill-[#C4907F] text-[#C4907F]" />}
+                  icon={
+                    reviews.length ? (
+                      <Star className="h-3.5 w-3.5 fill-[#C4907F] text-[#C4907F]" />
+                    ) : undefined
+                  }
                   label={String(avgRating)}
                   sub="Rating"
                 />
                 <StatPill label={String(sessionCount)} sub="Sessions" />
-                <StatPill label={String(mentor.countries?.length || 1)} sub="Countries" />
+                {mentor.countries && mentor.countries.length > 0 && (
+                  <StatPill label={String(mentor.countries.length)} sub="Countries" />
+                )}
               </div>
               <div className="flex flex-wrap gap-3">
                 <button
@@ -296,13 +302,28 @@ function MentorProfilePage() {
                 >
                   Book a Session
                 </button>
-                <Link
-                  to="/messages"
-                  search={{ peer: mentor.id, peerName: mentor.full_name }}
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-6 text-[14px] font-medium text-white transition hover:bg-white/10"
-                >
-                  Message
-                </Link>
+                {/* Child-safety: messaging IS consent-gated server-side (send_message →
+                    student_has_consent, fail-closed). This UI swap is defense-in-depth —
+                    don't show a consent-pending minor a channel the server rejects.
+                    Mirrors the booking-widget swap below. */}
+                {consent?.awaiting ? (
+                  <button
+                    type="button"
+                    disabled
+                    aria-label="Messaging opens once a parent approves"
+                    className="inline-flex h-12 cursor-not-allowed items-center justify-center rounded-full border border-white/20 px-6 text-[14px] font-medium text-white/40"
+                  >
+                    Message
+                  </button>
+                ) : (
+                  <Link
+                    to="/messages"
+                    search={{ peer: mentor.id, peerName: mentor.full_name }}
+                    className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-6 text-[14px] font-medium text-white transition hover:bg-white/10"
+                  >
+                    Message
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -340,7 +361,7 @@ function MentorProfilePage() {
 
               <div>
                 <h2 className="font-display text-[24px] font-semibold tracking-tight text-[#1A1A1A]">
-                  Universities I Got Into
+                  University
                 </h2>
                 <div className="mt-3 flex flex-wrap gap-2">
                   <span className="rounded-full bg-[#EDE0DB] px-3.5 py-1.5 text-[12px] font-medium text-[#1A1A1A]">

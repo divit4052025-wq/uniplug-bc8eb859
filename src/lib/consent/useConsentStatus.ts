@@ -17,7 +17,14 @@ function isUnder18(dobISO: string | null): boolean {
   return age < 18;
 }
 
-export type ConsentStatus = { awaiting: boolean; parentEmail: string | null };
+export type ConsentStatus = {
+  awaiting: boolean;
+  parentEmail: string | null;
+  // True only when consent was REQUIRED and a parental_consent record actually
+  // exists — so the UI can say "consent on file" honestly, and NOT assert a
+  // record for students who never required consent (18+ / non-gated grade).
+  onFile: boolean;
+};
 
 /**
  * Whether a student is consent-required and still awaiting parental consent.
@@ -36,11 +43,12 @@ export function useConsentStatus(userId: string | null) {
         .eq("id", userId as string)
         .maybeSingle();
       if (error) throw error;
-      if (!data) return { awaiting: false, parentEmail: null };
+      if (!data) return { awaiting: false, parentEmail: null, onFile: false };
       const required = isUnder18(data.date_of_birth) || GATED_GRADES.includes(data.grade ?? "");
       return {
         awaiting: required && !data.parental_consent_at,
         parentEmail: data.parental_consent_email,
+        onFile: required && !!data.parental_consent_at,
       };
     },
   });

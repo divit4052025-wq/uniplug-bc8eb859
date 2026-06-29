@@ -57,7 +57,7 @@ const COURSES = [
   "Other",
 ];
 const YEARS = ["1st Year", "2nd Year", "3rd Year", "Final Year"];
-const SORTS = ["Relevance", "Rating", "Price Low to High", "Price High to Low"];
+const SORTS = ["Relevance", "Price Low to High", "Price High to Low"];
 
 type Mentor = {
   id: string;
@@ -121,6 +121,7 @@ function BrowsePage() {
 
   const {
     data: mentors = [],
+    isLoading,
     isError,
     refetch,
   } = useQuery<Mentor[]>({
@@ -169,7 +170,6 @@ function BrowsePage() {
       if (years.length && !years.includes(m.year)) return false;
       return true;
     });
-    if (sort === "Rating") list = [...list];
     if (sort === "Price Low to High") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "Price High to Low") list = [...list].sort((a, b) => b.price - a.price);
     return list;
@@ -231,6 +231,16 @@ function BrowsePage() {
                 message="Couldn't load mentors right now."
                 onRetry={() => void refetch()}
               />
+            ) : isLoading ? (
+              <div
+                className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+                aria-busy="true"
+                aria-label="Loading mentors"
+              >
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="h-64 animate-pulse rounded-2xl bg-[#EDE0DB]/45" />
+                ))}
+              </div>
             ) : (
               <>
                 {consent?.awaiting && userId && (
@@ -249,23 +259,34 @@ function BrowsePage() {
                     <MentorCard
                       key={m.id}
                       mentor={m}
+                      awaitingConsent={!!consent?.awaiting}
                       onBook={() => navigate({ to: "/mentor/$id", params: { id: m.id } })}
                     />
                   ))}
                 </div>
-                {filtered.length === 0 && (
-                  <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
-                    <p className="font-display text-[18px] text-[#1A1A1A]">
-                      No mentors match those filters.
-                    </p>
-                    <button
-                      onClick={clearAll}
-                      className="mt-4 rounded-full bg-[#C4907F] px-5 py-2 text-[13px] font-medium text-[#FFFCFB]"
-                    >
-                      Clear filters
-                    </button>
-                  </div>
-                )}
+                {filtered.length === 0 &&
+                  (mentors.length === 0 ? (
+                    <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
+                      <p className="font-display text-[18px] text-[#1A1A1A]">
+                        No mentors are available yet.
+                      </p>
+                      <p className="mt-1 text-[14px] text-[#1A1A1A]/60">
+                        Check back soon — new Plugs are being verified.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="mt-12 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-10 text-center">
+                      <p className="font-display text-[18px] text-[#1A1A1A]">
+                        No mentors match those filters.
+                      </p>
+                      <button
+                        onClick={clearAll}
+                        className="mt-4 rounded-full bg-[#C4907F] px-5 py-2 text-[13px] font-medium text-[#FFFCFB]"
+                      >
+                        Clear filters
+                      </button>
+                    </div>
+                  ))}
               </>
             )}
           </section>
@@ -442,7 +463,15 @@ function CheckRow({
   );
 }
 
-function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
+function MentorCard({
+  mentor,
+  onBook,
+  awaitingConsent,
+}: {
+  mentor: Mentor;
+  onBook: () => void;
+  awaitingConsent: boolean;
+}) {
   return (
     <article className="group flex flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(26,26,26,0.25)]">
       <Link to="/mentor/$id" params={{ id: mentor.id }} className="block">
@@ -471,13 +500,28 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
       >
         Book Now
       </button>
-      <Link
-        to="/messages"
-        search={{ peer: mentor.id, peerName: mentor.name }}
-        className="mt-2 block w-full rounded-full border border-[#1A1A1A]/15 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A] transition hover:border-[#C4907F] hover:text-[#C4907F]"
-      >
-        Message
-      </Link>
+      {/* Child-safety: messaging IS consent-gated server-side (send_message →
+          student_has_consent, fail-closed; migration 20260604000040_d). This UI swap
+          is defense-in-depth — don't show a consent-pending minor a contact channel
+          the server will reject. */}
+      {awaitingConsent ? (
+        <button
+          type="button"
+          disabled
+          aria-label="Messaging opens once a parent approves"
+          className="mt-2 block w-full cursor-not-allowed rounded-full border border-[#1A1A1A]/10 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A]/35"
+        >
+          Message
+        </button>
+      ) : (
+        <Link
+          to="/messages"
+          search={{ peer: mentor.id, peerName: mentor.name }}
+          className="mt-2 block w-full rounded-full border border-[#1A1A1A]/15 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A] transition hover:border-[#C4907F] hover:text-[#C4907F]"
+        >
+          Message
+        </Link>
+      )}
     </article>
   );
 }

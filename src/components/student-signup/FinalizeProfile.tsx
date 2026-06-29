@@ -204,7 +204,7 @@ export function FinalizeProfile() {
       <div className="signup-wizard relative h-dvh overflow-hidden overscroll-none bg-brand-paper text-foreground">
         <SignupCursor />
         <MotionConfig reducedMotion="user">
-          <YoureInBeat firstName={firstName} onPrimary={goDashboard} onReplay={goDashboard} />
+          <YoureInBeat firstName={firstName} onPrimary={goDashboard} />
         </MotionConfig>
       </div>
     );
