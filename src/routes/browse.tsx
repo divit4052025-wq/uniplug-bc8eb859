@@ -500,17 +500,19 @@ function MentorCard({
       >
         Book Now
       </button>
-      {/* Child-safety: a minor still awaiting parental consent should not be able
-          to open a contact channel with an adult mentor (messaging isn't yet
-          consent-gated server-side — flagged). */}
+      {/* Child-safety: messaging IS consent-gated server-side (send_message →
+          student_has_consent, fail-closed; migration 20260604000040_d). This UI swap
+          is defense-in-depth — don't show a consent-pending minor a contact channel
+          the server will reject. */}
       {awaitingConsent ? (
-        <span
-          aria-disabled="true"
-          title="Messaging opens once a parent approves"
+        <button
+          type="button"
+          disabled
+          aria-label="Messaging opens once a parent approves"
           className="mt-2 block w-full cursor-not-allowed rounded-full border border-[#1A1A1A]/10 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A]/35"
         >
           Message
-        </span>
+        </button>
       ) : (
         <Link
           to="/messages"

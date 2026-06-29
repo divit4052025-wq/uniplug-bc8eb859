@@ -220,7 +220,7 @@ export function SignupWizard() {
         else if (parentEmail.trim().toLowerCase() === email.trim().toLowerCase())
           e.parentEmail = "Use a parent or guardian’s email — not your own";
         if (parentPhone.trim().length < 6) e.parentPhone = "Parent’s phone is required";
-        else if (parentPhone.trim() === phone.trim())
+        else if (parentPhone.replace(/\D/g, "") === phone.replace(/\D/g, ""))
           e.parentPhone = "Use a parent or guardian’s phone — not your own";
       }
     } else if (key === "school") {
@@ -234,7 +234,7 @@ export function SignupWizard() {
         else if (parentEmail.trim().toLowerCase() === email.trim().toLowerCase())
           e.parentEmail = "Use a parent or guardian’s email — not your own";
         if (parentPhone.trim().length < 6) e.parentPhone = "Parent’s phone is required";
-        else if (parentPhone.trim() === phone.trim())
+        else if (parentPhone.replace(/\D/g, "") === phone.replace(/\D/g, ""))
           e.parentPhone = "Use a parent or guardian’s phone — not your own";
       }
     } else if (key === "account") {
@@ -872,46 +872,44 @@ export function SignupWizard() {
                       {pwLabel}
                     </span>
                   </div>
+                  {/* Checkbox box and the label+links are SIBLINGS (not nested):
+                      a role=checkbox makes its descendants presentational, so links
+                      inside it would be unreachable by screen readers, and keydown on
+                      a nested link would bubble and toggle the box. Keeping them
+                      separate makes the real <a> links keyboard- and AT-reachable so a
+                      (often minor) user can actually open what they're agreeing to. */}
                   <div
-                    role="checkbox"
-                    aria-checked={agreed}
-                    aria-label="I agree to UniPlug’s Terms of Service, Privacy Policy, and Code of Conduct"
-                    tabIndex={0}
-                    data-mag
-                    data-hov
-                    onClick={() => {
-                      setAgreed((a) => !a);
-                      setErrors((e) => ({ ...e, agreed: "" }));
-                    }}
-                    onKeyDown={(ev) => {
-                      if (ev.key === "Enter" || ev.key === " ") {
-                        ev.preventDefault();
-                        setAgreed((a) => !a);
-                        setErrors((e) => ({ ...e, agreed: "" }));
-                      }
-                    }}
-                    className="flex cursor-none items-start gap-3 rounded-md border px-4 py-3.5 text-left transition"
+                    className="flex items-start gap-3 rounded-md border px-4 py-3.5 transition"
                     style={{ borderColor: agreed ? "var(--primary)" : "var(--border)" }}
                   >
-                    <span
-                      className="mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] border text-[14px] text-brand-paper transition"
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={agreed}
+                      aria-labelledby="agree-student-label"
+                      data-mag
+                      data-hov
+                      onClick={() => {
+                        setAgreed((a) => !a);
+                        setErrors((e) => ({ ...e, agreed: "" }));
+                      }}
+                      className="mt-px flex h-[22px] w-[22px] shrink-0 cursor-none items-center justify-center rounded-[5px] border text-[14px] text-brand-paper transition"
                       style={{
                         borderColor: agreed ? "var(--foreground)" : "rgba(26,26,26,.3)",
                         background: agreed ? "var(--foreground)" : "transparent",
                       }}
                     >
                       {agreed ? "✓" : ""}
-                    </span>
-                    <span className="text-[13.5px] leading-relaxed text-brand-ink-soft">
+                    </button>
+                    <span
+                      id="agree-student-label"
+                      className="text-[13.5px] leading-relaxed text-brand-ink-soft"
+                    >
                       I agree to UniPlug’s{" "}
-                      {/* Real, openable links so a (often minor) user can read what
-                          they're agreeing to. stopPropagation keeps a link click from
-                          toggling the consent checkbox. */}
                       <a
                         href="/terms"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(ev) => ev.stopPropagation()}
                         className="cursor-none border-b-[1.5px] border-primary text-foreground"
                       >
                         Terms of Service
@@ -921,7 +919,6 @@ export function SignupWizard() {
                         href="/privacy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(ev) => ev.stopPropagation()}
                         className="cursor-none border-b-[1.5px] border-primary text-foreground"
                       >
                         Privacy Policy
@@ -931,7 +928,6 @@ export function SignupWizard() {
                         href="/community-guidelines"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(ev) => ev.stopPropagation()}
                         className="cursor-none border-b-[1.5px] border-primary text-foreground"
                       >
                         Code of Conduct

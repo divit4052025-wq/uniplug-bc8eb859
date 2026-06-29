@@ -302,17 +302,19 @@ function MentorProfilePage() {
                 >
                   Book a Session
                 </button>
-                {/* Child-safety: don't expose the contact channel to a minor who is
-                    still awaiting parental consent (messaging is not yet consent-gated
-                    server-side — flagged). Mirrors the booking-widget swap below. */}
+                {/* Child-safety: messaging IS consent-gated server-side (send_message →
+                    student_has_consent, fail-closed). This UI swap is defense-in-depth —
+                    don't show a consent-pending minor a channel the server rejects.
+                    Mirrors the booking-widget swap below. */}
                 {consent?.awaiting ? (
-                  <span
-                    aria-disabled="true"
-                    title="Messaging opens once a parent approves"
+                  <button
+                    type="button"
+                    disabled
+                    aria-label="Messaging opens once a parent approves"
                     className="inline-flex h-12 cursor-not-allowed items-center justify-center rounded-full border border-white/20 px-6 text-[14px] font-medium text-white/40"
                   >
                     Message
-                  </span>
+                  </button>
                 ) : (
                   <Link
                     to="/messages"

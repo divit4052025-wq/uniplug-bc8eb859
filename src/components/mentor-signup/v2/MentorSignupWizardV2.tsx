@@ -673,45 +673,43 @@ export function MentorSignupWizardV2() {
                       {pwLabel}
                     </span>
                   </div>
+                  {/* Checkbox box and the label+links are SIBLINGS (not nested): a
+                      role=checkbox makes descendants presentational, so nested links
+                      would be unreachable by screen readers and keydown would bubble to
+                      toggle the box. Separate keeps the real <a> links keyboard- and
+                      AT-reachable. */}
                   <div
-                    role="checkbox"
-                    aria-checked={agreed}
-                    aria-label="I agree to UniPlug’s Terms & Conditions, Privacy Policy, Mentor Agreement, and Code of Conduct"
-                    tabIndex={0}
-                    data-mag
-                    data-hov
-                    onClick={() => {
-                      setAgreed((a) => !a);
-                      setErrors((e) => ({ ...e, agreed: "" }));
-                    }}
-                    onKeyDown={(ev) => {
-                      if (ev.key === "Enter" || ev.key === " ") {
-                        ev.preventDefault();
-                        setAgreed((a) => !a);
-                        setErrors((e) => ({ ...e, agreed: "" }));
-                      }
-                    }}
-                    className="flex cursor-none items-start gap-3 rounded-md border px-4 py-3.5 text-left transition"
+                    className="flex items-start gap-3 rounded-md border px-4 py-3.5 transition"
                     style={{ borderColor: agreed ? "var(--primary)" : "rgba(255,252,251,0.2)" }}
                   >
-                    <span
-                      className="mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] border text-[14px] text-[#1A1A1A] transition"
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={agreed}
+                      aria-labelledby="agree-mentor-label"
+                      data-mag
+                      data-hov
+                      onClick={() => {
+                        setAgreed((a) => !a);
+                        setErrors((e) => ({ ...e, agreed: "" }));
+                      }}
+                      className="mt-px flex h-[22px] w-[22px] shrink-0 cursor-none items-center justify-center rounded-[5px] border text-[14px] text-[#1A1A1A] transition"
                       style={{
                         borderColor: agreed ? "var(--brand-rose)" : "rgba(255,252,251,0.35)",
                         background: agreed ? "var(--brand-rose)" : "transparent",
                       }}
                     >
                       {agreed ? "✓" : ""}
-                    </span>
-                    <span className="text-[13.5px] leading-relaxed text-[rgba(255,252,251,0.7)]">
+                    </button>
+                    <span
+                      id="agree-mentor-label"
+                      className="text-[13.5px] leading-relaxed text-[rgba(255,252,251,0.7)]"
+                    >
                       I agree to UniPlug’s{" "}
-                      {/* Real, openable links (open in a new tab; stopPropagation so a
-                          link click doesn't toggle the agreement checkbox). */}
                       <a
                         href="/terms"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(ev) => ev.stopPropagation()}
                         className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
                       >
                         Terms &amp; Conditions
@@ -721,7 +719,6 @@ export function MentorSignupWizardV2() {
                         href="/privacy"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(ev) => ev.stopPropagation()}
                         className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
                       >
                         Privacy Policy
@@ -731,7 +728,6 @@ export function MentorSignupWizardV2() {
                         href="/mentor-terms"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(ev) => ev.stopPropagation()}
                         className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
                       >
                         Mentor Agreement
@@ -741,7 +737,6 @@ export function MentorSignupWizardV2() {
                         href="/community-guidelines"
                         target="_blank"
                         rel="noopener noreferrer"
-                        onClick={(ev) => ev.stopPropagation()}
                         className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
                       >
                         Code of Conduct
