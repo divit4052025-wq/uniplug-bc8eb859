@@ -6,6 +6,7 @@ import { Mascot } from "@/components/mascots/Mascot";
 import { useStudentDashboard } from "@/components/dashboard/DashboardContext";
 
 import { Quarter3DBoundary } from "./Quarter3DBoundary";
+import { QuarterBeacon } from "./QuarterBeacon";
 import { ZONES, type QuarterState } from "./world/scene";
 import type { TimeName } from "./world/kit";
 import "./quarter.css";
@@ -37,11 +38,12 @@ const LILAC = "#D7C8EE";
 const INK = "#1A1A1A";
 
 export function StudentQuarterHome() {
-  const { firstName, consent } = useStudentDashboard();
+  const { userId, firstName, consent } = useStudentDashboard();
   const navigate = useNavigate();
   const [time, setTime] = useState<TimeName>("dawn");
   const [motion, setMotion] = useState(true);
   const [tweaksOpen, setTweaksOpen] = useState(false);
+  const [beaconOpen, setBeaconOpen] = useState(false);
   const [founderMsg, setFounderMsg] = useState<string | null>(null);
   const msgTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -108,7 +110,7 @@ export function StudentQuarterHome() {
             className="qx-bell"
             title="Notifications"
             aria-label="Notifications"
-            onClick={() => navigate({ to: "/dashboard/line" })}
+            onClick={() => setBeaconOpen(true)}
           >
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path
@@ -206,6 +208,9 @@ export function StudentQuarterHome() {
           })}
         </nav>
       </div>
+
+      {/* notifications slide-over (the Beacon) — opened by the world's bell */}
+      <QuarterBeacon open={beaconOpen} onClose={() => setBeaconOpen(false)} userId={userId} />
 
       {/* dev-only Tweaks: flex consent state + time of day + motion for review. */}
       {import.meta.env.DEV && !tweaksOpen && (

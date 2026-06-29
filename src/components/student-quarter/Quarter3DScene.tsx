@@ -49,6 +49,9 @@ export default function Quarter3DScene({
       onLocked: (id) => lockedRef.current?.(id),
     });
     apiRef.current = api;
+    // Dev-only handle so the world can be driven from the console during review
+    // (e.g. window.__Q_API.setTime("midday")). Never present in production.
+    if (import.meta.env.DEV) (window as { __Q_API?: typeof api }).__Q_API = api;
     return () => {
       api.dispose();
       apiRef.current = null;
