@@ -28,23 +28,15 @@ import {
 } from "./kit";
 import * as PR from "./props";
 import { BUILDINGS } from "./buildings";
+import { ZONES, zoneOpen as zoneOpenShared } from "./zones";
+import type { QuarterState, Zone, ZoneOverride } from "./zones";
 
 const T = THREE;
 
-export type QuarterState = "pending" | "granted";
-export type ZoneOverride = "auto" | "lit" | "locked";
-
-export interface Zone {
-  id: string;
-  name: string;
-  kind: string;
-  pos: [number, number];
-  always?: boolean;
-  book?: boolean;
-  blurb: string;
-  stat: string;
-  sub: string;
-}
+// Zone data + world-state types live in the THREE-FREE ./zones module so eager
+// surfaces can read them without pulling three. Re-exported here for back-compat.
+export { ZONES };
+export type { QuarterState, Zone, ZoneOverride };
 
 export interface QuarterSceneOpts {
   time?: TimeName;
@@ -68,79 +60,6 @@ export interface QuarterSceneApi {
   setActive: (on: boolean) => void;
   dispose: () => void;
 }
-
-export const ZONES: Zone[] = [
-  {
-    id: "square",
-    name: "The Square",
-    kind: "Home",
-    pos: [0, 24],
-    always: true,
-    blurb: "Where you land. Your Plugs, your matches, your school list — and what’s next.",
-    stat: "Your home base",
-    sub: "start here",
-  },
-  {
-    id: "switchboard",
-    name: "The Switchboard",
-    kind: "Find your Plug",
-    pos: [11, -20],
-    always: true,
-    blurb: "Search and filter mentors who’ve been exactly where you want to go, then book.",
-    stat: "Browse mentors",
-    sub: "search · filter · book",
-  },
-  {
-    id: "studio",
-    name: "The Studio",
-    kind: "Your sessions",
-    pos: [-24, -5],
-    book: true,
-    blurb: "Your 1:1 sessions — join, reschedule, review, and read your mentor’s notes.",
-    stat: "Sessions & notes",
-    sub: "join · reschedule",
-  },
-  {
-    id: "line",
-    name: "The Line",
-    kind: "Messages",
-    pos: [24, -5],
-    always: true,
-    blurb: "Your direct line to your Plugs — every conversation, in one place.",
-    stat: "Messages",
-    sub: "chat with your Plugs",
-  },
-  {
-    id: "locker",
-    name: "The Locker",
-    kind: "Documents",
-    pos: [-20, 14],
-    always: true,
-    blurb: "Your essays, lists and materials — shared with the Plugs you work with.",
-    stat: "Your documents",
-    sub: "upload · share",
-  },
-  {
-    id: "climb",
-    name: "The Climb",
-    kind: "Progress",
-    pos: [20, 14],
-    always: true,
-    blurb: "How far you’ve come — your session notes, action points, and what’s done.",
-    stat: "Your progress",
-    sub: "notes · action points",
-  },
-  {
-    id: "dorm",
-    name: "The Dorm",
-    kind: "Profile & settings",
-    pos: [-13, -20],
-    always: true,
-    blurb: "Your room — profile, targets, settings, and your parent’s consent.",
-    stat: "Profile & settings",
-    sub: "consent lives here",
-  },
-];
 
 export function init(mount: HTMLElement, opts: QuarterSceneOpts = {}): QuarterSceneApi {
   const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -273,6 +192,9 @@ export function init(mount: HTMLElement, opts: QuarterSceneOpts = {}): QuarterSc
     const tx = new T.CanvasTexture(c);
     if ((T as any).SRGBColorSpace) (tx as any).colorSpace = (T as any).SRGBColorSpace;
     else (tx as any).encoding = T.sRGBEncoding;
+    // Dispose the previous sky texture before reassigning (each dawn/midday
+    // toggle would otherwise leak a GPU texture).
+    (scene.background as THREE.Texture | null)?.dispose?.();
     scene.background = tx;
   }
 
@@ -785,14 +707,9 @@ export function init(mount: HTMLElement, opts: QuarterSceneOpts = {}): QuarterSc
 
   /* ---------- world state — parental consent (pending ↔ granted) ---------- */
   const overrides: Record<string, "lit" | "locked"> = {};
-  function zoneOpenZ(z: Zone): boolean {
-    const ov = overrides[z.id];
-    if (ov === "lit") return true;
-    if (ov === "locked") return false;
-    if (z.always) return true;
-    if (z.book) return worldState === "granted";
-    return true;
-  }
+  // Delegate to the shared (three-free) helper so the engine + the dock can
+  // never drift on what "open" means. worldState/overrides are read at call time.
+  const zoneOpenZ = (z: Zone): boolean => zoneOpenShared(z, worldState, overrides);
   function applyState() {
     buildingRoots.forEach((g) => {
       const z = ZONES.find((x) => x.id === (g.userData as any).zoneId)!;
@@ -876,6 +793,7 @@ export function init(mount: HTMLElement, opts: QuarterSceneOpts = {}): QuarterSc
     idleT = 0,
     lastPX = 0,
     lastPY = 0;
+  let enterTimer: ReturnType<typeof setTimeout> | undefined;
   function setPointer(e: PointerEvent) {
     const r = renderer.domElement.getBoundingClientRect();
     pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
@@ -970,7 +888,7 @@ export function init(mount: HTMLElement, opts: QuarterSceneOpts = {}): QuarterSc
     controls.autoRotate = false;
     hoveredId = null;
     refreshHover();
-    if (enter && opts.onEnter) setTimeout(() => opts.onEnter!(id), 580);
+    if (enter && opts.onEnter) enterTimer = setTimeout(() => opts.onEnter!(id), 580);
   }
   function flyHome() {
     flying = {
@@ -1006,8 +924,11 @@ export function init(mount: HTMLElement, opts: QuarterSceneOpts = {}): QuarterSc
     fromTgt: HOME_TGT.clone(),
     toTgt: HOME_TGT.clone(),
   };
-  (window as any).__Q_SCENE = scene;
-  (window as any).__Q_CAM = camera;
+  // Dev-only debug handles (cleared in dispose()). Never set in production.
+  if (import.meta.env.DEV) {
+    (window as any).__Q_SCENE = scene;
+    (window as any).__Q_CAM = camera;
+  }
 
   const clock = new T.Clock();
   let raf = 0;
@@ -1167,13 +1088,24 @@ export function init(mount: HTMLElement, opts: QuarterSceneOpts = {}): QuarterSc
     },
     dispose() {
       cancelAnimationFrame(raf);
+      if (enterTimer) clearTimeout(enterTimer);
       removeEventListener("resize", onResize);
       ro.disconnect();
       renderer.domElement.removeEventListener("pointermove", onMove);
       renderer.domElement.removeEventListener("pointerdown", onDown);
       renderer.domElement.removeEventListener("pointerup", onUp);
+      // Free the GPU: dispose every geometry in the scene graph, the sky
+      // texture, and the shared material cache, so navigating away from
+      // /dashboard doesn't leak the whole world.
+      [island, buildingsGroup, propsGroup, skyGroup].forEach(disposeGroup);
+      (scene.background as THREE.Texture | null)?.dispose?.();
+      clearMaterialCache();
       renderer.dispose();
       mount.innerHTML = "";
+      if (import.meta.env.DEV) {
+        delete (window as any).__Q_SCENE;
+        delete (window as any).__Q_CAM;
+      }
     },
   };
 }

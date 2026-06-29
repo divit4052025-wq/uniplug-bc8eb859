@@ -22,7 +22,14 @@ function DormPage() {
       intro="Your room — profile, targets, settings, and your parent’s consent."
     >
       <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-        {consent?.awaiting ? (
+        {/* Branch on the loading/unknown case FIRST — never assert "consent on
+            file" before the consent query has resolved (it would be a false
+            claim to a pending minor during load/error). */}
+        {consent === undefined ? (
+          <div className="qc soft">
+            <div style={{ fontSize: 13, color: "var(--q-ink55)" }}>Checking consent status…</div>
+          </div>
+        ) : consent.awaiting ? (
           <AwaitingConsentNotice studentId={userId} parentEmail={consent.parentEmail} />
         ) : (
           <div className="qc soft">

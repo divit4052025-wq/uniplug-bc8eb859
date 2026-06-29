@@ -16,6 +16,15 @@
   --q-ease:cubic-bezier(.22,1,.36,1);
 }
 
+/* Scope the Tailwind font tokens to Gabarito/Quicksand inside the Quarter, so a
+   wrapped legacy section's `font-display`/`font-sans` utility doesn't fall back
+   to the GLOBAL Fraunces/Inter defaults. Mirrors the .hq-shell / .signup-wizard
+   scoping the rest of the app already ships. */
+.qx-stage, .qsec{
+  --font-display:"Gabarito",ui-sans-serif,system-ui,sans-serif;
+  --font-sans:"Quicksand",ui-sans-serif,system-ui,sans-serif;
+}
+
 /* ---------------- world stage ---------------- */
 .qx-stage{ position:fixed; inset:0; background:#cdd8e2; overflow:hidden; font-family:var(--q-body); }
 .qx-canvas{ position:absolute; inset:0; }

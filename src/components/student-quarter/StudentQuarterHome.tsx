@@ -7,7 +7,11 @@ import { useStudentDashboard } from "@/components/dashboard/DashboardContext";
 
 import { Quarter3DBoundary } from "./Quarter3DBoundary";
 import { QuarterBeacon } from "./QuarterBeacon";
-import { ZONES, type QuarterState } from "./world/scene";
+// THREE-FREE import: ZONES + types come from ./world/zones, NOT ./world/scene,
+// so this eager route component never statically pulls three.js into the SSR
+// Worker bundle or the initial /dashboard chunk (the engine is reached only via
+// the lazy import inside Quarter3DBoundary).
+import { ZONES, zoneOpen, type QuarterState } from "./world/zones";
 import type { TimeName } from "./world/kit";
 import "./quarter.css";
 
@@ -18,9 +22,13 @@ import "./quarter.css";
  * mobile / no-WebGL fallback (it works with no canvas). Mirrors the mentor
  * Headquarters' MentorHqHome, re-skinned LIGHT per the locked Quarter design
  * (Gabarito + Quicksand, paper #FFFCFB, ink #1A1A1A, rose #F4B5AA). The world
- * state is the REAL parental-consent gate (useConsentStatus → ctx.consent):
- * a consent-pending minor sees the gated world (booking locked at the Studio),
- * everyone else the fully-open world. No fabricated data anywhere.
+ * state is a COSMETIC MIRROR of the real parental-consent gate (useConsentStatus
+ * → ctx.consent): a consent-pending minor sees the gated world (the Studio
+ * ribboned off + a warm consent banner). The ACTUAL booking enforcement is NOT
+ * in the world — it is the mentor booking widget (mentor.$id swaps the calendar
+ * for AwaitingConsentNotice) backed by the DB trigger prevent_booking_minor_no_
+ * consent, so a minor can browse but never reach a booking action. No fabricated
+ * data anywhere.
  */
 
 // Building id → landmark route. Every building maps to a real student surface.
@@ -51,7 +59,11 @@ export function StudentQuarterHome() {
   // screen-recording. In production the world-state is purely the real gate.
   const [consentOverride, setConsentOverride] = useState<QuarterState | null>(null);
 
-  const realState: QuarterState = consent?.awaiting ? "pending" : "granted";
+  // Fail-safe for a mostly-minor userbase: default to the GATED world until
+  // consent is KNOWN and not awaiting, so a pending minor never flashes the
+  // fully-open world while the consent query is loading. (Purely cosmetic — the
+  // real booking gate at the mentor widget + DB trigger is the enforcement.)
+  const realState: QuarterState = consent && !consent.awaiting ? "granted" : "pending";
   const worldState: QuarterState = consentOverride ?? realState;
   const name = firstName || "there";
 
@@ -61,9 +73,6 @@ export function StudentQuarterHome() {
     },
     [],
   );
-
-  const zoneOpen = (z: (typeof ZONES)[number]) =>
-    z.always ? true : z.book ? worldState === "granted" : true;
 
   const onEnter = (zoneId: string) => {
     const to = ROUTE_BY_ZONE[zoneId];
@@ -192,7 +201,7 @@ export function StudentQuarterHome() {
         {/* zone dock — full fallback / mobile navigation (works with no WebGL) */}
         <nav className="qx-dock" aria-label="Quarter places">
           {ZONES.map((z) => {
-            const open = zoneOpen(z);
+            const open = zoneOpen(z, worldState);
             return (
               <button
                 key={z.id}
@@ -281,9 +290,15 @@ function QuarterTweaks({
     <div className="qtw">
       <div className="qtw-h">
         <b>Tweaks · dev</b>
-        <span className="x" role="button" tabIndex={0} onClick={onClose}>
+        <button
+          type="button"
+          className="x"
+          aria-label="Close tweaks"
+          onClick={onClose}
+          style={{ border: 0, background: "transparent" }}
+        >
           ✕
-        </span>
+        </button>
       </div>
       <div className="qtw-b">
         <div className="qtw-grp">

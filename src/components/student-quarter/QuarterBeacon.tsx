@@ -141,9 +141,15 @@ export function QuarterBeacon({
               {markAll.isPending ? "Marking…" : "Mark all read"}
             </button>
           )}
-          <span className="x" role="button" tabIndex={0} aria-label="Close" onClick={onClose}>
+          <button
+            type="button"
+            className="x"
+            aria-label="Close notifications"
+            onClick={onClose}
+            style={{ border: 0, background: "transparent" }}
+          >
             ✕
-          </span>
+          </button>
         </div>
         <div className="qbeacon-b">
           {rows.length === 0 ? (
