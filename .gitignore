@@ -49,3 +49,12 @@ scratch/
 /design/handoff/
 /unconventional-signup-flow-design/
 /Unconventional signup flow design-handoff.zip
+/*design-handoff.zip
+/*Dashbaord-handoff.zip
+/uniplug-dashbaord/
+/uniplug-student-dashbaord/
+
+# Local-only dev affordances (NEVER commit — temporary login bypass + local seed accounts)
+/src/routes/dev-login.tsx
+/supabase/dev-seeds/p10-verify-local-login.sql
+/supabase/dev-seeds/run-p10-verify-local-login.sh
