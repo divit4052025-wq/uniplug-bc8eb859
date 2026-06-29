@@ -302,13 +302,26 @@ function MentorProfilePage() {
                 >
                   Book a Session
                 </button>
-                <Link
-                  to="/messages"
-                  search={{ peer: mentor.id, peerName: mentor.full_name }}
-                  className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-6 text-[14px] font-medium text-white transition hover:bg-white/10"
-                >
-                  Message
-                </Link>
+                {/* Child-safety: don't expose the contact channel to a minor who is
+                    still awaiting parental consent (messaging is not yet consent-gated
+                    server-side — flagged). Mirrors the booking-widget swap below. */}
+                {consent?.awaiting ? (
+                  <span
+                    aria-disabled="true"
+                    title="Messaging opens once a parent approves"
+                    className="inline-flex h-12 cursor-not-allowed items-center justify-center rounded-full border border-white/20 px-6 text-[14px] font-medium text-white/40"
+                  >
+                    Message
+                  </span>
+                ) : (
+                  <Link
+                    to="/messages"
+                    search={{ peer: mentor.id, peerName: mentor.full_name }}
+                    className="inline-flex h-12 items-center justify-center rounded-full border border-white/30 px-6 text-[14px] font-medium text-white transition hover:bg-white/10"
+                  >
+                    Message
+                  </Link>
+                )}
               </div>
             </div>
           </div>

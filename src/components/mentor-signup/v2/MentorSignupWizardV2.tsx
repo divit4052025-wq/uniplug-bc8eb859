@@ -238,6 +238,12 @@ export function MentorSignupWizardV2() {
           data: {
             role: "mentor",
             full_name: fullName.trim(),
+            // The wizard validates 18+ on `dob` but previously dropped it here, so
+            // mentors.date_of_birth was always NULL even though handle_new_user's
+            // mentor branch is wired to store it. Persist it (mirrors the student
+            // wizard) so the age is recorded + auditable. (Server-side age gate is
+            // still owed — flagged separately; this just stops the data loss.)
+            date_of_birth: dob,
             university: university[0]?.name ?? "",
             university_id: university[0]?.id ?? "",
             course: course[0]?.name ?? "",
@@ -667,16 +673,23 @@ export function MentorSignupWizardV2() {
                       {pwLabel}
                     </span>
                   </div>
-                  <button
-                    type="button"
+                  <div
                     role="checkbox"
                     aria-checked={agreed}
                     aria-label="I agree to UniPlug’s Terms & Conditions, Privacy Policy, Mentor Agreement, and Code of Conduct"
+                    tabIndex={0}
                     data-mag
                     data-hov
                     onClick={() => {
                       setAgreed((a) => !a);
                       setErrors((e) => ({ ...e, agreed: "" }));
+                    }}
+                    onKeyDown={(ev) => {
+                      if (ev.key === "Enter" || ev.key === " ") {
+                        ev.preventDefault();
+                        setAgreed((a) => !a);
+                        setErrors((e) => ({ ...e, agreed: "" }));
+                      }
                     }}
                     className="flex cursor-none items-start gap-3 rounded-md border px-4 py-3.5 text-left transition"
                     style={{ borderColor: agreed ? "var(--primary)" : "rgba(255,252,251,0.2)" }}
@@ -692,24 +705,50 @@ export function MentorSignupWizardV2() {
                     </span>
                     <span className="text-[13.5px] leading-relaxed text-[rgba(255,252,251,0.7)]">
                       I agree to UniPlug’s{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      {/* Real, openable links (open in a new tab; stopPropagation so a
+                          link click doesn't toggle the agreement checkbox). */}
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(ev) => ev.stopPropagation()}
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Terms &amp; Conditions
-                      </b>
+                      </a>
                       ,{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(ev) => ev.stopPropagation()}
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Privacy Policy
-                      </b>
+                      </a>
                       ,{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      <a
+                        href="/mentor-terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(ev) => ev.stopPropagation()}
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Mentor Agreement
-                      </b>
+                      </a>
                       , and{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      <a
+                        href="/community-guidelines"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(ev) => ev.stopPropagation()}
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Code of Conduct
-                      </b>
+                      </a>
                       .
                     </span>
-                  </button>
+                  </div>
                   {errors.agreed && <span className={errCls}>{errors.agreed}</span>}
                   {serverError && (
                     <p role="alert" className="text-center text-xs text-[#E5765B]">

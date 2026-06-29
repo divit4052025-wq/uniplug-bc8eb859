@@ -249,6 +249,7 @@ function BrowsePage() {
                     <MentorCard
                       key={m.id}
                       mentor={m}
+                      awaitingConsent={!!consent?.awaiting}
                       onBook={() => navigate({ to: "/mentor/$id", params: { id: m.id } })}
                     />
                   ))}
@@ -442,7 +443,15 @@ function CheckRow({
   );
 }
 
-function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) {
+function MentorCard({
+  mentor,
+  onBook,
+  awaitingConsent,
+}: {
+  mentor: Mentor;
+  onBook: () => void;
+  awaitingConsent: boolean;
+}) {
   return (
     <article className="group flex flex-col rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-5 transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-20px_rgba(26,26,26,0.25)]">
       <Link to="/mentor/$id" params={{ id: mentor.id }} className="block">
@@ -471,13 +480,26 @@ function MentorCard({ mentor, onBook }: { mentor: Mentor; onBook: () => void }) 
       >
         Book Now
       </button>
-      <Link
-        to="/messages"
-        search={{ peer: mentor.id, peerName: mentor.name }}
-        className="mt-2 block w-full rounded-full border border-[#1A1A1A]/15 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A] transition hover:border-[#C4907F] hover:text-[#C4907F]"
-      >
-        Message
-      </Link>
+      {/* Child-safety: a minor still awaiting parental consent should not be able
+          to open a contact channel with an adult mentor (messaging isn't yet
+          consent-gated server-side — flagged). */}
+      {awaitingConsent ? (
+        <span
+          aria-disabled="true"
+          title="Messaging opens once a parent approves"
+          className="mt-2 block w-full cursor-not-allowed rounded-full border border-[#1A1A1A]/10 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A]/35"
+        >
+          Message
+        </span>
+      ) : (
+        <Link
+          to="/messages"
+          search={{ peer: mentor.id, peerName: mentor.name }}
+          className="mt-2 block w-full rounded-full border border-[#1A1A1A]/15 py-2.5 text-center text-[13px] font-medium text-[#1A1A1A] transition hover:border-[#C4907F] hover:text-[#C4907F]"
+        >
+          Message
+        </Link>
+      )}
     </article>
   );
 }
