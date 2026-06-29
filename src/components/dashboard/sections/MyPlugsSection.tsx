@@ -41,12 +41,12 @@ export function MyPlugsSection({ studentId }: { studentId: string }) {
           <ErrorBanner message="Couldn't load your plugs." onRetry={() => void refetch()} />
         </div>
       ) : isLoading ? (
-        <div className="mt-4 h-32 rounded-2xl bg-[#EDE0DB]" />
+        <div className="mt-4 h-32 animate-pulse rounded-2xl bg-[#EDE0DB]/45" />
       ) : plugs.length === 0 ? (
-        <div className="mt-4 rounded-2xl bg-[#EDE0DB] px-6 py-10 text-center">
+        <div className="mt-4 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] px-6 py-10 text-center">
           <p className="text-[15px] font-light text-[#1A1A1A]">You haven't found your Plug yet</p>
           <a
-            href="/browse"
+            href="/dashboard/switchboard"
             className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-[#C4907F] px-6 text-[13px] font-medium text-white transition hover:opacity-90"
           >
             Find Your Plug
@@ -63,13 +63,13 @@ export function MyPlugsSection({ studentId }: { studentId: string }) {
             return (
               <article
                 key={p.id}
-                className="flex items-start gap-3 rounded-2xl border border-[#E8C4B8] bg-[#EDE0DB] p-5"
+                className="flex items-start gap-3 rounded-2xl border border-[#EDE0DB] bg-[#FFFCFB] p-5"
               >
                 <div className="relative">
-                  <div className="grid h-14 w-14 place-content-center rounded-full bg-[#FFFCFB] font-display text-[18px] font-semibold text-[#1A1A1A]">
+                  <div className="grid h-14 w-14 place-content-center rounded-full bg-[#FAF5EF] font-display text-[18px] font-semibold text-[#1A1A1A]">
                     {initials}
                   </div>
-                  <span className="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#EDE0DB]">
+                  <span className="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-content-center rounded-full bg-[#C4907F] ring-2 ring-[#FFFCFB]">
                     <BadgeCheck className="h-3 w-3 text-[#FFFCFB]" />
                   </span>
                 </div>
@@ -77,9 +77,9 @@ export function MyPlugsSection({ studentId }: { studentId: string }) {
                   <h3 className="font-display text-[16px] font-bold leading-tight text-[#1A1A1A]">
                     {p.full_name}
                   </h3>
-                  <p className="mt-0.5 text-[13px] text-[#C4907F]">{p.university}</p>
+                  <p className="mt-0.5 text-[13px] text-[#1A1A1A]/70">{p.university}</p>
                   <a
-                    href="/browse"
+                    href="/dashboard/switchboard"
                     className="mt-3 inline-flex h-8 items-center justify-center rounded-full bg-[#C4907F] px-3 text-[12px] font-medium text-white hover:opacity-90"
                   >
                     Book again

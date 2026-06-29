@@ -51,9 +51,16 @@ import { Route as MentorDashboardForumRouteImport } from './routes/mentor-dashbo
 import { Route as MentorDashboardForgeRouteImport } from './routes/mentor-dashboard.forge'
 import { Route as MentorDashboardEmbassyRouteImport } from './routes/mentor-dashboard.embassy'
 import { Route as MentorDashboardEarningsRouteImport } from './routes/mentor-dashboard.earnings'
+import { Route as DashboardSwitchboardRouteImport } from './routes/dashboard.switchboard'
+import { Route as DashboardStudioRouteImport } from './routes/dashboard.studio'
+import { Route as DashboardSquareRouteImport } from './routes/dashboard.square'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard.settings'
 import { Route as DashboardSessionsRouteImport } from './routes/dashboard.sessions'
+import { Route as DashboardLockerRouteImport } from './routes/dashboard.locker'
+import { Route as DashboardLineRouteImport } from './routes/dashboard.line'
+import { Route as DashboardDormRouteImport } from './routes/dashboard.dorm'
 import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
+import { Route as DashboardClimbRouteImport } from './routes/dashboard.climb'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
 import { Route as MentorDashboardStudentsStudentIdRouteImport } from './routes/mentor-dashboard.students_.$studentId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
@@ -271,6 +278,21 @@ const MentorDashboardEarningsRoute = MentorDashboardEarningsRouteImport.update({
   path: '/earnings',
   getParentRoute: () => MentorDashboardRoute,
 } as any)
+const DashboardSwitchboardRoute = DashboardSwitchboardRouteImport.update({
+  id: '/switchboard',
+  path: '/switchboard',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardStudioRoute = DashboardStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardSquareRoute = DashboardSquareRouteImport.update({
+  id: '/square',
+  path: '/square',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -281,9 +303,29 @@ const DashboardSessionsRoute = DashboardSessionsRouteImport.update({
   path: '/sessions',
   getParentRoute: () => DashboardRoute,
 } as any)
+const DashboardLockerRoute = DashboardLockerRouteImport.update({
+  id: '/locker',
+  path: '/locker',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardLineRoute = DashboardLineRouteImport.update({
+  id: '/line',
+  path: '/line',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardDormRoute = DashboardDormRouteImport.update({
+  id: '/dorm',
+  path: '/dorm',
+  getParentRoute: () => DashboardRoute,
+} as any)
 const DashboardDocumentsRoute = DashboardDocumentsRouteImport.update({
   id: '/documents',
   path: '/documents',
+  getParentRoute: () => DashboardRoute,
+} as any)
+const DashboardClimbRoute = DashboardClimbRouteImport.update({
+  id: '/climb',
+  path: '/climb',
   getParentRoute: () => DashboardRoute,
 } as any)
 const CallBookingIdRoute = CallBookingIdRouteImport.update({
@@ -341,9 +383,16 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/dorm': typeof DashboardDormRoute
+  '/dashboard/line': typeof DashboardLineRoute
+  '/dashboard/locker': typeof DashboardLockerRoute
   '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/square': typeof DashboardSquareRoute
+  '/dashboard/studio': typeof DashboardStudioRoute
+  '/dashboard/switchboard': typeof DashboardSwitchboardRoute
   '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
   '/mentor-dashboard/embassy': typeof MentorDashboardEmbassyRoute
   '/mentor-dashboard/forge': typeof MentorDashboardForgeRoute
@@ -391,9 +440,16 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/dorm': typeof DashboardDormRoute
+  '/dashboard/line': typeof DashboardLineRoute
+  '/dashboard/locker': typeof DashboardLockerRoute
   '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/square': typeof DashboardSquareRoute
+  '/dashboard/studio': typeof DashboardStudioRoute
+  '/dashboard/switchboard': typeof DashboardSwitchboardRoute
   '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
   '/mentor-dashboard/embassy': typeof MentorDashboardEmbassyRoute
   '/mentor-dashboard/forge': typeof MentorDashboardForgeRoute
@@ -444,9 +500,16 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/call/$bookingId': typeof CallBookingIdRoute
+  '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
+  '/dashboard/dorm': typeof DashboardDormRoute
+  '/dashboard/line': typeof DashboardLineRoute
+  '/dashboard/locker': typeof DashboardLockerRoute
   '/dashboard/sessions': typeof DashboardSessionsRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
+  '/dashboard/square': typeof DashboardSquareRoute
+  '/dashboard/studio': typeof DashboardStudioRoute
+  '/dashboard/switchboard': typeof DashboardSwitchboardRoute
   '/mentor-dashboard/earnings': typeof MentorDashboardEarningsRoute
   '/mentor-dashboard/embassy': typeof MentorDashboardEmbassyRoute
   '/mentor-dashboard/forge': typeof MentorDashboardForgeRoute
@@ -498,9 +561,16 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/dashboard/climb'
     | '/dashboard/documents'
+    | '/dashboard/dorm'
+    | '/dashboard/line'
+    | '/dashboard/locker'
     | '/dashboard/sessions'
     | '/dashboard/settings'
+    | '/dashboard/square'
+    | '/dashboard/studio'
+    | '/dashboard/switchboard'
     | '/mentor-dashboard/earnings'
     | '/mentor-dashboard/embassy'
     | '/mentor-dashboard/forge'
@@ -548,9 +618,16 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/dashboard/climb'
     | '/dashboard/documents'
+    | '/dashboard/dorm'
+    | '/dashboard/line'
+    | '/dashboard/locker'
     | '/dashboard/sessions'
     | '/dashboard/settings'
+    | '/dashboard/square'
+    | '/dashboard/studio'
+    | '/dashboard/switchboard'
     | '/mentor-dashboard/earnings'
     | '/mentor-dashboard/embassy'
     | '/mentor-dashboard/forge'
@@ -600,9 +677,16 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/call/$bookingId'
+    | '/dashboard/climb'
     | '/dashboard/documents'
+    | '/dashboard/dorm'
+    | '/dashboard/line'
+    | '/dashboard/locker'
     | '/dashboard/sessions'
     | '/dashboard/settings'
+    | '/dashboard/square'
+    | '/dashboard/studio'
+    | '/dashboard/switchboard'
     | '/mentor-dashboard/earnings'
     | '/mentor-dashboard/embassy'
     | '/mentor-dashboard/forge'
@@ -959,6 +1043,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MentorDashboardEarningsRouteImport
       parentRoute: typeof MentorDashboardRoute
     }
+    '/dashboard/switchboard': {
+      id: '/dashboard/switchboard'
+      path: '/switchboard'
+      fullPath: '/dashboard/switchboard'
+      preLoaderRoute: typeof DashboardSwitchboardRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/studio': {
+      id: '/dashboard/studio'
+      path: '/studio'
+      fullPath: '/dashboard/studio'
+      preLoaderRoute: typeof DashboardStudioRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/square': {
+      id: '/dashboard/square'
+      path: '/square'
+      fullPath: '/dashboard/square'
+      preLoaderRoute: typeof DashboardSquareRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/settings': {
       id: '/dashboard/settings'
       path: '/settings'
@@ -973,11 +1078,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardSessionsRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/dashboard/locker': {
+      id: '/dashboard/locker'
+      path: '/locker'
+      fullPath: '/dashboard/locker'
+      preLoaderRoute: typeof DashboardLockerRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/line': {
+      id: '/dashboard/line'
+      path: '/line'
+      fullPath: '/dashboard/line'
+      preLoaderRoute: typeof DashboardLineRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/dorm': {
+      id: '/dashboard/dorm'
+      path: '/dorm'
+      fullPath: '/dashboard/dorm'
+      preLoaderRoute: typeof DashboardDormRouteImport
+      parentRoute: typeof DashboardRoute
+    }
     '/dashboard/documents': {
       id: '/dashboard/documents'
       path: '/documents'
       fullPath: '/dashboard/documents'
       preLoaderRoute: typeof DashboardDocumentsRouteImport
+      parentRoute: typeof DashboardRoute
+    }
+    '/dashboard/climb': {
+      id: '/dashboard/climb'
+      path: '/climb'
+      fullPath: '/dashboard/climb'
+      preLoaderRoute: typeof DashboardClimbRouteImport
       parentRoute: typeof DashboardRoute
     }
     '/call/$bookingId': {
@@ -1019,16 +1152,30 @@ declare module '@tanstack/react-router' {
 }
 
 interface DashboardRouteChildren {
+  DashboardClimbRoute: typeof DashboardClimbRoute
   DashboardDocumentsRoute: typeof DashboardDocumentsRoute
+  DashboardDormRoute: typeof DashboardDormRoute
+  DashboardLineRoute: typeof DashboardLineRoute
+  DashboardLockerRoute: typeof DashboardLockerRoute
   DashboardSessionsRoute: typeof DashboardSessionsRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
+  DashboardSquareRoute: typeof DashboardSquareRoute
+  DashboardStudioRoute: typeof DashboardStudioRoute
+  DashboardSwitchboardRoute: typeof DashboardSwitchboardRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
 }
 
 const DashboardRouteChildren: DashboardRouteChildren = {
+  DashboardClimbRoute: DashboardClimbRoute,
   DashboardDocumentsRoute: DashboardDocumentsRoute,
+  DashboardDormRoute: DashboardDormRoute,
+  DashboardLineRoute: DashboardLineRoute,
+  DashboardLockerRoute: DashboardLockerRoute,
   DashboardSessionsRoute: DashboardSessionsRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
+  DashboardSquareRoute: DashboardSquareRoute,
+  DashboardStudioRoute: DashboardStudioRoute,
+  DashboardSwitchboardRoute: DashboardSwitchboardRoute,
   DashboardIndexRoute: DashboardIndexRoute,
 }
 

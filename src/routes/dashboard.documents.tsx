@@ -1,19 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 
-import { MyDocumentsSection } from "@/components/dashboard/sections/MyDocumentsSection";
-import { useStudentDashboard } from "@/components/dashboard/DashboardContext";
-
-// My Documents (/dashboard/documents) — uploaded documents only. (Schools moved
-// to the compact "My Schools" widget on the home page.)
+// Legacy /dashboard/documents → The Locker (the Quarter landmark for documents).
+// The Locker renders the same MyDocumentsSection, so this is a zero-loss
+// redirect that keeps old links + bookmarks working.
 export const Route = createFileRoute("/dashboard/documents")({
-  component: DashboardDocuments,
+  beforeLoad: () => {
+    throw redirect({ to: "/dashboard/locker" });
+  },
 });
-
-function DashboardDocuments() {
-  const { userId } = useStudentDashboard();
-  return (
-    <div className="mt-8 space-y-12 animate-hero-rise">
-      <MyDocumentsSection userId={userId} />
-    </div>
-  );
-}
