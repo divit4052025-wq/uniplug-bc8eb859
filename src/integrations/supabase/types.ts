@@ -1608,6 +1608,7 @@ export type Database = {
           parental_consent_at: string | null;
           parental_consent_email: string | null;
           parental_consent_token: string | null;
+          parental_consent_token_issued_at: string | null;
           phone: string;
           photo_url: string | null;
           profile_completed_at: string | null;
@@ -1629,6 +1630,7 @@ export type Database = {
           parental_consent_at?: string | null;
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
+          parental_consent_token_issued_at?: string | null;
           phone: string;
           photo_url?: string | null;
           profile_completed_at?: string | null;
@@ -1650,6 +1652,7 @@ export type Database = {
           parental_consent_at?: string | null;
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
+          parental_consent_token_issued_at?: string | null;
           phone?: string;
           photo_url?: string | null;
           profile_completed_at?: string | null;
