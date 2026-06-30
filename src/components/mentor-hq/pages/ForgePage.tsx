@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BadgeCheck, Loader2, Plus, ShieldAlert, UploadCloud, X, Lock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -7,12 +7,19 @@ import { HqCard, HqPageShell } from "@/components/mentor-hq/HqPageShell";
 import { VerifiedBadge } from "@/components/site/VerifiedBadge";
 import { useMentorDashboard } from "@/components/mentor-dashboard/MentorDashboardContext";
 import { supabase } from "@/integrations/supabase/client";
+import { log } from "@/lib/log";
 import { useOptimisticMutation } from "@/lib/hooks/useOptimisticMutation";
 import {
   loadMentorProfile,
   saveMentorProfile,
   type MentorScalarProfile,
 } from "@/components/mentor-dashboard/mentorProfileEdit";
+import {
+  resubmitMentorApplication,
+  setMentorEnrollmentDocument,
+  setMentorIdDocument,
+  uploadMentorDocument,
+} from "@/components/mentor-signup/mentorWrite";
 import { HqSectionTitle } from "./shared";
 
 const BIO_MAX = 500;
@@ -363,7 +370,7 @@ function ReadOnlyField({ label, value }: { label: string; value?: string | null 
 }
 
 function VerificationPanel() {
-  const { status, verifiedAt, verificationNotes } = useMentorDashboard();
+  const { status, verifiedAt } = useMentorDashboard();
 
   if (verifiedAt) {
     return (
@@ -389,29 +396,7 @@ function VerificationPanel() {
   }
 
   if (status === "rejected") {
-    return (
-      <HqCard className="border-[#D8432A]/40 bg-[#D8432A]/[0.06]">
-        <div className="flex items-start gap-3">
-          <ShieldAlert
-            className="mt-0.5 h-5 w-5 shrink-0"
-            style={{ color: "#C0392B" }}
-            aria-hidden="true"
-          />
-          <div>
-            <p className="font-display text-base font-semibold">Verification needs changes</p>
-            <div className="mt-2 rounded-lg border-l-2 border-[#D8432A] bg-[#D8432A]/[0.07] px-3 py-2 text-[13px] text-[#1A1A1A]">
-              {verificationNotes && verificationNotes.trim()
-                ? verificationNotes
-                : "Re-check that your college ID is current, clear, and matches your enrolment details."}
-            </div>
-            <p className="mt-2 text-[13px] text-[#1A1A1A]/70">
-              Update your details and re-upload your college ID to be re-reviewed. Reach out to
-              support if you need a hand.
-            </p>
-          </div>
-        </div>
-      </HqCard>
-    );
+    return <ResubmitPanel />;
   }
 
   // pending / under review
@@ -432,5 +417,168 @@ function VerificationPanel() {
         </div>
       </div>
     </HqCard>
+  );
+}
+
+// Rejected verification → the resubmit surface. Shows the admin's real reason,
+// lets the mentor replace their college ID (and, on the enhanced track, their
+// enrollment proof), then calls resubmit_mentor_application(). On success the
+// layout's mentor row is invalidated so status flips rejected → pending and this
+// panel re-renders as "in review" — no fabricated success.
+function ResubmitPanel() {
+  const { mentorId, verificationNotes } = useMentorDashboard();
+  const queryClient = useQueryClient();
+
+  const [idPhoto, setIdPhoto] = useState<File | null>(null);
+  const [enrollPhoto, setEnrollPhoto] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // The enrollment-proof re-upload is only offered on the enhanced track. Read
+  // the tier straight from the row (not in context); fail-closed to "enhanced"
+  // so the heavier-proof option is shown if the tier can't be read (mirrors
+  // FinalizeMentor). The DB RPC is the real gate either way.
+  const { data: tier } = useQuery<"standard" | "enhanced">({
+    queryKey: ["mentor-tier", mentorId],
+    queryFn: async () => {
+      const { data, error: tierErr } = await supabase
+        .from("mentors")
+        .select("tier")
+        .eq("id", mentorId)
+        .maybeSingle();
+      if (tierErr) throw tierErr;
+      return (data?.tier as "standard" | "enhanced" | undefined) ?? "enhanced";
+    },
+  });
+
+  async function resubmit() {
+    setError(null);
+    setBusy(true);
+    try {
+      if (idPhoto) {
+        const path = await uploadMentorDocument(mentorId, idPhoto, "college-id");
+        await setMentorIdDocument(mentorId, path);
+      }
+      if (tier === "enhanced" && enrollPhoto) {
+        const enrollPath = await uploadMentorDocument(mentorId, enrollPhoto, "enrollment-proof");
+        await setMentorEnrollmentDocument(mentorId, enrollPath);
+      }
+      await resubmitMentorApplication();
+      // Refetch the layout's mentor row → status moves rejected → pending and
+      // the whole HQ world-state flips with it.
+      await queryClient.invalidateQueries({ queryKey: ["mentor-profile-header", mentorId] });
+      toast.success("Application resubmitted — we'll review it again shortly.");
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : "We couldn't resubmit your application.";
+      log.error({
+        surface: "web",
+        event: "mentor_resubmit_failed",
+        kind: "mentor_resubmit",
+        error: raw,
+      });
+      setError(raw);
+      setBusy(false);
+    }
+  }
+
+  return (
+    <HqCard className="border-[#D8432A]/40 bg-[#D8432A]/[0.06]">
+      <div className="flex items-start gap-3">
+        <ShieldAlert
+          className="mt-0.5 h-5 w-5 shrink-0"
+          style={{ color: "#C0392B" }}
+          aria-hidden="true"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-base font-semibold">Verification needs changes</p>
+          <div className="mt-2 rounded-lg border-l-2 border-[#D8432A] bg-[#D8432A]/[0.07] px-3 py-2 text-[13px] text-[#1A1A1A]">
+            {verificationNotes && verificationNotes.trim()
+              ? verificationNotes
+              : "Re-check that your college ID is current, clear, and matches your enrolment details."}
+          </div>
+          <p className="mt-2 text-[13px] text-[#1A1A1A]/70">
+            Replace any documents that need updating, then resubmit to be re-reviewed. Reach out to
+            support if you need a hand.
+          </p>
+
+          <div className="mt-4 flex flex-col gap-3">
+            <ReuploadControl
+              label={idPhoto ? "College ID replaced" : "Replace college ID"}
+              fileName={idPhoto?.name ?? null}
+              ariaLabel="Replace your college ID (optional)"
+              disabled={busy}
+              onSelect={setIdPhoto}
+            />
+            {tier === "enhanced" ? (
+              <ReuploadControl
+                label={enrollPhoto ? "Enrollment proof replaced" : "Replace enrollment proof"}
+                fileName={enrollPhoto?.name ?? null}
+                ariaLabel="Replace your proof of enrollment (optional)"
+                disabled={busy}
+                onSelect={setEnrollPhoto}
+              />
+            ) : null}
+
+            {error ? (
+              <p role="alert" className="text-[13px] font-medium text-[#C0392B]">
+                {error}
+              </p>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={resubmit}
+              disabled={busy}
+              className="inline-flex h-11 w-fit items-center justify-center gap-2 rounded-md bg-[#1A1A1A] px-6 text-[14px] font-bold text-[#FAF5EF] transition hover:opacity-90 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C4907F]/30 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FFFCFB]"
+            >
+              {busy ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  Resubmitting…
+                </>
+              ) : (
+                "Resubmit application"
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </HqCard>
+  );
+}
+
+function ReuploadControl({
+  label,
+  fileName,
+  ariaLabel,
+  disabled,
+  onSelect,
+}: {
+  label: string;
+  fileName: string | null;
+  ariaLabel: string;
+  disabled: boolean;
+  onSelect: (file: File | null) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <label className={disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}>
+        <input
+          type="file"
+          accept="image/*,application/pdf"
+          aria-label={ariaLabel}
+          className="hidden"
+          disabled={disabled}
+          onChange={(e) => onSelect(e.target.files?.[0] ?? null)}
+        />
+        <span className="inline-flex items-center gap-2 rounded-md border border-[#1A1A1A]/15 bg-[#FFFCFB] px-4 py-2 text-[13px] font-semibold text-[#1A1A1A] transition hover:border-[#1A1A1A]/30">
+          <UploadCloud className="h-4 w-4" aria-hidden="true" />
+          {label}
+        </span>
+      </label>
+      {fileName ? (
+        <span className="min-w-0 truncate text-[12px] text-[#1A1A1A]/55">{fileName}</span>
+      ) : null}
+    </div>
   );
 }
