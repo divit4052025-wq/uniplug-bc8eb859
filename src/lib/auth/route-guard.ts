@@ -4,8 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { resolveUserRole } from "@/lib/auth/role";
 import { withRetry } from "@/lib/retry";
 
-const ADMIN_EMAIL = "divitfatehpuria7@gmail.com";
-
 export interface AuthContext {
   userId?: string;
   userMetadata?: { role?: string; full_name?: string };
@@ -48,7 +46,22 @@ export async function clientAuthGuard(opts: GuardOpts): Promise<AuthContext> {
   const session = sessionData?.session;
   if (!session) throw redirect({ to: opts.signedOutTo });
 
-  const isAdmin = (session.user.email ?? "").toLowerCase() === ADMIN_EMAIL;
+  const meta = (session.user.user_metadata ?? {}) as { role?: string; full_name?: string };
+
+  // Cheap fast-path ONLY for an "any" route that explicitly permits admins: any
+  // signed-in user is fine, no role resolution needed. For "any" WITHOUT
+  // allowAdmin (or allowAdmin:false), we still resolve role below so an admin is
+  // trapped on /admin — this preserves the pre-rewrite behaviour and honours the
+  // deliberate allowAdmin:false on the 1:1 messaging routes (admins excluded).
+  if (opts.requireRole === "any" && opts.allowAdmin === true) {
+    return { userId: session.user.id, userMetadata: meta };
+  }
+
+  // Admin-ness is data-driven now (the role system), resolved via resolveUserRole
+  // — no hardcoded email. resolveUserRole returns "admin" for any active admin role.
+  const role = await resolveUserRole(session.user.id, session.user.email, meta);
+  const isAdmin = role === "admin";
+
   if (isAdmin) {
     if (opts.requireRole === "admin") {
       return { userId: session.user.id };
@@ -56,17 +69,17 @@ export async function clientAuthGuard(opts: GuardOpts): Promise<AuthContext> {
     if (!opts.allowAdmin) {
       throw redirect({ to: "/admin" });
     }
-  } else if (opts.requireRole === "admin") {
+    return { userId: session.user.id, userMetadata: meta };
+  }
+  if (opts.requireRole === "admin") {
     throw redirect({ to: "/login" });
   }
 
-  const meta = (session.user.user_metadata ?? {}) as { role?: string; full_name?: string };
-
-  if (opts.requireRole === "any" || (isAdmin && opts.allowAdmin)) {
+  // Non-admin on an "any" route is always fine.
+  if (opts.requireRole === "any") {
     return { userId: session.user.id, userMetadata: meta };
   }
 
-  const role = await resolveUserRole(session.user.id, session.user.email, meta);
   if (opts.requireRole === "student" && role !== "student") {
     if (role === "mentor") throw redirect({ to: "/mentor-dashboard" });
     throw redirect({ to: opts.signedOutTo });

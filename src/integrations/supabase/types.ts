@@ -43,6 +43,66 @@ export type Database = {
           },
         ];
       };
+      admin_audit_log: {
+        Row: {
+          action: string;
+          actor_id: string;
+          created_at: string;
+          detail: Json | null;
+          id: string;
+          justification: string | null;
+          target_id: string | null;
+          target_label: string | null;
+          target_type: string | null;
+        };
+        Insert: {
+          action: string;
+          actor_id: string;
+          created_at?: string;
+          detail?: Json | null;
+          id?: string;
+          justification?: string | null;
+          target_id?: string | null;
+          target_label?: string | null;
+          target_type?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string;
+          created_at?: string;
+          detail?: Json | null;
+          id?: string;
+          justification?: string | null;
+          target_id?: string | null;
+          target_label?: string | null;
+          target_type?: string | null;
+        };
+        Relationships: [];
+      };
+      admin_roles: {
+        Row: {
+          granted_at: string;
+          granted_by: string | null;
+          revoked_at: string | null;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          granted_at?: string;
+          granted_by?: string | null;
+          revoked_at?: string | null;
+          role: string;
+          user_id: string;
+        };
+        Update: {
+          granted_at?: string;
+          granted_by?: string | null;
+          revoked_at?: string | null;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       ai_rate_limit_events: {
         Row: {
           created_at: string;
@@ -2110,6 +2170,40 @@ export type Database = {
         }[];
       };
       is_admin: { Args: never; Returns: boolean };
+      is_super_admin: { Args: never; Returns: boolean };
+      current_admin_role: { Args: never; Returns: string | null };
+      log_admin_action: {
+        Args: {
+          _action: string;
+          _target_type?: string;
+          _target_id?: string;
+          _target_label?: string;
+          _justification?: string;
+          _detail?: Json;
+        };
+        Returns: string;
+      };
+      admin_grant_role: { Args: { _user_id: string; _role: string }; Returns: undefined };
+      admin_revoke_role: { Args: { _user_id: string; _role: string }; Returns: undefined };
+      admin_list_audit_log: {
+        Args: {
+          _limit?: number;
+          _offset?: number;
+          _actor?: string;
+          _action?: string;
+        };
+        Returns: {
+          id: string;
+          actor_id: string;
+          actor_email: string | null;
+          action: string;
+          target_type: string | null;
+          target_id: string | null;
+          target_label: string | null;
+          justification: string | null;
+          created_at: string;
+        }[];
+      };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
         // B (2026-06-04): optional specialty/university/min-rating filters.

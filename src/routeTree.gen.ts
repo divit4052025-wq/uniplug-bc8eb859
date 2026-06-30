@@ -33,6 +33,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MentorDashboardIndexRouteImport } from './routes/mentor-dashboard.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as StudentSignupFinalizeRouteImport } from './routes/student-signup_.finalize'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
@@ -61,6 +62,7 @@ import { Route as DashboardDormRouteImport } from './routes/dashboard.dorm'
 import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
 import { Route as DashboardClimbRouteImport } from './routes/dashboard.climb'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
+import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
@@ -184,6 +186,11 @@ const DashboardIndexRoute = DashboardIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => DashboardRoute,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const StudentSignupFinalizeRoute = StudentSignupFinalizeRouteImport.update({
   id: '/student-signup_/finalize',
@@ -326,6 +333,11 @@ const CallBookingIdRoute = CallBookingIdRouteImport.update({
   path: '/call/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicHooksSendRemindersRoute =
   ApiPublicHooksSendRemindersRouteImport.update({
     id: '/api/public/hooks/send-reminders',
@@ -348,7 +360,7 @@ const ApiPublicHooksRazorpayWebhookRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/browse': typeof BrowseRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/cookie-policy': typeof CookiePolicyRoute
@@ -368,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -396,6 +409,7 @@ export interface FileRoutesByFullPath {
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
@@ -405,7 +419,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
   '/browse': typeof BrowseRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/cookie-policy': typeof CookiePolicyRoute
@@ -423,6 +436,7 @@ export interface FileRoutesByTo {
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -451,6 +465,7 @@ export interface FileRoutesByTo {
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
+  '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
@@ -461,7 +476,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/browse': typeof BrowseRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/cookie-policy': typeof CookiePolicyRoute
@@ -481,6 +496,7 @@ export interface FileRoutesById {
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -509,6 +525,7 @@ export interface FileRoutesById {
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup_/finalize': typeof StudentSignupFinalizeRoute
+  '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
@@ -540,6 +557,7 @@ export interface FileRouteTypes {
     | '/student-signup'
     | '/terms'
     | '/welcome'
+    | '/admin/audit'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -568,6 +586,7 @@ export interface FileRouteTypes {
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup/finalize'
+    | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
     | '/api/public/hooks/razorpay-webhook'
@@ -577,7 +596,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
-    | '/admin'
     | '/browse'
     | '/community-guidelines'
     | '/cookie-policy'
@@ -595,6 +613,7 @@ export interface FileRouteTypes {
     | '/student-signup'
     | '/terms'
     | '/welcome'
+    | '/admin/audit'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -623,6 +642,7 @@ export interface FileRouteTypes {
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup/finalize'
+    | '/admin'
     | '/dashboard'
     | '/mentor-dashboard'
     | '/api/public/hooks/razorpay-webhook'
@@ -652,6 +672,7 @@ export interface FileRouteTypes {
     | '/student-signup'
     | '/terms'
     | '/welcome'
+    | '/admin/audit'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -680,6 +701,7 @@ export interface FileRouteTypes {
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup_/finalize'
+    | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
     | '/api/public/hooks/razorpay-webhook'
@@ -690,7 +712,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   BrowseRoute: typeof BrowseRoute
   CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
   CookiePolicyRoute: typeof CookiePolicyRoute
@@ -891,6 +913,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIndexRouteImport
       parentRoute: typeof DashboardRoute
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/student-signup_/finalize': {
       id: '/student-signup_/finalize'
       path: '/student-signup/finalize'
@@ -1087,6 +1116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/hooks/send-reminders': {
       id: '/api/public/hooks/send-reminders'
       path: '/api/public/hooks/send-reminders'
@@ -1110,6 +1146,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminAuditRoute: typeof AdminAuditRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditRoute: AdminAuditRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface DashboardRouteChildren {
   DashboardClimbRoute: typeof DashboardClimbRoute
@@ -1192,7 +1240,7 @@ const SessionNotesRouteWithChildren = SessionNotesRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   BrowseRoute: BrowseRoute,
   CommunityGuidelinesRoute: CommunityGuidelinesRoute,
   CookiePolicyRoute: CookiePolicyRoute,
