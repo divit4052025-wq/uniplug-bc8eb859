@@ -178,9 +178,9 @@ function CancelButton({ booking, studentId }: { booking: BookingRow; studentId: 
   const hours = hoursUntilStartIST(booking.date, booking.time_slot);
   const refundHint =
     hours >= 24
-      ? "You'll receive a full refund."
+      ? "You're eligible for a full refund — we'll process it after review."
       : hours >= 2
-        ? "This session is less than 24 hours away, so you'll receive a 50% refund."
+        ? "This session is less than 24 hours away, so you're eligible for a 50% refund, processed after review."
         : "This session is less than 2 hours away, so no refund is available.";
 
   const cancel = useOptimisticMutation<BookingRow[], void, CancelResult>({
@@ -201,7 +201,7 @@ function CancelButton({ booking, studentId }: { booking: BookingRow; studentId: 
         const refundable = data?.refundable_inr ?? 0;
         toast.success(
           refundable > 0
-            ? `Session cancelled — ₹${refundable.toLocaleString("en-IN")} will be refunded.`
+            ? `Session cancelled — ₹${refundable.toLocaleString("en-IN")} refund requested (pending review).`
             : "Session cancelled.",
         );
         // The freed slot becomes bookable again on the mentor's calendar.
