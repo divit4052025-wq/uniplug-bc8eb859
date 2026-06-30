@@ -49,11 +49,11 @@ BEGIN
   ) VALUES
     (m_a, 'authenticated', 'authenticated', 'm_a@a2-lock.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Approved M','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Approved M','university','T','course','T','year','2nd Year'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'),
     (m_b, 'authenticated', 'authenticated', 'm_b@a2-lock.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Approved M2','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Approved M2','university','T','course','T','year','2nd Year'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000');
 
   -- Promote both mentors to approved via service_role (bypasses trigger).

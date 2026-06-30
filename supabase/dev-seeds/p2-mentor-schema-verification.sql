@@ -54,14 +54,14 @@ INSERT INTO auth.users (
   'a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1'::uuid,
   'authenticated', 'authenticated', 'p2-mentor-a@example.com',
   crypt('p2-fixture-pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','Mentor A','university','IIT Bombay','course','Computer Science','year','3rd Year'),
+  jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Mentor A','university','IIT Bombay','course','Computer Science','year','3rd Year'),
   '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'
 ),
 (
   'b2b2b2b2-b2b2-b2b2-b2b2-b2b2b2b2b2b2'::uuid,
   'authenticated', 'authenticated', 'p2-mentor-b@example.com',
   crypt('p2-fixture-pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','Mentor B','university','IIT Delhi','course','Mechanical Engineering','year','2nd Year'),
+  jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Mentor B','university','IIT Delhi','course','Mechanical Engineering','year','2nd Year'),
   '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'
 ),
 (
@@ -69,7 +69,7 @@ INSERT INTO auth.users (
   'authenticated', 'authenticated', 'p2-mentor-c@example.com',
   crypt('p2-fixture-pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
   jsonb_build_object(
-    'role','mentor','full_name','Mentor C','university','Stanford University','course','Economics','year','Final Year',
+    'role','mentor','date_of_birth','2000-01-01','full_name','Mentor C','university','Stanford University','course','Economics','year','Final Year',
     'phone','+91-999','college_email','c@stanford.edu','bio','I mentor essays',
     'specialty','essays',
     'university_id',(SELECT id::text FROM public.ref_universities LIMIT 1),
