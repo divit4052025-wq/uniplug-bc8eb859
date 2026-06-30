@@ -71,7 +71,7 @@ INSERT INTO auth.users (
   crypt('p7-fixture-pw', gen_salt('bf')), now(),
   '{"provider":"email"}'::jsonb,
   jsonb_build_object('role','mentor','full_name','Phase7 Mentor M',
-    'university','P7 University','course','CS','year','2'),
+    'university','P7 University','course','CS','year','2','date_of_birth','2000-01-01'),
   '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'
 )
 ON CONFLICT (id) DO NOTHING;

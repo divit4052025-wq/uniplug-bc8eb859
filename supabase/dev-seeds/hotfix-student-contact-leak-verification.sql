@@ -29,7 +29,7 @@ INSERT INTO auth.users (
   'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'::uuid,
   'authenticated', 'authenticated', 'hotfix-mentor@example.com',
   crypt('hotfix-pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','Hotfix Mentor','university','IIT Bombay','course','Computer Science','year','3rd Year'),
+  jsonb_build_object('role','mentor','full_name','Hotfix Mentor','university','IIT Bombay','course','Computer Science','year','3rd Year','date_of_birth','2000-01-01'),
   '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'
 ),
 (

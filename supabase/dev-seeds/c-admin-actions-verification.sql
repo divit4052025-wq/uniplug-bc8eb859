@@ -11,7 +11,7 @@ SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
 -- admin (is_admin() matches this email), a mentor, a non-admin context.
 INSERT INTO auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, confirmation_token, recovery_token, email_change, email_change_token_new, created_at, updated_at, instance_id) VALUES
 ('dc000000-0000-0000-0000-0000000000a0','authenticated','authenticated','divitfatehpuria7@gmail.com',crypt('x',gen_salt('bf')),now(),'{"provider":"email"}','{"role":"student","full_name":"Admin","phone":"+91","school":"S","grade":"Grade 12","date_of_birth":"1990-01-01"}','','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
-('dc000000-0000-0000-0000-0000000000b0','authenticated','authenticated','c-mentor@example.com',crypt('x',gen_salt('bf')),now(),'{"provider":"email"}','{"role":"mentor","full_name":"C Mentor","university":"U","course":"C","year":"3rd Year"}','','','','',now(),now(),'00000000-0000-0000-0000-000000000000')
+('dc000000-0000-0000-0000-0000000000b0','authenticated','authenticated','c-mentor@example.com',crypt('x',gen_salt('bf')),now(),'{"provider":"email"}','{"role":"mentor","full_name":"C Mentor","university":"U","course":"C","year":"3rd Year","date_of_birth":"2000-01-01"}','','','','',now(),now(),'00000000-0000-0000-0000-000000000000')
 ON CONFLICT (id) DO NOTHING;
 UPDATE public.mentors SET status='pending' WHERE id='dc000000-0000-0000-0000-0000000000b0';
 INSERT INTO public.ref_add_requests (id, kind, proposed_name, requested_by, status)

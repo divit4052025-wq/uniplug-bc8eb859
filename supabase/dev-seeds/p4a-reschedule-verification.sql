@@ -27,7 +27,7 @@ INSERT INTO auth.users (
 ) VALUES
 ('cafe0001-0000-0000-0000-000000000001'::uuid,'authenticated','authenticated','p4a-mentor@example.com',
   crypt('p4a-pw',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','P4a Mentor','university','IIT Bombay','course','CS','year','3rd Year'),
+  jsonb_build_object('role','mentor','full_name','P4a Mentor','university','IIT Bombay','course','CS','year','3rd Year','date_of_birth','2000-01-01'),
   '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
 ('cafe0001-0000-0000-0000-0000000000a1'::uuid,'authenticated','authenticated','p4a-s1@example.com',
   crypt('p4a-pw',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,

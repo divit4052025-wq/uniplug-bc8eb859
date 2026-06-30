@@ -32,7 +32,7 @@ BEGIN
      email_change, email_change_token_new, created_at, updated_at, instance_id) VALUES
     (m_a,'authenticated','authenticated','m_a@p4.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Mentor P4','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','full_name','Mentor P4','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
     (s_x,'authenticated','authenticated','s_x@p4.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
