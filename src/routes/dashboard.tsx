@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { StudentDashboardProvider } from "@/components/dashboard/DashboardContext";
+import { StudentSupportButton } from "@/components/student-quarter/StudentSupportButton";
 import { useConsentStatus } from "@/lib/consent/useConsentStatus";
 import { resolveUserRole } from "@/lib/auth/role";
 import { clientAuthGuard, type AuthContext } from "@/lib/auth/route-guard";
@@ -119,6 +120,10 @@ function DashboardLayout() {
   return (
     <StudentDashboardProvider value={{ userId, firstName, profileIncomplete, consent }}>
       <Outlet />
+      {/* Persistent emergency-guidance affordance — floats over every landmark
+          and the 3D world home. NOT a route/zone; pure React + CSS (three-free).
+          Emergency contacts only — no report form (owner-deferred). */}
+      <StudentSupportButton />
     </StudentDashboardProvider>
   );
 }
