@@ -2054,6 +2054,18 @@ export type Database = {
           year: string;
         }[];
       };
+      get_mentor_reviews: {
+        // A4 (2026-06-30): public per-mentor review list, approved mentors only.
+        // Reviewer first name only — never returns student_id.
+        Args: { _mentor_id: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          rating: number;
+          review: string;
+          reviewer_first_name: string;
+        }[];
+      };
       get_my_conversations: {
         Args: never;
         Returns: {

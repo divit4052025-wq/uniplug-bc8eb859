@@ -46,7 +46,6 @@ type MentorProfile = {
 
 type Review = {
   id: string;
-  student_id: string;
   rating: number;
   review: string;
   created_at: string;
@@ -99,27 +98,29 @@ function MentorProfilePage() {
       const mentor: MentorProfile | undefined = ((profile ?? []) as MentorProfile[])[0];
       if (!mentor) return { mentor: null, reviews: [], sessionCount: 0 };
 
-      const { data: rev, error: rErr } = await supabase
-        .from("reviews")
-        .select("id, student_id, rating, review, created_at")
-        .eq("mentor_id", id)
-        .order("created_at", { ascending: false });
+      // Public per-mentor review list comes from get_mentor_reviews: an
+      // approved-mentor-gated SECURITY DEFINER RPC that returns the reviewer's
+      // first name only and NEVER the raw student_id. The table SELECT is
+      // own-rows only, so a raw .from("reviews") read here would return nothing
+      // for other users' reviews.
+      const { data: rev, error: rErr } = await supabase.rpc("get_mentor_reviews", {
+        _mentor_id: id,
+      });
       if (rErr) throw rErr;
-      const reviewRows: Review[] = (rev ?? []) as Review[];
-      const studentIds = Array.from(new Set(reviewRows.map((r) => r.student_id)));
-      let nameMap = new Map<string, string>();
-      if (studentIds.length) {
-        const { data: names, error: nErr } = await supabase.rpc("get_review_student_names", {
-          _ids: studentIds,
-        });
-        if (nErr) throw nErr;
-        nameMap = new Map(
-          ((names ?? []) as { id: string; full_name: string }[]).map((n) => [n.id, n.full_name]),
-        );
-      }
-      const reviews = reviewRows.map((r) => ({
-        ...r,
-        studentName: nameMap.get(r.student_id) ?? "Student",
+      const reviews: Review[] = (
+        (rev ?? []) as {
+          id: string;
+          rating: number;
+          review: string;
+          created_at: string;
+          reviewer_first_name: string;
+        }[]
+      ).map((r) => ({
+        id: r.id,
+        rating: r.rating,
+        review: r.review,
+        created_at: r.created_at,
+        studentName: r.reviewer_first_name || "Student",
       }));
 
       const { count, error: cErr } = await supabase
