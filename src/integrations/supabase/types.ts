@@ -150,6 +150,30 @@ export type Database = {
           },
         ];
       };
+      consent_revocation_events: {
+        Row: {
+          action: string;
+          booking_id: string | null;
+          id: string;
+          revoked_at: string;
+          student_id: string;
+        };
+        Insert: {
+          action: string;
+          booking_id?: string | null;
+          id?: string;
+          revoked_at?: string;
+          student_id: string;
+        };
+        Update: {
+          action?: string;
+          booking_id?: string | null;
+          id?: string;
+          revoked_at?: string;
+          student_id?: string;
+        };
+        Relationships: [];
+      };
       conversations: {
         Row: {
           blocked_at: string | null;
@@ -1779,6 +1803,7 @@ export type Database = {
         }[];
       };
       can_mentor_access_document: { Args: { _document_id: string }; Returns: boolean };
+      student_has_consent: { Args: { _student_id: string }; Returns: boolean };
       admin_promote_ref_add_request: {
         Args: { _id: string };
         Returns: undefined;

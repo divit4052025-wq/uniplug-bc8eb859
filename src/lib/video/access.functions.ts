@@ -32,6 +32,7 @@ export type VideoCallDenyReason =
   | "not_a_participant"
   | "not_joinable_status"
   | "outside_window"
+  | "consent_revoked"
   | "unauthenticated"
   | "server_error";
 
@@ -46,6 +47,9 @@ function mapRpcError(message: string | undefined): VideoCallDenyReason {
   if (m.includes("booking_not_found")) return "booking_not_found";
   if (m.includes("not_joinable_status")) return "not_joinable_status";
   if (m.includes("outside_window")) return "outside_window";
+  // A3: the join gate now RAISEs consent_revoked when parental consent is not
+  // current — surface a distinct, non-alarming "paused" reason.
+  if (m.includes("consent_revoked")) return "consent_revoked";
   if (m.includes("authentication required")) return "unauthenticated";
   return "server_error";
 }
