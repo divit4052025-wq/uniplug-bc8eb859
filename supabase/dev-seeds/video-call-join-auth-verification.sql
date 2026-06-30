@@ -74,15 +74,15 @@ BEGIN
   ) VALUES
     (m_a, 'authenticated', 'authenticated', 'm_a@vid.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Matched M','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','full_name','Matched M','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'),
     (m_b, 'authenticated', 'authenticated', 'm_b@vid.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Second M','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','full_name','Second M','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'),
     (s_a, 'authenticated', 'authenticated', 's_a@vid.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','student','full_name','Booked S','phone','+91-0','school','T','grade','Grade 11'),
+     jsonb_build_object('role','student','full_name','Booked S','phone','+91-0','school','T','grade','Grade 11','date_of_birth','2010-01-01'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'),
     (s_b, 'authenticated', 'authenticated', 's_b@vid.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
@@ -110,6 +110,10 @@ BEGIN
   -- with b_huge's slot in the partial unique index.
   INSERT INTO public.bookings (id, mentor_id, student_id, date, time_slot, duration, price, status)
   VALUES (b_orphan, m_b, NULL, v_today, v_other_hh, 60, 0, 'confirmed');
+
+  -- A3 live-consent: authorize_video_join now re-checks current consent, so the
+  -- booked minor must have parental consent on file (a real booked student does).
+  UPDATE public.students SET parental_consent_at = now() WHERE id = s_a;
 END $$;
 
 CREATE TEMP TABLE _vid_results (

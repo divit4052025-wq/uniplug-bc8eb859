@@ -36,7 +36,7 @@ INSERT INTO auth.users (
   'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid,
   'authenticated', 'authenticated', 'hotfix-student@example.com',
   crypt('hotfix-pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','student','full_name','Hotfix Student','phone','+91-700','school','Test School','grade','Grade 12'),
+  jsonb_build_object('role','student','full_name','Hotfix Student','phone','+91-700','school','Test School','grade','Grade 12','date_of_birth','2000-01-01'),
   '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'
 )
 ON CONFLICT (id) DO NOTHING;
