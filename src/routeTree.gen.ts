@@ -15,7 +15,6 @@ import { Route as StudentSignupRouteImport } from './routes/student-signup'
 import { Route as SessionNotesRouteImport } from './routes/session-notes'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
-import { Route as ProgressRouteImport } from './routes/progress'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as MessagesRouteImport } from './routes/messages'
@@ -62,7 +61,6 @@ import { Route as DashboardDormRouteImport } from './routes/dashboard.dorm'
 import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
 import { Route as DashboardClimbRouteImport } from './routes/dashboard.climb'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
-import { Route as MentorDashboardStudentsStudentIdRouteImport } from './routes/mentor-dashboard.students_.$studentId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
@@ -95,11 +93,6 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const RefundPolicyRoute = RefundPolicyRouteImport.update({
   id: '/refund-policy',
   path: '/refund-policy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProgressRoute = ProgressRouteImport.update({
-  id: '/progress',
-  path: '/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -333,12 +326,6 @@ const CallBookingIdRoute = CallBookingIdRouteImport.update({
   path: '/call/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MentorDashboardStudentsStudentIdRoute =
-  MentorDashboardStudentsStudentIdRouteImport.update({
-    id: '/students_/$studentId',
-    path: '/students/$studentId',
-    getParentRoute: () => MentorDashboardRoute,
-  } as any)
 const ApiPublicHooksSendRemindersRoute =
   ApiPublicHooksSendRemindersRouteImport.update({
     id: '/api/public/hooks/send-reminders',
@@ -375,7 +362,6 @@ export interface FileRoutesByFullPath {
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
-  '/progress': typeof ProgressRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
@@ -412,7 +398,6 @@ export interface FileRoutesByFullPath {
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
-  '/mentor-dashboard/students/$studentId': typeof MentorDashboardStudentsStudentIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -432,7 +417,6 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
-  '/progress': typeof ProgressRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
@@ -469,7 +453,6 @@ export interface FileRoutesByTo {
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
-  '/mentor-dashboard/students/$studentId': typeof MentorDashboardStudentsStudentIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -492,7 +475,6 @@ export interface FileRoutesById {
   '/messages': typeof MessagesRoute
   '/notifications': typeof NotificationsRoute
   '/privacy': typeof PrivacyRoute
-  '/progress': typeof ProgressRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/session-notes': typeof SessionNotesRouteWithChildren
@@ -529,7 +511,6 @@ export interface FileRoutesById {
   '/student-signup_/finalize': typeof StudentSignupFinalizeRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
-  '/mentor-dashboard/students_/$studentId': typeof MentorDashboardStudentsStudentIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -553,7 +534,6 @@ export interface FileRouteTypes {
     | '/messages'
     | '/notifications'
     | '/privacy'
-    | '/progress'
     | '/refund-policy'
     | '/reset-password'
     | '/session-notes'
@@ -590,7 +570,6 @@ export interface FileRouteTypes {
     | '/student-signup/finalize'
     | '/dashboard/'
     | '/mentor-dashboard/'
-    | '/mentor-dashboard/students/$studentId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -610,7 +589,6 @@ export interface FileRouteTypes {
     | '/messages'
     | '/notifications'
     | '/privacy'
-    | '/progress'
     | '/refund-policy'
     | '/reset-password'
     | '/session-notes'
@@ -647,7 +625,6 @@ export interface FileRouteTypes {
     | '/student-signup/finalize'
     | '/dashboard'
     | '/mentor-dashboard'
-    | '/mentor-dashboard/students/$studentId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -669,7 +646,6 @@ export interface FileRouteTypes {
     | '/messages'
     | '/notifications'
     | '/privacy'
-    | '/progress'
     | '/refund-policy'
     | '/reset-password'
     | '/session-notes'
@@ -706,7 +682,6 @@ export interface FileRouteTypes {
     | '/student-signup_/finalize'
     | '/dashboard/'
     | '/mentor-dashboard/'
-    | '/mentor-dashboard/students_/$studentId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -729,7 +704,6 @@ export interface RootRouteChildren {
   MessagesRoute: typeof MessagesRoute
   NotificationsRoute: typeof NotificationsRoute
   PrivacyRoute: typeof PrivacyRoute
-  ProgressRoute: typeof ProgressRoute
   RefundPolicyRoute: typeof RefundPolicyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SessionNotesRoute: typeof SessionNotesRouteWithChildren
@@ -789,13 +763,6 @@ declare module '@tanstack/react-router' {
       path: '/refund-policy'
       fullPath: '/refund-policy'
       preLoaderRoute: typeof RefundPolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/progress': {
-      id: '/progress'
-      path: '/progress'
-      fullPath: '/progress'
-      preLoaderRoute: typeof ProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -1120,13 +1087,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/mentor-dashboard/students_/$studentId': {
-      id: '/mentor-dashboard/students_/$studentId'
-      path: '/students/$studentId'
-      fullPath: '/mentor-dashboard/students/$studentId'
-      preLoaderRoute: typeof MentorDashboardStudentsStudentIdRouteImport
-      parentRoute: typeof MentorDashboardRoute
-    }
     '/api/public/hooks/send-reminders': {
       id: '/api/public/hooks/send-reminders'
       path: '/api/public/hooks/send-reminders'
@@ -1196,7 +1156,6 @@ interface MentorDashboardRouteChildren {
   MentorDashboardVaultRoute: typeof MentorDashboardVaultRoute
   MentorDashboardWatchtowerRoute: typeof MentorDashboardWatchtowerRoute
   MentorDashboardIndexRoute: typeof MentorDashboardIndexRoute
-  MentorDashboardStudentsStudentIdRoute: typeof MentorDashboardStudentsStudentIdRoute
 }
 
 const MentorDashboardRouteChildren: MentorDashboardRouteChildren = {
@@ -1212,7 +1171,6 @@ const MentorDashboardRouteChildren: MentorDashboardRouteChildren = {
   MentorDashboardVaultRoute: MentorDashboardVaultRoute,
   MentorDashboardWatchtowerRoute: MentorDashboardWatchtowerRoute,
   MentorDashboardIndexRoute: MentorDashboardIndexRoute,
-  MentorDashboardStudentsStudentIdRoute: MentorDashboardStudentsStudentIdRoute,
 }
 
 const MentorDashboardRouteWithChildren = MentorDashboardRoute._addFileChildren(
@@ -1248,7 +1206,6 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesRoute: MessagesRoute,
   NotificationsRoute: NotificationsRoute,
   PrivacyRoute: PrivacyRoute,
-  ProgressRoute: ProgressRoute,
   RefundPolicyRoute: RefundPolicyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SessionNotesRoute: SessionNotesRouteWithChildren,
