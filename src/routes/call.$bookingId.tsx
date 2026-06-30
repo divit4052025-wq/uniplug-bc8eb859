@@ -38,6 +38,10 @@ const DENY_COPY: Record<VideoCallDenyReason, { title: string; body: string }> = 
     title: "You don't have access to this call",
     body: "Only the booked student and their matched mentor can join this session.",
   },
+  consent_revoked: {
+    title: "Access paused",
+    body: "This session is paused and can't be joined right now. Please contact support if you think this is a mistake.",
+  },
   booking_not_found: {
     title: "Session not found",
     body: "We couldn't find this session. It may have been removed.",

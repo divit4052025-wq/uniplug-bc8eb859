@@ -150,6 +150,30 @@ export type Database = {
           },
         ];
       };
+      consent_revocation_events: {
+        Row: {
+          action: string;
+          booking_id: string | null;
+          id: string;
+          revoked_at: string;
+          student_id: string;
+        };
+        Insert: {
+          action: string;
+          booking_id?: string | null;
+          id?: string;
+          revoked_at?: string;
+          student_id: string;
+        };
+        Update: {
+          action?: string;
+          booking_id?: string | null;
+          id?: string;
+          revoked_at?: string;
+          student_id?: string;
+        };
+        Relationships: [];
+      };
       conversations: {
         Row: {
           blocked_at: string | null;
@@ -1608,6 +1632,7 @@ export type Database = {
           parental_consent_at: string | null;
           parental_consent_email: string | null;
           parental_consent_token: string | null;
+          parental_consent_token_issued_at: string | null;
           phone: string;
           photo_url: string | null;
           profile_completed_at: string | null;
@@ -1629,6 +1654,7 @@ export type Database = {
           parental_consent_at?: string | null;
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
+          parental_consent_token_issued_at?: string | null;
           phone: string;
           photo_url?: string | null;
           profile_completed_at?: string | null;
@@ -1650,6 +1676,7 @@ export type Database = {
           parental_consent_at?: string | null;
           parental_consent_email?: string | null;
           parental_consent_token?: string | null;
+          parental_consent_token_issued_at?: string | null;
           phone?: string;
           photo_url?: string | null;
           profile_completed_at?: string | null;
@@ -1776,6 +1803,7 @@ export type Database = {
         }[];
       };
       can_mentor_access_document: { Args: { _document_id: string }; Returns: boolean };
+      student_has_consent: { Args: { _student_id: string }; Returns: boolean };
       admin_promote_ref_add_request: {
         Args: { _id: string };
         Returns: undefined;
@@ -2024,6 +2052,18 @@ export type Database = {
           university: string;
           verified_at: string;
           year: string;
+        }[];
+      };
+      get_mentor_reviews: {
+        // A4 (2026-06-30): public per-mentor review list, approved mentors only.
+        // Reviewer first name only — never returns student_id.
+        Args: { _mentor_id: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          rating: number;
+          review: string;
+          reviewer_first_name: string;
         }[];
       };
       get_my_conversations: {

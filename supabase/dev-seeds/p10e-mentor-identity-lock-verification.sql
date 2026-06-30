@@ -29,11 +29,11 @@ BEGIN
   ) VALUES
     (m_app,'authenticated','authenticated','m_app@uniplug-p10e.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Approved M','university','Real U','course','CS','year','2nd Year'),
+     jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Approved M','university','Real U','course','CS','year','2nd Year'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
     (m_pen,'authenticated','authenticated','m_pen@uniplug-p10e.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Pending M','university','Real U','course','CS','year','2nd Year'),
+     jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Pending M','university','Real U','course','CS','year','2nd Year'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000');
 
   UPDATE public.mentors SET status='approved', id_document_path='m_app/id.png' WHERE id = m_app;

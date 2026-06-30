@@ -46,11 +46,11 @@ BEGIN
   ) VALUES
     (m, 'authenticated','authenticated','m@uniplug-p10c.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Mentor C','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Mentor C','university','T','course','T','year','2nd Year'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
     (m2,'authenticated','authenticated','m2@uniplug-p10c.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Mentor C2','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','date_of_birth','2000-01-01','full_name','Mentor C2','university','T','course','T','year','2nd Year'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
     (s,'authenticated','authenticated','s@uniplug-p10c.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,

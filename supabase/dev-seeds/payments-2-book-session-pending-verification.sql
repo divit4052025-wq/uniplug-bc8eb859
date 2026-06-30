@@ -42,11 +42,11 @@ BEGIN
      email_change, email_change_token_new, created_at, updated_at, instance_id) VALUES
     (m_a,'authenticated','authenticated','m_a@p2.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Mentor Priced','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','full_name','Mentor Priced','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
     (m_z,'authenticated','authenticated','m_z@p2.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Mentor Free','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','full_name','Mentor Free','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
     (s_x,'authenticated','authenticated','s_x@p2.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
@@ -143,7 +143,7 @@ BEGIN
      email_change, email_change_token_new, created_at, updated_at, instance_id)
   VALUES (m_pending,'authenticated','authenticated','m_pend@p2.local',crypt('pw',gen_salt('bf')),now(),
      '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Pending M','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','full_name','Pending M','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01'),
      '','','','',now(),now(),'00000000-0000-0000-0000-000000000000');
   INSERT INTO public.mentor_availability (mentor_id, day_of_week, start_hour)
   VALUES (m_pending, EXTRACT(ISODOW FROM v_future)::smallint, 16) ON CONFLICT DO NOTHING;

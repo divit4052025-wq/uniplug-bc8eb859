@@ -29,14 +29,14 @@ INSERT INTO auth.users (
   'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee'::uuid,
   'authenticated', 'authenticated', 'hotfix-mentor@example.com',
   crypt('hotfix-pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','Hotfix Mentor','university','IIT Bombay','course','Computer Science','year','3rd Year'),
+  jsonb_build_object('role','mentor','full_name','Hotfix Mentor','university','IIT Bombay','course','Computer Science','year','3rd Year','date_of_birth','2000-01-01'),
   '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'
 ),
 (
   'ffffffff-ffff-ffff-ffff-ffffffffffff'::uuid,
   'authenticated', 'authenticated', 'hotfix-student@example.com',
   crypt('hotfix-pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','student','full_name','Hotfix Student','phone','+91-700','school','Test School','grade','Grade 12'),
+  jsonb_build_object('role','student','full_name','Hotfix Student','phone','+91-700','school','Test School','grade','Grade 12','date_of_birth','2000-01-01'),
   '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'
 )
 ON CONFLICT (id) DO NOTHING;

@@ -31,10 +31,16 @@ function DormPage() {
           </div>
         ) : consent.awaiting ? (
           <AwaitingConsentNotice studentId={userId} parentEmail={consent.parentEmail} />
-        ) : (
+        ) : consent.onFile ? (
           <div className="qc soft">
             <div className="q-verified" style={{ fontSize: 13 }}>
               Parental consent on file — booking is open.
+            </div>
+          </div>
+        ) : (
+          <div className="qc soft">
+            <div className="q-verified" style={{ fontSize: 13 }}>
+              Booking is open.
             </div>
           </div>
         )}

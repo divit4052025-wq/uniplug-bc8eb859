@@ -420,12 +420,13 @@ BEGIN
     crypt('pw', gen_salt('bf')), now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
     jsonb_build_object(
-      'role',       'mentor',
-      'full_name',  'Rohan Iyer',
-      'university', 'University of Oxford',
-      'course',     'Computer Science',
-      'year',       '2nd Year',
-      'countries',  jsonb_build_array('United Kingdom', 'United States', 'Singapore')
+      'role',          'mentor',
+      'full_name',     'Rohan Iyer',
+      'university',    'University of Oxford',
+      'course',        'Computer Science',
+      'year',          '2nd Year',
+      'date_of_birth', '2000-01-01',   -- A2: mentors must be 18+ at signup
+      'countries',     jsonb_build_array('United Kingdom', 'United States', 'Singapore')
     ),
     '', '', '', '',
     now(), now(), '00000000-0000-0000-0000-000000000000'

@@ -34,7 +34,7 @@ export function ReportDialog({
   const mutation = useMutation({
     mutationFn: async () => submitReport(conversationId, messageId, reason.trim()),
     onSuccess: () => {
-      toast.success("Reported. Our team will review this conversation.");
+      toast.success("Reported. This conversation is recorded for safeguarding.");
       setReason("");
       onOpenChange(false);
     },
@@ -51,8 +51,9 @@ export function ReportDialog({
             {messageId ? "Report this message" : "Report this conversation"}
           </DialogTitle>
           <DialogDescription>
-            Tell us what's wrong. Reports are sent to the UniPlug team for safeguarding review — all
-            messages are retained.
+            Tell us what's wrong. Reports are recorded now and retained — we're bringing this
+            safeguarding channel fully online, so it's not yet a 24/7 monitored line. If a child is
+            in immediate danger, call Childline 1098 now.
           </DialogDescription>
         </DialogHeader>
         <Textarea

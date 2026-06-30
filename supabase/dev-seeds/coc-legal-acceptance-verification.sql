@@ -59,12 +59,14 @@ BEGIN
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
      jsonb_build_object(
        'role','mentor','full_name','CoC M','university','Test U','course','CS','year','2',
+       'date_of_birth','2000-01-01',
        'terms_version','1.0','privacy_version','1.0','code_of_conduct_version','1.0'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'),
     (m_nococ, 'authenticated', 'authenticated', 'm_nococ@coc.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
      jsonb_build_object(
        'role','mentor','full_name','NoCoC M','university','Test U','course','CS','year','2',
+       'date_of_birth','2000-01-01',
        'terms_version','1.0','privacy_version','1.0'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000');
 END $$;

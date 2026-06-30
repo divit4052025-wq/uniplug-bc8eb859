@@ -9,7 +9,7 @@ BEGIN;
 SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
 
 INSERT INTO auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, confirmation_token, recovery_token, email_change, email_change_token_new, created_at, updated_at, instance_id) VALUES
-('dd000000-0000-0000-0000-00000000000a','authenticated','authenticated','d-m@example.com',crypt('x',gen_salt('bf')),now(),'{"provider":"email"}','{"role":"mentor","full_name":"D Mentor","university":"U","course":"C","year":"3rd Year"}','','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
+('dd000000-0000-0000-0000-00000000000a','authenticated','authenticated','d-m@example.com',crypt('x',gen_salt('bf')),now(),'{"provider":"email"}','{"role":"mentor","full_name":"D Mentor","university":"U","course":"C","year":"3rd Year","date_of_birth":"2000-01-01"}','','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
 -- minor, gated grade, NO consent
 ('dd000000-0000-0000-0000-0000000000c1','authenticated','authenticated','d-minor@example.com',crypt('x',gen_salt('bf')),now(),'{"provider":"email"}','{"role":"student","full_name":"Minor NoConsent","phone":"+91","school":"S","grade":"Grade 10","date_of_birth":"2012-01-01","parent_email":"p@e.com"}','','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
 -- NULL dob, non-gated grade (fail-closed must still block)

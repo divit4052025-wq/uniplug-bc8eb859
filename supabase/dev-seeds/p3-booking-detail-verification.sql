@@ -28,11 +28,11 @@ INSERT INTO auth.users (
 ) VALUES
 ('a3a3a3a3-0000-0000-0000-0000000000a1'::uuid,'authenticated','authenticated','p3-mentor-a@example.com',
   crypt('p3-pw',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','P3 Mentor A','university','IIT Bombay','course','CS','year','3rd Year'),
+  jsonb_build_object('role','mentor','full_name','P3 Mentor A','university','IIT Bombay','course','CS','year','3rd Year','date_of_birth','2000-01-01'),
   '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
 ('a3a3a3a3-0000-0000-0000-0000000000a2'::uuid,'authenticated','authenticated','p3-mentor-b@example.com',
   crypt('p3-pw',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,
-  jsonb_build_object('role','mentor','full_name','P3 Mentor B','university','IIT Delhi','course','ME','year','2nd Year'),
+  jsonb_build_object('role','mentor','full_name','P3 Mentor B','university','IIT Delhi','course','ME','year','2nd Year','date_of_birth','2000-01-01'),
   '','','','',now(),now(),'00000000-0000-0000-0000-000000000000'),
 ('a3a3a3a3-0000-0000-0000-0000000000b1'::uuid,'authenticated','authenticated','p3-student-1@example.com',
   crypt('p3-pw',gen_salt('bf')),now(),'{"provider":"email"}'::jsonb,

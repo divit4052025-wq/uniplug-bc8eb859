@@ -57,8 +57,8 @@ BEGIN
          u.email, crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb, u.meta,
          '', '', '', '', now(), now()
   FROM (VALUES
-    (m,   'm@chat.local',   jsonb_build_object('role','mentor','full_name','Chat M','university','T','course','T','year','2nd Year')),
-    (m_p, 'm_p@chat.local', jsonb_build_object('role','mentor','full_name','Pending M','university','T','course','T','year','2nd Year')),
+    (m,   'm@chat.local',   jsonb_build_object('role','mentor','full_name','Chat M','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01')),
+    (m_p, 'm_p@chat.local', jsonb_build_object('role','mentor','full_name','Pending M','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01')),
     (s_a, 's_a@chat.local', jsonb_build_object('role','student','full_name','Stu A','phone','+91-0','school','T','grade','Grade 12','date_of_birth','2000-01-01')),
     (s_b, 's_b@chat.local', jsonb_build_object('role','student','full_name','Stu B','phone','+91-0','school','T','grade','Grade 12','date_of_birth','2000-01-01')),
     (s_c, 's_c@chat.local', jsonb_build_object('role','student','full_name','Stu C','phone','+91-0','school','T','grade','Grade 12','date_of_birth','2000-01-01')),

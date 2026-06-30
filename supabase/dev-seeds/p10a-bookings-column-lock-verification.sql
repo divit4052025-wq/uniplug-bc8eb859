@@ -35,7 +35,7 @@ BEGIN
   ) VALUES
     (m, 'authenticated', 'authenticated', 'm@uniplug-p10a.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,
-     jsonb_build_object('role','mentor','full_name','Mentor P10a','university','T','course','T','year','2nd Year'),
+     jsonb_build_object('role','mentor','full_name','Mentor P10a','university','T','course','T','year','2nd Year','date_of_birth','2000-01-01'),
      '', '', '', '', now(), now(), '00000000-0000-0000-0000-000000000000'),
     (s, 'authenticated', 'authenticated', 's@uniplug-p10a.local',
      crypt('pw', gen_salt('bf')), now(), '{"provider":"email"}'::jsonb,

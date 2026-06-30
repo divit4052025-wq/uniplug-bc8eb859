@@ -238,6 +238,12 @@ export function MentorSignupWizardV2() {
           data: {
             role: "mentor",
             full_name: fullName.trim(),
+            // The wizard validates 18+ on `dob` but previously dropped it here, so
+            // mentors.date_of_birth was always NULL even though handle_new_user's
+            // mentor branch is wired to store it. Persist it (mirrors the student
+            // wizard) so the age is recorded + auditable. (Server-side age gate is
+            // still owed — flagged separately; this just stops the data loss.)
+            date_of_birth: dob,
             university: university[0]?.name ?? "",
             university_id: university[0]?.id ?? "",
             course: course[0]?.name ?? "",
@@ -667,49 +673,77 @@ export function MentorSignupWizardV2() {
                       {pwLabel}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    role="checkbox"
-                    aria-checked={agreed}
-                    aria-label="I agree to UniPlug’s Terms & Conditions, Privacy Policy, Mentor Agreement, and Code of Conduct"
-                    data-mag
-                    data-hov
-                    onClick={() => {
-                      setAgreed((a) => !a);
-                      setErrors((e) => ({ ...e, agreed: "" }));
-                    }}
-                    className="flex cursor-none items-start gap-3 rounded-md border px-4 py-3.5 text-left transition"
+                  {/* Checkbox box and the label+links are SIBLINGS (not nested): a
+                      role=checkbox makes descendants presentational, so nested links
+                      would be unreachable by screen readers and keydown would bubble to
+                      toggle the box. Separate keeps the real <a> links keyboard- and
+                      AT-reachable. */}
+                  <div
+                    className="flex items-start gap-3 rounded-md border px-4 py-3.5 transition"
                     style={{ borderColor: agreed ? "var(--primary)" : "rgba(255,252,251,0.2)" }}
                   >
-                    <span
-                      className="mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] border text-[14px] text-[#1A1A1A] transition"
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={agreed}
+                      aria-labelledby="agree-mentor-label"
+                      data-mag
+                      data-hov
+                      onClick={() => {
+                        setAgreed((a) => !a);
+                        setErrors((e) => ({ ...e, agreed: "" }));
+                      }}
+                      className="mt-px flex h-[22px] w-[22px] shrink-0 cursor-none items-center justify-center rounded-[5px] border text-[14px] text-[#1A1A1A] transition"
                       style={{
                         borderColor: agreed ? "var(--brand-rose)" : "rgba(255,252,251,0.35)",
                         background: agreed ? "var(--brand-rose)" : "transparent",
                       }}
                     >
                       {agreed ? "✓" : ""}
-                    </span>
-                    <span className="text-[13.5px] leading-relaxed text-[rgba(255,252,251,0.7)]">
+                    </button>
+                    <span
+                      id="agree-mentor-label"
+                      className="text-[13.5px] leading-relaxed text-[rgba(255,252,251,0.7)]"
+                    >
                       I agree to UniPlug’s{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Terms &amp; Conditions
-                      </b>
+                      </a>
                       ,{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Privacy Policy
-                      </b>
+                      </a>
                       ,{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      <a
+                        href="/mentor-terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Mentor Agreement
-                      </b>
+                      </a>
                       , and{" "}
-                      <b className="border-b-[1.5px] border-primary text-brand-paper">
+                      <a
+                        href="/community-guidelines"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-none border-b-[1.5px] border-primary text-brand-paper"
+                      >
                         Code of Conduct
-                      </b>
+                      </a>
                       .
                     </span>
-                  </button>
+                  </div>
                   {errors.agreed && <span className={errCls}>{errors.agreed}</span>}
                   {serverError && (
                     <p role="alert" className="text-center text-xs text-[#E5765B]">

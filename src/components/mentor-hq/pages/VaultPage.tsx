@@ -86,7 +86,8 @@ function VaultContent({ mentorId }: { mentorId: string }) {
 
             {clawback > 0 ? (
               <div className="mt-3 rounded-xl border-l-2 border-[#C4907F] bg-[#F3E3DC]/60 px-4 py-3 text-[13px] text-[#1A1A1A]">
-                {inr(clawback)} from refunded sessions will be adjusted against a future payout.
+                {inr(clawback)} from sessions pending refund will be adjusted against a future
+                payout.
               </div>
             ) : null}
           </section>

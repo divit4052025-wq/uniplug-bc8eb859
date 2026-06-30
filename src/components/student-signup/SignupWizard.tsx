@@ -217,7 +217,11 @@ export function SignupWizard() {
         e.dob = "Enter a valid date of birth";
       if (under18) {
         if (!isEmail(parentEmail)) e.parentEmail = "Parent’s email is required";
+        else if (parentEmail.trim().toLowerCase() === email.trim().toLowerCase())
+          e.parentEmail = "Use a parent or guardian’s email — not your own";
         if (parentPhone.trim().length < 6) e.parentPhone = "Parent’s phone is required";
+        else if (parentPhone.replace(/\D/g, "") === phone.replace(/\D/g, ""))
+          e.parentPhone = "Use a parent or guardian’s phone — not your own";
       }
     } else if (key === "school") {
       if (!school.trim()) e.school = "Required";
@@ -227,7 +231,11 @@ export function SignupWizard() {
       // gated-grade-but-18+: parent contact not collected in basics, so collect here.
       if (!under18) {
         if (!isEmail(parentEmail)) e.parentEmail = "Parent’s email is required";
+        else if (parentEmail.trim().toLowerCase() === email.trim().toLowerCase())
+          e.parentEmail = "Use a parent or guardian’s email — not your own";
         if (parentPhone.trim().length < 6) e.parentPhone = "Parent’s phone is required";
+        else if (parentPhone.replace(/\D/g, "") === phone.replace(/\D/g, ""))
+          e.parentPhone = "Use a parent or guardian’s phone — not your own";
       }
     } else if (key === "account") {
       if (password.length < 8) e.password = "At least 8 characters";
@@ -864,45 +872,69 @@ export function SignupWizard() {
                       {pwLabel}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    role="checkbox"
-                    aria-checked={agreed}
-                    aria-label="I agree to UniPlug’s Terms of Service, Privacy Policy, and Code of Conduct"
-                    data-mag
-                    data-hov
-                    onClick={() => {
-                      setAgreed((a) => !a);
-                      setErrors((e) => ({ ...e, agreed: "" }));
-                    }}
-                    className="flex cursor-none items-start gap-3 rounded-md border px-4 py-3.5 text-left transition"
+                  {/* Checkbox box and the label+links are SIBLINGS (not nested):
+                      a role=checkbox makes its descendants presentational, so links
+                      inside it would be unreachable by screen readers, and keydown on
+                      a nested link would bubble and toggle the box. Keeping them
+                      separate makes the real <a> links keyboard- and AT-reachable so a
+                      (often minor) user can actually open what they're agreeing to. */}
+                  <div
+                    className="flex items-start gap-3 rounded-md border px-4 py-3.5 transition"
                     style={{ borderColor: agreed ? "var(--primary)" : "var(--border)" }}
                   >
-                    <span
-                      className="mt-px flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-[5px] border text-[14px] text-brand-paper transition"
+                    <button
+                      type="button"
+                      role="checkbox"
+                      aria-checked={agreed}
+                      aria-labelledby="agree-student-label"
+                      data-mag
+                      data-hov
+                      onClick={() => {
+                        setAgreed((a) => !a);
+                        setErrors((e) => ({ ...e, agreed: "" }));
+                      }}
+                      className="mt-px flex h-[22px] w-[22px] shrink-0 cursor-none items-center justify-center rounded-[5px] border text-[14px] text-brand-paper transition"
                       style={{
                         borderColor: agreed ? "var(--foreground)" : "rgba(26,26,26,.3)",
                         background: agreed ? "var(--foreground)" : "transparent",
                       }}
                     >
                       {agreed ? "✓" : ""}
-                    </span>
-                    <span className="text-[13.5px] leading-relaxed text-brand-ink-soft">
+                    </button>
+                    <span
+                      id="agree-student-label"
+                      className="text-[13.5px] leading-relaxed text-brand-ink-soft"
+                    >
                       I agree to UniPlug’s{" "}
-                      <b className="border-b-[1.5px] border-primary text-foreground">
+                      <a
+                        href="/terms"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-none border-b-[1.5px] border-primary text-foreground"
+                      >
                         Terms of Service
-                      </b>
+                      </a>
                       ,{" "}
-                      <b className="border-b-[1.5px] border-primary text-foreground">
+                      <a
+                        href="/privacy"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-none border-b-[1.5px] border-primary text-foreground"
+                      >
                         Privacy Policy
-                      </b>
+                      </a>
                       , and{" "}
-                      <b className="border-b-[1.5px] border-primary text-foreground">
+                      <a
+                        href="/community-guidelines"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-none border-b-[1.5px] border-primary text-foreground"
+                      >
                         Code of Conduct
-                      </b>
+                      </a>
                       .
                     </span>
-                  </button>
+                  </div>
                   {errors.agreed && <span className={errCls}>{errors.agreed}</span>}
                   {serverError && (
                     <p role="alert" className="text-center text-xs text-destructive">
