@@ -10,7 +10,7 @@
 -- handle_new_user rejects an under-18/DOB-null mentor at signup, and
 -- submit/resubmit refuse the application. The trigger remains the real gate.
 --
--- Helper: mentor_is_adult(_dob) — IMMUTABLE, NULL dob -> false (a missing DOB is
+-- Helper: mentor_is_adult(_dob) — STABLE (reads CURRENT_TIMESTAMP), NULL dob -> false (a missing DOB is
 -- treated as NOT an adult, so DOB-null approvals are rejected). 18y measured in
 -- Asia/Kolkata (India-only platform).
 --
@@ -33,7 +33,7 @@
 
 -- ── 1. age helper ───────────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.mentor_is_adult(_dob date)
-RETURNS boolean LANGUAGE sql IMMUTABLE AS $$
+RETURNS boolean LANGUAGE sql STABLE AS $$
   SELECT _dob IS NOT NULL
      AND _dob <= ((CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata') - interval '18 years')::date;
 $$;
@@ -42,7 +42,7 @@ REVOKE ALL     ON FUNCTION public.mentor_is_adult(date) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.mentor_is_adult(date) FROM anon, authenticated;
 GRANT  EXECUTE ON FUNCTION public.mentor_is_adult(date) TO service_role;
 COMMENT ON FUNCTION public.mentor_is_adult(date) IS
-  'A2 (2026-06-30): true iff _dob is non-null AND indicates age >= 18 in Asia/Kolkata. NULL DOB -> false (DOB-null is treated as not-an-adult). IMMUTABLE; server-internal (anon/authenticated/PUBLIC revoked).';
+  'A2 (2026-06-30): true iff _dob is non-null AND indicates age >= 18 in Asia/Kolkata. NULL DOB -> false (DOB-null is treated as not-an-adult). STABLE (reads CURRENT_TIMESTAMP); server-internal (anon/authenticated/PUBLIC revoked).';
 
 -- ── 2. authoritative trigger: no under-18/DOB-null reaches approved ──────────
 CREATE OR REPLACE FUNCTION public.enforce_mentor_adult_on_approve()

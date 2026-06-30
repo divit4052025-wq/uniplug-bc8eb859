@@ -44,10 +44,11 @@ export function StudentSupportButton() {
             position: "fixed",
             right: 20,
             bottom: onWorldHome ? 116 : 22,
-            // Above the full-screen WebGL canvas + HUD/dock (z 4–6) and the rooms
-            // (z 20). Transient dev/notification panels (z 60–71) may cover it;
-            // the dialog itself opens far above everything (z 100+).
-            zIndex: 50,
+            // Above the full-screen WebGL canvas + HUD/dock (z 4–6), the rooms
+            // (z 20), and the notifications/dev panels (z 60–71) — an emergency
+            // help affordance must stay reachable from anywhere. The dialog
+            // itself opens far above everything (z 100+).
+            zIndex: 80,
             boxShadow: "0 12px 30px -10px rgba(26,26,26,.5)",
             fontFamily: "var(--q-disp)",
           }}

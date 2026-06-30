@@ -476,7 +476,7 @@ function ResubmitPanel() {
         kind: "mentor_resubmit",
         error: raw,
       });
-      setError(raw);
+      setError("We couldn't resubmit your application. Please check your uploads and try again.");
       setBusy(false);
     }
   }

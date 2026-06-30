@@ -40,7 +40,7 @@ const DENY_COPY: Record<VideoCallDenyReason, { title: string; body: string }> = 
   },
   consent_revoked: {
     title: "Access paused",
-    body: "Access paused — parental consent is not currently active. Please contact support once consent has been renewed.",
+    body: "This session is paused and can't be joined right now. Please contact support if you think this is a mistake.",
   },
   booking_not_found: {
     title: "Session not found",
