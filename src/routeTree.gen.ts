@@ -65,6 +65,7 @@ import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
 import { Route as AdminVerificationRouteImport } from './routes/admin.verification'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSafeguardingRouteImport } from './routes/admin.safeguarding'
+import { Route as AdminPaymentsRouteImport } from './routes/admin.payments'
 import { Route as AdminConsentRouteImport } from './routes/admin.consent'
 import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
@@ -357,6 +358,11 @@ const AdminSafeguardingRoute = AdminSafeguardingRouteImport.update({
   path: '/safeguarding',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminConsentRoute = AdminConsentRouteImport.update({
   id: '/consent',
   path: '/consent',
@@ -439,6 +445,7 @@ export interface FileRoutesByFullPath {
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/consent': typeof AdminConsentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -504,6 +511,7 @@ export interface FileRoutesByTo {
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/consent': typeof AdminConsentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -573,6 +581,7 @@ export interface FileRoutesById {
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/consent': typeof AdminConsentRoute
+  '/admin/payments': typeof AdminPaymentsRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -643,6 +652,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/bookings'
     | '/admin/consent'
+    | '/admin/payments'
     | '/admin/safeguarding'
     | '/admin/users'
     | '/admin/verification'
@@ -708,6 +718,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/bookings'
     | '/admin/consent'
+    | '/admin/payments'
     | '/admin/safeguarding'
     | '/admin/users'
     | '/admin/verification'
@@ -776,6 +787,7 @@ export interface FileRouteTypes {
     | '/admin/audit'
     | '/admin/bookings'
     | '/admin/consent'
+    | '/admin/payments'
     | '/admin/safeguarding'
     | '/admin/users'
     | '/admin/verification'
@@ -1247,6 +1259,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSafeguardingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/consent': {
       id: '/admin/consent'
       path: '/consent'
@@ -1324,6 +1343,7 @@ interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminConsentRoute: typeof AdminConsentRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminSafeguardingRoute: typeof AdminSafeguardingRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
@@ -1338,6 +1358,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminConsentRoute: AdminConsentRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
   AdminSafeguardingRoute: AdminSafeguardingRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVerificationRoute: AdminVerificationRoute,

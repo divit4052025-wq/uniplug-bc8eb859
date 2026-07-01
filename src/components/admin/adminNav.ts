@@ -70,8 +70,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     label: "Payments",
     to: "/admin/payments",
     icon: Receipt,
-    status: "soon",
-    hint: "read-only",
+    status: "active",
   },
   { key: "audit", label: "Audit Log", to: "/admin/audit", icon: ScrollText, status: "active" },
 ];

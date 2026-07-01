@@ -2584,6 +2584,72 @@ export type Database = {
           token_exp: string | null;
         }[];
       };
+      admin_payments_summary: {
+        Args: Record<string, never>;
+        Returns: {
+          gross_captured_inr: number;
+          mentor_share_accrued_inr: number;
+          platform_fee_inr: number;
+          captured_count: number;
+          total_refunded_inr: number;
+          clawback_owed_inr: number;
+          refund_owed_inr: number;
+          refund_owed_count: number;
+          refund_processed_count: number;
+          refund_failed_count: number;
+          payout_scheduled_inr: number;
+          payout_scheduled_count: number;
+          payout_paid_inr: number;
+          payout_paid_count: number;
+          payout_failed_count: number;
+        }[];
+      };
+      admin_list_payment_ledger: {
+        Args: { _event_type?: string; _from?: string; _to?: string; _limit?: number };
+        Returns: {
+          id: string;
+          created_at: string;
+          event_type: string;
+          booking_id: string | null;
+          student_label: string | null;
+          mentor_label: string | null;
+          amount_inr: number | null;
+          mentor_share_inr: number | null;
+          platform_fee_inr: number | null;
+          razorpay_payment_id: string | null;
+          razorpay_refund_id: string | null;
+        }[];
+      };
+      admin_list_refund_intents: {
+        Args: { _status?: string; _limit?: number };
+        Returns: {
+          id: string;
+          booking_id: string | null;
+          student_label: string | null;
+          mentor_label: string | null;
+          amount_inr: number;
+          tier: string | null;
+          reason: string | null;
+          source: string | null;
+          status: string;
+          created_at: string;
+          processed_at: string | null;
+        }[];
+      };
+      admin_list_mentor_payouts: {
+        Args: { _status?: string; _limit?: number };
+        Returns: {
+          id: string;
+          mentor_id: string | null;
+          mentor_label: string | null;
+          amount_inr: number;
+          payout_date: string | null;
+          period_end: string | null;
+          status: string;
+          batch_id: string | null;
+          created_at: string;
+        }[];
+      };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
         // B (2026-06-04): optional specialty/university/min-rating filters.
