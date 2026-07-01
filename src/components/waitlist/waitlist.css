@@ -1,0 +1,423 @@
+/* ============================================================
+   UniPlug — Waitlist experience styles.
+   Ported from the Claude Design "UniPlug_Waitlist_Experience" bundle
+   (tokens + brand-ui `up-*` layer). EVERYTHING is scoped under
+   `.uc-waitlist` so it can never leak into the app's global design
+   system — the waitlist routes wrap their tree in that class. Fonts
+   (Gabarito / Quicksand) already load globally via src/styles.css.
+   Route-scoped: loaded only on /waitlist* via each route's head links.
+   ============================================================ */
+
+.uc-waitlist {
+  /* ---- Surfaces & ink ---- */
+  --paper: #faf5ef;
+  --offwhite: #fffcfb;
+  --night: #171513;
+  --cream: #f8e8dd;
+  --blush: #f2ddd4;
+  --stone: #d2cecb;
+  --ink: #1a1a1a;
+  --ink-soft: #5a524b;
+  --ink-faint: #8b8178;
+
+  /* ---- Accent spectrum ---- */
+  --rose: #f4b5aa;
+  --rose-deep: #c4907f;
+  --coral: #ed7e4a;
+  --sand: #f2d098;
+
+  /* ---- Rules / dividers ---- */
+  --rule: rgba(26, 26, 26, 0.14);
+  --rule-soft: rgba(26, 26, 26, 0.08);
+  --rule-dark: rgba(255, 252, 251, 0.16);
+
+  /* ---- Status ---- */
+  --success: #4f9d6b;
+  --danger: #c0442e;
+  --danger-soft: #f4d9d2;
+
+  /* ---- Semantic aliases ---- */
+  --text-strong: var(--ink);
+  --text-body: var(--ink-soft);
+  --text-muted: var(--ink-faint);
+  --text-on-dark: var(--paper);
+  --text-on-dark-muted: rgba(255, 252, 251, 0.55);
+  --border: var(--rule);
+  --border-soft: var(--rule-soft);
+  --border-strong: rgba(26, 26, 26, 0.24);
+  --focus-ring: var(--rose-deep);
+
+  /* ---- Radius ---- */
+  --radius: 6px;
+  --radius-sm: 4px;
+  --radius-lg: 10px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 140ms;
+  --dur: 240ms;
+
+  /* ---- Shadows ---- */
+  --shadow-xs: 0 1px 2px rgba(26, 26, 26, 0.05);
+  --shadow-sm: 0 1px 3px rgba(26, 26, 26, 0.07), 0 1px 2px rgba(26, 26, 26, 0.04);
+  --shadow-card: 0 2px 10px rgba(26, 26, 26, 0.06), 0 1px 3px rgba(26, 26, 26, 0.04);
+  --shadow-raised: 0 10px 30px rgba(26, 26, 26, 0.1), 0 2px 6px rgba(26, 26, 26, 0.05);
+  --shadow-pop: 0 28px 64px rgba(23, 21, 19, 0.28), 0 6px 16px rgba(23, 21, 19, 0.14);
+
+  /* ---- Type ---- */
+  --font-display: "Gabarito", system-ui, -apple-system, sans-serif;
+  --font-ui: "Quicksand", system-ui, -apple-system, sans-serif;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-display: 800;
+  --fs-kicker: 14px;
+  --tracking-button: 0.005em;
+  --tracking-kicker: 0.15em;
+
+  /* ---- Controls ---- */
+  --control-h: 44px;
+  --control-h-sm: 36px;
+  --control-h-lg: 54px;
+  --field-pad-x: 14px;
+  --field-pad-y: 12px;
+
+  font-family: var(--font-ui);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.uc-waitlist *,
+.uc-waitlist *::before,
+.uc-waitlist *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- Surface helper ---------- */
+.uc-waitlist .on-dark {
+  color: var(--text-on-dark);
+}
+
+/* ---------- Kicker / eyebrow ---------- */
+.uc-waitlist .up-kicker {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-semibold);
+  font-size: var(--fs-kicker);
+  letter-spacing: var(--tracking-kicker);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.uc-waitlist .up-kicker::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--rose);
+  flex: none;
+}
+.uc-waitlist .on-dark .up-kicker {
+  color: var(--text-on-dark-muted);
+}
+
+/* ---------- Buttons ---------- */
+.uc-waitlist .up-btn {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-bold);
+  font-size: 15px;
+  letter-spacing: var(--tracking-button);
+  line-height: 1;
+  border: none;
+  border-radius: var(--radius);
+  padding: 15px 24px;
+  min-height: var(--control-h);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    transform var(--dur-fast) var(--ease),
+    background-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease),
+    color var(--dur) var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.uc-waitlist .up-btn:active {
+  transform: translateY(1px);
+}
+.uc-waitlist .up-btn:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+.uc-waitlist .up-btn[disabled],
+.uc-waitlist .up-btn.is-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+.uc-waitlist .up-btn svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
+.uc-waitlist .up-btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+.uc-waitlist .up-btn--primary:hover {
+  background: #000;
+}
+.uc-waitlist .on-dark .up-btn--primary,
+.uc-waitlist .up-btn--primary.on-dark {
+  background: var(--rose-deep);
+  color: var(--ink);
+}
+.uc-waitlist .on-dark .up-btn--primary:hover,
+.uc-waitlist .up-btn--primary.on-dark:hover {
+  background: #d5a08e;
+}
+
+.uc-waitlist .up-btn--outline {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--border-strong);
+}
+.uc-waitlist .up-btn--outline:hover {
+  background: rgba(26, 26, 26, 0.04);
+}
+
+.uc-waitlist .up-btn--ghost {
+  background: transparent;
+  color: var(--ink);
+}
+.uc-waitlist .up-btn--ghost:hover {
+  background: rgba(26, 26, 26, 0.06);
+}
+.uc-waitlist .on-dark .up-btn--ghost {
+  color: var(--paper);
+}
+
+.uc-waitlist .up-btn--sm {
+  padding: 9px 16px;
+  font-size: 13px;
+  min-height: var(--control-h-sm);
+  gap: 7px;
+}
+.uc-waitlist .up-btn--sm svg {
+  width: 15px;
+  height: 15px;
+}
+.uc-waitlist .up-btn--lg {
+  padding: 18px 32px;
+  font-size: 16px;
+  min-height: var(--control-h-lg);
+}
+.uc-waitlist .up-btn--block {
+  width: 100%;
+}
+.uc-waitlist .up-btn--icon {
+  padding: 0;
+  width: var(--control-h);
+  height: var(--control-h);
+}
+.uc-waitlist .up-btn--icon.up-btn--sm {
+  width: var(--control-h-sm);
+  height: var(--control-h-sm);
+}
+
+/* ---------- Text link CTA (animated underline) ---------- */
+.uc-waitlist .up-link {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-bold);
+  font-size: 15px;
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 3px;
+  border: none;
+  background: linear-gradient(currentColor, currentColor) no-repeat left bottom / 0% 1.5px;
+  transition:
+    background-size var(--dur) var(--ease),
+    gap var(--dur) var(--ease);
+  cursor: pointer;
+}
+.uc-waitlist .up-link:hover {
+  background-size: 100% 1.5px;
+  gap: 11px;
+}
+.uc-waitlist .on-dark .up-link {
+  color: var(--paper);
+}
+
+/* ---------- Form fields ---------- */
+.uc-waitlist .up-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.uc-waitlist .up-label {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-semibold);
+  font-size: 14px;
+  color: var(--ink);
+}
+.uc-waitlist .up-error {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-semibold);
+  font-size: 13px;
+  color: var(--danger);
+}
+.uc-waitlist .up-input {
+  font-family: var(--font-ui);
+  font-weight: var(--fw-medium);
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--offwhite);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--field-pad-y) var(--field-pad-x);
+  min-height: var(--control-h);
+  width: 100%;
+  transition:
+    border-color var(--dur) var(--ease),
+    box-shadow var(--dur) var(--ease);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.uc-waitlist .up-input::placeholder {
+  color: var(--ink-faint);
+}
+.uc-waitlist .up-input:hover {
+  border-color: var(--border-strong);
+}
+.uc-waitlist .up-input:focus {
+  outline: none;
+  border-color: var(--rose-deep);
+  box-shadow: 0 0 0 3px rgba(196, 144, 127, 0.18);
+}
+.uc-waitlist .up-input[aria-invalid="true"] {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(192, 68, 46, 0.14);
+}
+.uc-waitlist .up-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ---------- Alert ---------- */
+.uc-waitlist .up-alert {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--cream);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  border: 1px solid var(--border-soft);
+}
+.uc-waitlist .up-alert .up-alert-icon {
+  flex: none;
+  margin-top: 1px;
+}
+.uc-waitlist .up-alert--danger {
+  background: var(--danger-soft);
+  border-color: #eec3ba;
+}
+
+/* ---------- Role-chooser doors ---------- */
+.uc-waitlist .uc-door {
+  flex: 1 1 340px;
+  max-width: 460px;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid var(--rule);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  padding: 30px 30px 26px;
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.28s var(--ease),
+    box-shadow 0.28s var(--ease);
+}
+.uc-waitlist .uc-door:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-raised);
+}
+@media (prefers-reduced-motion: reduce) {
+  .uc-waitlist .uc-door:hover {
+    transform: none;
+  }
+}
+
+/* ---------- Keyframes (guarded for reduced motion) ---------- */
+@keyframes uc-upspin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes uc-popUp {
+  0% {
+    transform: translateY(14px) scale(0.965);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes uc-glowPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+.uc-waitlist .uc-anim-pop {
+  animation: uc-popUp 0.45s var(--ease) both;
+}
+.uc-waitlist .uc-anim-success {
+  animation: uc-popUp 0.5s cubic-bezier(0.34, 1.4, 0.5, 1) both;
+}
+.uc-waitlist .uc-spinner {
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  border: 2.4px solid rgba(250, 245, 239, 0.35);
+  border-top-color: var(--paper);
+  display: inline-block;
+  animation: uc-upspin 0.8s linear infinite;
+}
+.uc-waitlist .uc-glow {
+  animation: uc-glowPulse 4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .uc-waitlist .uc-anim-pop,
+  .uc-waitlist .uc-anim-success,
+  .uc-waitlist .uc-spinner,
+  .uc-waitlist .uc-glow {
+    animation: none;
+  }
+}

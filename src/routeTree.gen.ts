@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as WaitlistRouteImport } from './routes/waitlist'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StudentSignupRouteImport } from './routes/student-signup'
 import { Route as SessionNotesRouteImport } from './routes/session-notes'
@@ -34,6 +35,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MentorDashboardIndexRouteImport } from './routes/mentor-dashboard.index'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as WaitlistStudentRouteImport } from './routes/waitlist_.student'
+import { Route as WaitlistMentorRouteImport } from './routes/waitlist_.mentor'
 import { Route as StudentSignupFinalizeRouteImport } from './routes/student-signup_.finalize'
 import { Route as SessionNotesNoteIdRouteImport } from './routes/session-notes.$noteId'
 import { Route as ParentalConsentTokenRouteImport } from './routes/parental-consent.$token'
@@ -72,6 +75,8 @@ import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminVerificationMentorIdRouteImport } from './routes/admin.verification_.$mentorId'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin.users_.$userId'
 import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings_.$bookingId'
+import { Route as ApiPublicWaitlistSubmitRouteImport } from './routes/api/public/waitlist/submit'
+import { Route as ApiPublicWaitlistCountsRouteImport } from './routes/api/public/waitlist/counts'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
@@ -80,6 +85,11 @@ import { Route as AdminSafeguardingSourceReportIdRouteImport } from './routes/ad
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WaitlistRoute = WaitlistRouteImport.update({
+  id: '/waitlist',
+  path: '/waitlist',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -201,6 +211,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminRoute,
+} as any)
+const WaitlistStudentRoute = WaitlistStudentRouteImport.update({
+  id: '/waitlist_/student',
+  path: '/waitlist/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WaitlistMentorRoute = WaitlistMentorRouteImport.update({
+  id: '/waitlist_/mentor',
+  path: '/waitlist/mentor',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const StudentSignupFinalizeRoute = StudentSignupFinalizeRouteImport.update({
   id: '/student-signup_/finalize',
@@ -394,6 +414,16 @@ const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
   path: '/bookings/$bookingId',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiPublicWaitlistSubmitRoute = ApiPublicWaitlistSubmitRouteImport.update({
+  id: '/api/public/waitlist/submit',
+  path: '/api/public/waitlist/submit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicWaitlistCountsRoute = ApiPublicWaitlistCountsRouteImport.update({
+  id: '/api/public/waitlist/counts',
+  path: '/api/public/waitlist/counts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksSendRemindersRoute =
   ApiPublicHooksSendRemindersRouteImport.update({
     id: '/api/public/hooks/send-reminders',
@@ -441,6 +471,7 @@ export interface FileRoutesByFullPath {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/waitlist': typeof WaitlistRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -477,6 +508,8 @@ export interface FileRoutesByFullPath {
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
+  '/waitlist/mentor': typeof WaitlistMentorRoute
+  '/waitlist/student': typeof WaitlistStudentRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
@@ -487,6 +520,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
+  '/api/public/waitlist/counts': typeof ApiPublicWaitlistCountsRoute
+  '/api/public/waitlist/submit': typeof ApiPublicWaitlistSubmitRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -507,6 +542,7 @@ export interface FileRoutesByTo {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/waitlist': typeof WaitlistRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -543,6 +579,8 @@ export interface FileRoutesByTo {
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup/finalize': typeof StudentSignupFinalizeRoute
+  '/waitlist/mentor': typeof WaitlistMentorRoute
+  '/waitlist/student': typeof WaitlistStudentRoute
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
@@ -553,6 +591,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
+  '/api/public/waitlist/counts': typeof ApiPublicWaitlistCountsRoute
+  '/api/public/waitlist/submit': typeof ApiPublicWaitlistSubmitRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -577,6 +617,7 @@ export interface FileRoutesById {
   '/session-notes': typeof SessionNotesRouteWithChildren
   '/student-signup': typeof StudentSignupRoute
   '/terms': typeof TermsRoute
+  '/waitlist': typeof WaitlistRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -613,6 +654,8 @@ export interface FileRoutesById {
   '/parental-consent/$token': typeof ParentalConsentTokenRoute
   '/session-notes/$noteId': typeof SessionNotesNoteIdRoute
   '/student-signup_/finalize': typeof StudentSignupFinalizeRoute
+  '/waitlist_/mentor': typeof WaitlistMentorRoute
+  '/waitlist_/student': typeof WaitlistStudentRoute
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
@@ -623,6 +666,8 @@ export interface FileRoutesById {
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
+  '/api/public/waitlist/counts': typeof ApiPublicWaitlistCountsRoute
+  '/api/public/waitlist/submit': typeof ApiPublicWaitlistSubmitRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -648,6 +693,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/waitlist'
     | '/welcome'
     | '/admin/audit'
     | '/admin/bookings'
@@ -684,6 +730,8 @@ export interface FileRouteTypes {
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup/finalize'
+    | '/waitlist/mentor'
+    | '/waitlist/student'
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
@@ -694,6 +742,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
+    | '/api/public/waitlist/counts'
+    | '/api/public/waitlist/submit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -714,6 +764,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/waitlist'
     | '/welcome'
     | '/admin/audit'
     | '/admin/bookings'
@@ -750,6 +801,8 @@ export interface FileRouteTypes {
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup/finalize'
+    | '/waitlist/mentor'
+    | '/waitlist/student'
     | '/admin'
     | '/dashboard'
     | '/mentor-dashboard'
@@ -760,6 +813,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
+    | '/api/public/waitlist/counts'
+    | '/api/public/waitlist/submit'
   id:
     | '__root__'
     | '/'
@@ -783,6 +838,7 @@ export interface FileRouteTypes {
     | '/session-notes'
     | '/student-signup'
     | '/terms'
+    | '/waitlist'
     | '/welcome'
     | '/admin/audit'
     | '/admin/bookings'
@@ -819,6 +875,8 @@ export interface FileRouteTypes {
     | '/parental-consent/$token'
     | '/session-notes/$noteId'
     | '/student-signup_/finalize'
+    | '/waitlist_/mentor'
+    | '/waitlist_/student'
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
@@ -829,6 +887,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
+    | '/api/public/waitlist/counts'
+    | '/api/public/waitlist/submit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -853,6 +913,7 @@ export interface RootRouteChildren {
   SessionNotesRoute: typeof SessionNotesRouteWithChildren
   StudentSignupRoute: typeof StudentSignupRoute
   TermsRoute: typeof TermsRoute
+  WaitlistRoute: typeof WaitlistRoute
   WelcomeRoute: typeof WelcomeRoute
   CallBookingIdRoute: typeof CallBookingIdRoute
   MentorSignupFinalizeRoute: typeof MentorSignupFinalizeRoute
@@ -860,9 +921,13 @@ export interface RootRouteChildren {
   MessagesConversationIdRoute: typeof MessagesConversationIdRoute
   ParentalConsentTokenRoute: typeof ParentalConsentTokenRoute
   StudentSignupFinalizeRoute: typeof StudentSignupFinalizeRoute
+  WaitlistMentorRoute: typeof WaitlistMentorRoute
+  WaitlistStudentRoute: typeof WaitlistStudentRoute
   ApiPublicHooksRazorpayWebhookRoute: typeof ApiPublicHooksRazorpayWebhookRoute
   ApiPublicHooksSendEventEmailRoute: typeof ApiPublicHooksSendEventEmailRoute
   ApiPublicHooksSendRemindersRoute: typeof ApiPublicHooksSendRemindersRoute
+  ApiPublicWaitlistCountsRoute: typeof ApiPublicWaitlistCountsRoute
+  ApiPublicWaitlistSubmitRoute: typeof ApiPublicWaitlistSubmitRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -872,6 +937,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/waitlist': {
+      id: '/waitlist'
+      path: '/waitlist'
+      fullPath: '/waitlist'
+      preLoaderRoute: typeof WaitlistRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -1041,6 +1113,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/waitlist_/student': {
+      id: '/waitlist_/student'
+      path: '/waitlist/student'
+      fullPath: '/waitlist/student'
+      preLoaderRoute: typeof WaitlistStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/waitlist_/mentor': {
+      id: '/waitlist_/mentor'
+      path: '/waitlist/mentor'
+      fullPath: '/waitlist/mentor'
+      preLoaderRoute: typeof WaitlistMentorRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/student-signup_/finalize': {
       id: '/student-signup_/finalize'
@@ -1308,6 +1394,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/public/waitlist/submit': {
+      id: '/api/public/waitlist/submit'
+      path: '/api/public/waitlist/submit'
+      fullPath: '/api/public/waitlist/submit'
+      preLoaderRoute: typeof ApiPublicWaitlistSubmitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/waitlist/counts': {
+      id: '/api/public/waitlist/counts'
+      path: '/api/public/waitlist/counts'
+      fullPath: '/api/public/waitlist/counts'
+      preLoaderRoute: typeof ApiPublicWaitlistCountsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/send-reminders': {
       id: '/api/public/hooks/send-reminders'
       path: '/api/public/hooks/send-reminders'
@@ -1471,6 +1571,7 @@ const rootRouteChildren: RootRouteChildren = {
   SessionNotesRoute: SessionNotesRouteWithChildren,
   StudentSignupRoute: StudentSignupRoute,
   TermsRoute: TermsRoute,
+  WaitlistRoute: WaitlistRoute,
   WelcomeRoute: WelcomeRoute,
   CallBookingIdRoute: CallBookingIdRoute,
   MentorSignupFinalizeRoute: MentorSignupFinalizeRoute,
@@ -1478,19 +1579,24 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesConversationIdRoute: MessagesConversationIdRoute,
   ParentalConsentTokenRoute: ParentalConsentTokenRoute,
   StudentSignupFinalizeRoute: StudentSignupFinalizeRoute,
+  WaitlistMentorRoute: WaitlistMentorRoute,
+  WaitlistStudentRoute: WaitlistStudentRoute,
   ApiPublicHooksRazorpayWebhookRoute: ApiPublicHooksRazorpayWebhookRoute,
   ApiPublicHooksSendEventEmailRoute: ApiPublicHooksSendEventEmailRoute,
   ApiPublicHooksSendRemindersRoute: ApiPublicHooksSendRemindersRoute,
+  ApiPublicWaitlistCountsRoute: ApiPublicWaitlistCountsRoute,
+  ApiPublicWaitlistSubmitRoute: ApiPublicWaitlistSubmitRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
 
 import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
+import type { startInstance } from './start.ts'
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true
     router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
   }
 }
