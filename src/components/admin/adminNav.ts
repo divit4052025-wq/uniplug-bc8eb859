@@ -35,8 +35,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     label: "Safeguarding",
     to: "/admin/safeguarding",
     icon: ShieldAlert,
-    status: "soon",
-    hint: "reports queue",
+    status: "active",
   },
   {
     key: "verification",

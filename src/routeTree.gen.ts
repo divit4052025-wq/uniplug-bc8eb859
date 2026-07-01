@@ -62,10 +62,12 @@ import { Route as DashboardDormRouteImport } from './routes/dashboard.dorm'
 import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
 import { Route as DashboardClimbRouteImport } from './routes/dashboard.climb'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
+import { Route as AdminSafeguardingRouteImport } from './routes/admin.safeguarding'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
+import { Route as AdminSafeguardingSourceReportIdRouteImport } from './routes/admin.safeguarding_.$source.$reportId'
 
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
@@ -333,6 +335,11 @@ const CallBookingIdRoute = CallBookingIdRouteImport.update({
   path: '/call/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminSafeguardingRoute = AdminSafeguardingRouteImport.update({
+  id: '/safeguarding',
+  path: '/safeguarding',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -355,6 +362,12 @@ const ApiPublicHooksRazorpayWebhookRoute =
     id: '/api/public/hooks/razorpay-webhook',
     path: '/api/public/hooks/razorpay-webhook',
     getParentRoute: () => rootRouteImport,
+  } as any)
+const AdminSafeguardingSourceReportIdRoute =
+  AdminSafeguardingSourceReportIdRouteImport.update({
+    id: '/safeguarding_/$source/$reportId',
+    path: '/safeguarding/$source/$reportId',
+    getParentRoute: () => AdminRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -381,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -412,6 +426,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -437,6 +452,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -468,6 +484,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
+  '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -497,6 +514,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -528,6 +546,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/safeguarding_/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
   '/api/public/hooks/send-reminders': typeof ApiPublicHooksSendRemindersRoute
@@ -558,6 +577,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/safeguarding'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -589,6 +609,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/safeguarding/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -614,6 +635,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/safeguarding'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -645,6 +667,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/mentor-dashboard'
+    | '/admin/safeguarding/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -673,6 +696,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/safeguarding'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -704,6 +728,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/safeguarding_/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
     | '/api/public/hooks/send-reminders'
@@ -1116,6 +1141,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/safeguarding': {
+      id: '/admin/safeguarding'
+      path: '/safeguarding'
+      fullPath: '/admin/safeguarding'
+      preLoaderRoute: typeof AdminSafeguardingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/audit': {
       id: '/admin/audit'
       path: '/audit'
@@ -1144,17 +1176,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksRazorpayWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/safeguarding_/$source/$reportId': {
+      id: '/admin/safeguarding_/$source/$reportId'
+      path: '/safeguarding/$source/$reportId'
+      fullPath: '/admin/safeguarding/$source/$reportId'
+      preLoaderRoute: typeof AdminSafeguardingSourceReportIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminSafeguardingRoute: typeof AdminSafeguardingRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminSafeguardingSourceReportIdRoute: typeof AdminSafeguardingSourceReportIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
+  AdminSafeguardingRoute: AdminSafeguardingRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminSafeguardingSourceReportIdRoute: AdminSafeguardingSourceReportIdRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

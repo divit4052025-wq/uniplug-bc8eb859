@@ -103,6 +103,114 @@ export type Database = {
         };
         Relationships: [];
       };
+      account_moderation: {
+        Row: {
+          user_id: string;
+          state: string;
+          reason: string | null;
+          actor_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          state?: string;
+          reason?: string | null;
+          actor_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          state?: string;
+          reason?: string | null;
+          actor_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      report_triage: {
+        Row: {
+          source: string;
+          report_id: string;
+          status: string;
+          severity: string | null;
+          notes: string | null;
+          assigned_to: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          source: string;
+          report_id: string;
+          status?: string;
+          severity?: string | null;
+          notes?: string | null;
+          assigned_to?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          source?: string;
+          report_id?: string;
+          status?: string;
+          severity?: string | null;
+          notes?: string | null;
+          assigned_to?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_warnings: {
+        Row: { id: string; user_id: string; reason: string; actor_id: string; created_at: string };
+        Insert: {
+          id?: string;
+          user_id: string;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      escalation_records: {
+        Row: {
+          id: string;
+          source: string | null;
+          report_id: string | null;
+          subject_user_id: string | null;
+          channel: string;
+          reference_note: string | null;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          source?: string | null;
+          report_id?: string | null;
+          subject_user_id?: string | null;
+          channel: string;
+          reference_note?: string | null;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          source?: string | null;
+          report_id?: string | null;
+          subject_user_id?: string | null;
+          channel?: string;
+          reference_note?: string | null;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       ai_rate_limit_events: {
         Row: {
           created_at: string;
@@ -130,6 +238,7 @@ export type Database = {
           date: string;
           description: string | null;
           duration: number;
+          frozen_at: string | null;
           id: string;
           mentor_id: string | null;
           paid_at: string | null;
@@ -148,6 +257,7 @@ export type Database = {
           date: string;
           description?: string | null;
           duration?: number;
+          frozen_at?: string | null;
           id?: string;
           mentor_id?: string | null;
           paid_at?: string | null;
@@ -166,6 +276,7 @@ export type Database = {
           date?: string;
           description?: string | null;
           duration?: number;
+          frozen_at?: string | null;
           id?: string;
           mentor_id?: string | null;
           paid_at?: string | null;
@@ -2202,6 +2313,92 @@ export type Database = {
           target_label: string | null;
           justification: string | null;
           created_at: string;
+        }[];
+      };
+      admin_list_safeguarding_queue: {
+        Args: { _status?: string; _limit?: number; _offset?: number };
+        Returns: {
+          source: string;
+          report_id: string;
+          created_at: string;
+          category: string;
+          reporter_id: string | null;
+          reporter_label: string | null;
+          subject_user_id: string | null;
+          subject_label: string | null;
+          status: string;
+          severity: string | null;
+        }[];
+      };
+      admin_get_report_case: {
+        Args: { _source: string; _report_id: string };
+        Returns: {
+          source: string;
+          report_id: string;
+          created_at: string;
+          category: string;
+          content: string | null;
+          reporter_id: string | null;
+          reporter_label: string | null;
+          subject_user_id: string | null;
+          subject_label: string | null;
+          conversation_id: string | null;
+          reported_message_id: string | null;
+          booking_id: string | null;
+          status: string;
+          severity: string | null;
+          notes: string | null;
+        }[];
+      };
+      admin_set_report_triage: {
+        Args: {
+          _source: string;
+          _report_id: string;
+          _status?: string;
+          _severity?: string;
+          _notes?: string;
+        };
+        Returns: undefined;
+      };
+      admin_list_escalations: {
+        Args: { _source: string; _report_id: string };
+        Returns: {
+          id: string;
+          channel: string;
+          reference_note: string | null;
+          actor_id: string;
+          created_at: string;
+        }[];
+      };
+      admin_set_account_state: {
+        Args: { _user_id: string; _state: string; _reason?: string };
+        Returns: undefined;
+      };
+      admin_warn_user: { Args: { _user_id: string; _reason: string }; Returns: string };
+      admin_freeze_or_cancel_booking: {
+        Args: { _booking_id: string; _reason?: string };
+        Returns: string;
+      };
+      admin_record_escalation: {
+        Args: {
+          _channel: string;
+          _subject_user_id?: string;
+          _source?: string;
+          _report_id?: string;
+          _note?: string;
+        };
+        Returns: string;
+      };
+      admin_reveal_contact: {
+        Args: { _user_id: string; _justification?: string };
+        Returns: {
+          user_id: string;
+          role: string;
+          full_name: string | null;
+          email: string | null;
+          phone: string | null;
+          parent_phone: string | null;
+          parent_email: string | null;
         }[];
       };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
