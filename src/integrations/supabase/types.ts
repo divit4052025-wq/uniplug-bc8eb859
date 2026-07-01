@@ -2525,6 +2525,65 @@ export type Database = {
         Args: { _event_id: string; _note?: string };
         Returns: undefined;
       };
+      admin_list_bookings_ledger: {
+        Args: {
+          _status?: string;
+          _from?: string;
+          _to?: string;
+          _frozen_only?: boolean;
+          _limit?: number;
+        };
+        Returns: {
+          id: string;
+          student_id: string | null;
+          student_label: string | null;
+          mentor_id: string | null;
+          mentor_label: string | null;
+          date: string;
+          time_slot: string;
+          duration: number;
+          status: string;
+          price: number;
+          paid: boolean;
+          frozen: boolean;
+          refund_pending: boolean;
+          created_at: string;
+        }[];
+      };
+      admin_get_booking: {
+        Args: { _booking_id: string };
+        Returns: {
+          id: string;
+          status: string;
+          date: string;
+          time_slot: string;
+          duration: number;
+          price: number;
+          student_id: string | null;
+          student_label: string | null;
+          mentor_id: string | null;
+          mentor_label: string | null;
+          paid_at: string | null;
+          frozen_at: string | null;
+          has_payment: boolean;
+          refund_status: string | null;
+          refund_amount_inr: number | null;
+          subject: string | null;
+          description: string | null;
+          reschedule_count: number | null;
+          created_at: string;
+        }[];
+      };
+      admin_list_booking_joins: {
+        Args: { _booking_id: string };
+        Returns: {
+          role: string;
+          user_id: string | null;
+          user_label: string | null;
+          issued_at: string;
+          token_exp: string | null;
+        }[];
+      };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
         // B (2026-06-04): optional specialty/university/min-rating filters.

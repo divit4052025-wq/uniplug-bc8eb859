@@ -66,9 +66,11 @@ import { Route as AdminVerificationRouteImport } from './routes/admin.verificati
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSafeguardingRouteImport } from './routes/admin.safeguarding'
 import { Route as AdminConsentRouteImport } from './routes/admin.consent'
+import { Route as AdminBookingsRouteImport } from './routes/admin.bookings'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminVerificationMentorIdRouteImport } from './routes/admin.verification_.$mentorId'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin.users_.$userId'
+import { Route as AdminBookingsBookingIdRouteImport } from './routes/admin.bookings_.$bookingId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
@@ -360,6 +362,11 @@ const AdminConsentRoute = AdminConsentRouteImport.update({
   path: '/consent',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBookingsRoute = AdminBookingsRouteImport.update({
+  id: '/bookings',
+  path: '/bookings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -374,6 +381,11 @@ const AdminVerificationMentorIdRoute =
 const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
   id: '/users_/$userId',
   path: '/users/$userId',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminBookingsBookingIdRoute = AdminBookingsBookingIdRouteImport.update({
+  id: '/bookings_/$bookingId',
+  path: '/bookings/$bookingId',
   getParentRoute: () => AdminRoute,
 } as any)
 const ApiPublicHooksSendRemindersRoute =
@@ -425,6 +437,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/bookings': typeof AdminBookingsRoute
   '/admin/consent': typeof AdminConsentRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -460,6 +473,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/admin/verification/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
@@ -488,6 +502,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/bookings': typeof AdminBookingsRoute
   '/admin/consent': typeof AdminConsentRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -523,6 +538,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
+  '/admin/bookings/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/admin/verification/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
@@ -555,6 +571,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/bookings': typeof AdminBookingsRoute
   '/admin/consent': typeof AdminConsentRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
@@ -590,6 +607,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/bookings_/$bookingId': typeof AdminBookingsBookingIdRoute
   '/admin/users_/$userId': typeof AdminUsersUserIdRoute
   '/admin/verification_/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding_/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
@@ -623,6 +641,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/bookings'
     | '/admin/consent'
     | '/admin/safeguarding'
     | '/admin/users'
@@ -658,6 +677,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/bookings/$bookingId'
     | '/admin/users/$userId'
     | '/admin/verification/$mentorId'
     | '/admin/safeguarding/$source/$reportId'
@@ -686,6 +706,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/bookings'
     | '/admin/consent'
     | '/admin/safeguarding'
     | '/admin/users'
@@ -721,6 +742,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/mentor-dashboard'
+    | '/admin/bookings/$bookingId'
     | '/admin/users/$userId'
     | '/admin/verification/$mentorId'
     | '/admin/safeguarding/$source/$reportId'
@@ -752,6 +774,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/bookings'
     | '/admin/consent'
     | '/admin/safeguarding'
     | '/admin/users'
@@ -787,6 +810,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/bookings_/$bookingId'
     | '/admin/users_/$userId'
     | '/admin/verification_/$mentorId'
     | '/admin/safeguarding_/$source/$reportId'
@@ -1230,6 +1254,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminConsentRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/bookings': {
+      id: '/admin/bookings'
+      path: '/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/audit': {
       id: '/admin/audit'
       path: '/audit'
@@ -1249,6 +1280,13 @@ declare module '@tanstack/react-router' {
       path: '/users/$userId'
       fullPath: '/admin/users/$userId'
       preLoaderRoute: typeof AdminUsersUserIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/bookings_/$bookingId': {
+      id: '/admin/bookings_/$bookingId'
+      path: '/bookings/$bookingId'
+      fullPath: '/admin/bookings/$bookingId'
+      preLoaderRoute: typeof AdminBookingsBookingIdRouteImport
       parentRoute: typeof AdminRoute
     }
     '/api/public/hooks/send-reminders': {
@@ -1284,11 +1322,13 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminBookingsRoute: typeof AdminBookingsRoute
   AdminConsentRoute: typeof AdminConsentRoute
   AdminSafeguardingRoute: typeof AdminSafeguardingRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminBookingsBookingIdRoute: typeof AdminBookingsBookingIdRoute
   AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
   AdminVerificationMentorIdRoute: typeof AdminVerificationMentorIdRoute
   AdminSafeguardingSourceReportIdRoute: typeof AdminSafeguardingSourceReportIdRoute
@@ -1296,11 +1336,13 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
+  AdminBookingsRoute: AdminBookingsRoute,
   AdminConsentRoute: AdminConsentRoute,
   AdminSafeguardingRoute: AdminSafeguardingRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminBookingsBookingIdRoute: AdminBookingsBookingIdRoute,
   AdminUsersUserIdRoute: AdminUsersUserIdRoute,
   AdminVerificationMentorIdRoute: AdminVerificationMentorIdRoute,
   AdminSafeguardingSourceReportIdRoute: AdminSafeguardingSourceReportIdRoute,

@@ -63,8 +63,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     label: "Bookings",
     to: "/admin/bookings",
     icon: CalendarClock,
-    status: "soon",
-    hint: "ledger",
+    status: "active",
   },
   {
     key: "payments",
