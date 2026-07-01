@@ -56,8 +56,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     label: "Consent",
     to: "/admin/consent",
     icon: HeartHandshake,
-    status: "soon",
-    hint: "minors",
+    status: "active",
   },
   {
     key: "bookings",

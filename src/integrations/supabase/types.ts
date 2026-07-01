@@ -2492,6 +2492,39 @@ export type Database = {
           created_at: string;
         }[];
       };
+      admin_list_consent: {
+        Args: { _status?: string; _limit?: number };
+        Returns: {
+          student_id: string;
+          full_name: string | null;
+          grade: string | null;
+          dob_known: boolean;
+          status: string;
+          has_parent_contact: boolean;
+          granted_at: string | null;
+          last_revoked_at: string | null;
+          unresolved_fallout: number;
+        }[];
+      };
+      admin_list_consent_fallout: {
+        Args: { _include_resolved?: boolean };
+        Returns: {
+          event_id: string;
+          student_id: string;
+          student_label: string | null;
+          booking_id: string | null;
+          action: string;
+          revoked_at: string;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          resolution_note: string | null;
+        }[];
+      };
+      admin_revoke_consent: { Args: { _student_id: string; _reason: string }; Returns: undefined };
+      admin_resolve_consent_event: {
+        Args: { _event_id: string; _note?: string };
+        Returns: undefined;
+      };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
         // B (2026-06-04): optional specialty/university/min-rating filters.

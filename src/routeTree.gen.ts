@@ -65,6 +65,7 @@ import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
 import { Route as AdminVerificationRouteImport } from './routes/admin.verification'
 import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSafeguardingRouteImport } from './routes/admin.safeguarding'
+import { Route as AdminConsentRouteImport } from './routes/admin.consent'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminVerificationMentorIdRouteImport } from './routes/admin.verification_.$mentorId'
 import { Route as AdminUsersUserIdRouteImport } from './routes/admin.users_.$userId'
@@ -354,6 +355,11 @@ const AdminSafeguardingRoute = AdminSafeguardingRouteImport.update({
   path: '/safeguarding',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminConsentRoute = AdminConsentRouteImport.update({
+  id: '/consent',
+  path: '/consent',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAuditRoute = AdminAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -419,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/consent': typeof AdminConsentRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -481,6 +488,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/consent': typeof AdminConsentRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -547,6 +555,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
+  '/admin/consent': typeof AdminConsentRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
   '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
@@ -614,6 +623,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/consent'
     | '/admin/safeguarding'
     | '/admin/users'
     | '/admin/verification'
@@ -676,6 +686,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/consent'
     | '/admin/safeguarding'
     | '/admin/users'
     | '/admin/verification'
@@ -741,6 +752,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/welcome'
     | '/admin/audit'
+    | '/admin/consent'
     | '/admin/safeguarding'
     | '/admin/users'
     | '/admin/verification'
@@ -1211,6 +1223,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSafeguardingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/consent': {
+      id: '/admin/consent'
+      path: '/consent'
+      fullPath: '/admin/consent'
+      preLoaderRoute: typeof AdminConsentRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/audit': {
       id: '/admin/audit'
       path: '/audit'
@@ -1265,6 +1284,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
+  AdminConsentRoute: typeof AdminConsentRoute
   AdminSafeguardingRoute: typeof AdminSafeguardingRoute
   AdminUsersRoute: typeof AdminUsersRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
@@ -1276,6 +1296,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
+  AdminConsentRoute: AdminConsentRoute,
   AdminSafeguardingRoute: AdminSafeguardingRoute,
   AdminUsersRoute: AdminUsersRoute,
   AdminVerificationRoute: AdminVerificationRoute,
