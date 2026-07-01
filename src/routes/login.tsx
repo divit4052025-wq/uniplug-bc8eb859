@@ -6,6 +6,7 @@ import { FounderCompanion } from "@/components/student-signup/v2/FounderCompanio
 import { Logo } from "@/components/site/Logo";
 import type { MascotExpression } from "@/components/mascots/Mascot";
 import { markSession } from "@/lib/ephemeral-session";
+import { resolveUserRole, dashboardPathForRole } from "@/lib/auth/role";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/login")({
@@ -101,33 +102,12 @@ function LoginPage() {
       setStatus("success");
       setFounderExpr("celebrating");
 
-      // Admin shortcut
-      if ((data.user?.email ?? "").toLowerCase() === "divitfatehpuria7@gmail.com") {
-        navigate({ to: "/admin" });
-        return;
-      }
-      // Determine role: check mentors first, then students.
-      const { data: mentorRow } = await supabase
-        .from("mentors")
-        .select("id")
-        .eq("id", userId)
-        .maybeSingle();
-      if (mentorRow) {
-        navigate({ to: "/mentor-dashboard" });
-        return;
-      }
-      const { data: studentRow } = await supabase
-        .from("students")
-        .select("id")
-        .eq("id", userId)
-        .maybeSingle();
-      if (studentRow) {
-        navigate({ to: "/dashboard" });
-        return;
-      }
-      // Fallback by metadata
-      const role = (data.user?.user_metadata?.role as string | undefined) ?? "student";
-      navigate({ to: role === "mentor" ? "/mentor-dashboard" : "/dashboard" });
+      // Resolve role centrally (admin is data-driven via the role system; no
+      // email literal, no divergent inline re-implementation). Admin → /admin,
+      // mentor → /mentor-dashboard, student/unknown → /dashboard.
+      const meta = (data.user?.user_metadata ?? {}) as { role?: string };
+      const role = await resolveUserRole(userId, data.user?.email, meta);
+      navigate({ to: dashboardPathForRole(role) });
     } catch (err) {
       setStatus("idle");
       setFounderExpr("confused");

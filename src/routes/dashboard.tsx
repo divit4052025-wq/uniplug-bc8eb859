@@ -53,13 +53,14 @@ function DashboardLayout() {
         navigate({ to: "/student-signup" });
         return;
       }
-      if ((session.user.email ?? "").toLowerCase() === "divitfatehpuria7@gmail.com") {
-        navigate({ to: "/admin" });
-        return;
-      }
       const meta = (session.user.user_metadata ?? {}) as { role?: string; full_name?: string };
       const role = await resolveUserRole(session.user.id, session.user.email, meta);
       if (cancelled) return;
+      // Admin-ness is data-driven now (role system), not an email literal.
+      if (role === "admin") {
+        navigate({ to: "/admin" });
+        return;
+      }
       if (role === "mentor") {
         navigate({ to: "/mentor-dashboard" });
         return;

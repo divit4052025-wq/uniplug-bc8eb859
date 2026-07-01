@@ -43,6 +43,174 @@ export type Database = {
           },
         ];
       };
+      admin_audit_log: {
+        Row: {
+          action: string;
+          actor_id: string;
+          created_at: string;
+          detail: Json | null;
+          id: string;
+          justification: string | null;
+          target_id: string | null;
+          target_label: string | null;
+          target_type: string | null;
+        };
+        Insert: {
+          action: string;
+          actor_id: string;
+          created_at?: string;
+          detail?: Json | null;
+          id?: string;
+          justification?: string | null;
+          target_id?: string | null;
+          target_label?: string | null;
+          target_type?: string | null;
+        };
+        Update: {
+          action?: string;
+          actor_id?: string;
+          created_at?: string;
+          detail?: Json | null;
+          id?: string;
+          justification?: string | null;
+          target_id?: string | null;
+          target_label?: string | null;
+          target_type?: string | null;
+        };
+        Relationships: [];
+      };
+      admin_roles: {
+        Row: {
+          granted_at: string;
+          granted_by: string | null;
+          revoked_at: string | null;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          granted_at?: string;
+          granted_by?: string | null;
+          revoked_at?: string | null;
+          role: string;
+          user_id: string;
+        };
+        Update: {
+          granted_at?: string;
+          granted_by?: string | null;
+          revoked_at?: string | null;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      account_moderation: {
+        Row: {
+          user_id: string;
+          state: string;
+          reason: string | null;
+          actor_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          state?: string;
+          reason?: string | null;
+          actor_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          state?: string;
+          reason?: string | null;
+          actor_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      report_triage: {
+        Row: {
+          source: string;
+          report_id: string;
+          status: string;
+          severity: string | null;
+          notes: string | null;
+          assigned_to: string | null;
+          updated_by: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          source: string;
+          report_id: string;
+          status?: string;
+          severity?: string | null;
+          notes?: string | null;
+          assigned_to?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          source?: string;
+          report_id?: string;
+          status?: string;
+          severity?: string | null;
+          notes?: string | null;
+          assigned_to?: string | null;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      user_warnings: {
+        Row: { id: string; user_id: string; reason: string; actor_id: string; created_at: string };
+        Insert: {
+          id?: string;
+          user_id: string;
+          reason: string;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          reason?: string;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      escalation_records: {
+        Row: {
+          id: string;
+          source: string | null;
+          report_id: string | null;
+          subject_user_id: string | null;
+          channel: string;
+          reference_note: string | null;
+          actor_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          source?: string | null;
+          report_id?: string | null;
+          subject_user_id?: string | null;
+          channel: string;
+          reference_note?: string | null;
+          actor_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          source?: string | null;
+          report_id?: string | null;
+          subject_user_id?: string | null;
+          channel?: string;
+          reference_note?: string | null;
+          actor_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       ai_rate_limit_events: {
         Row: {
           created_at: string;
@@ -70,6 +238,7 @@ export type Database = {
           date: string;
           description: string | null;
           duration: number;
+          frozen_at: string | null;
           id: string;
           mentor_id: string | null;
           paid_at: string | null;
@@ -88,6 +257,7 @@ export type Database = {
           date: string;
           description?: string | null;
           duration?: number;
+          frozen_at?: string | null;
           id?: string;
           mentor_id?: string | null;
           paid_at?: string | null;
@@ -106,6 +276,7 @@ export type Database = {
           date?: string;
           description?: string | null;
           duration?: number;
+          frozen_at?: string | null;
           id?: string;
           mentor_id?: string | null;
           paid_at?: string | null;
@@ -2110,6 +2281,389 @@ export type Database = {
         }[];
       };
       is_admin: { Args: never; Returns: boolean };
+      is_super_admin: { Args: never; Returns: boolean };
+      current_admin_role: { Args: never; Returns: string | null };
+      log_admin_action: {
+        Args: {
+          _action: string;
+          _target_type?: string;
+          _target_id?: string;
+          _target_label?: string;
+          _justification?: string;
+          _detail?: Json;
+        };
+        Returns: string;
+      };
+      admin_grant_role: { Args: { _user_id: string; _role: string }; Returns: undefined };
+      admin_revoke_role: { Args: { _user_id: string; _role: string }; Returns: undefined };
+      admin_list_audit_log: {
+        Args: {
+          _limit?: number;
+          _offset?: number;
+          _actor?: string;
+          _action?: string;
+        };
+        Returns: {
+          id: string;
+          actor_id: string;
+          actor_email: string | null;
+          action: string;
+          target_type: string | null;
+          target_id: string | null;
+          target_label: string | null;
+          justification: string | null;
+          created_at: string;
+        }[];
+      };
+      admin_list_safeguarding_queue: {
+        Args: { _status?: string; _limit?: number; _offset?: number };
+        Returns: {
+          source: string;
+          report_id: string;
+          created_at: string;
+          category: string;
+          reporter_id: string | null;
+          reporter_label: string | null;
+          subject_user_id: string | null;
+          subject_label: string | null;
+          status: string;
+          severity: string | null;
+        }[];
+      };
+      admin_get_report_case: {
+        Args: { _source: string; _report_id: string };
+        Returns: {
+          source: string;
+          report_id: string;
+          created_at: string;
+          category: string;
+          content: string | null;
+          reporter_id: string | null;
+          reporter_label: string | null;
+          subject_user_id: string | null;
+          subject_label: string | null;
+          conversation_id: string | null;
+          reported_message_id: string | null;
+          booking_id: string | null;
+          status: string;
+          severity: string | null;
+          notes: string | null;
+        }[];
+      };
+      admin_set_report_triage: {
+        Args: {
+          _source: string;
+          _report_id: string;
+          _status?: string;
+          _severity?: string;
+          _notes?: string;
+        };
+        Returns: undefined;
+      };
+      admin_list_escalations: {
+        Args: { _source: string; _report_id: string };
+        Returns: {
+          id: string;
+          channel: string;
+          reference_note: string | null;
+          actor_id: string;
+          created_at: string;
+        }[];
+      };
+      admin_set_account_state: {
+        Args: { _user_id: string; _state: string; _reason?: string };
+        Returns: undefined;
+      };
+      admin_warn_user: { Args: { _user_id: string; _reason: string }; Returns: string };
+      admin_freeze_or_cancel_booking: {
+        Args: { _booking_id: string; _reason?: string };
+        Returns: string;
+      };
+      admin_record_escalation: {
+        Args: {
+          _channel: string;
+          _subject_user_id?: string;
+          _source?: string;
+          _report_id?: string;
+          _note?: string;
+        };
+        Returns: string;
+      };
+      admin_reveal_contact: {
+        Args: { _user_id: string; _justification?: string };
+        Returns: {
+          user_id: string;
+          role: string;
+          full_name: string | null;
+          email: string | null;
+          phone: string | null;
+          parent_phone: string | null;
+          parent_email: string | null;
+        }[];
+      };
+      admin_list_mentor_applications: {
+        Args: { _status?: string; _mentor_id?: string };
+        Returns: {
+          id: string;
+          full_name: string | null;
+          email: string | null;
+          university: string | null;
+          course: string | null;
+          year: string | null;
+          college_email: string | null;
+          status: string;
+          tier: string;
+          date_of_birth: string | null;
+          is_adult: boolean;
+          verified_at: string | null;
+          verification_notes: string | null;
+          application_submitted_at: string | null;
+          has_id_doc: boolean;
+          has_enrollment_doc: boolean;
+          created_at: string;
+        }[];
+      };
+      admin_approve_mentor: { Args: { _mentor_id: string }; Returns: undefined };
+      admin_reject_mentor: { Args: { _mentor_id: string; _reason: string }; Returns: undefined };
+      admin_search_users: {
+        Args: { _query?: string; _role?: string; _limit?: number };
+        Returns: {
+          user_id: string;
+          role: string;
+          full_name: string | null;
+          sub_label: string | null;
+          account_state: string;
+          created_at: string;
+        }[];
+      };
+      admin_get_user_profile: {
+        Args: { _user_id: string };
+        Returns: {
+          user_id: string;
+          role: string;
+          full_name: string | null;
+          created_at: string;
+          account_state: string;
+          account_reason: string | null;
+          grade: string | null;
+          school: string | null;
+          requires_consent: boolean | null;
+          dob_known: boolean | null;
+          has_consent: boolean | null;
+          parental_consent_at: string | null;
+          university: string | null;
+          course: string | null;
+          year: string | null;
+          mentor_status: string | null;
+          tier: string | null;
+          is_adult: boolean | null;
+        }[];
+      };
+      admin_list_user_bookings: {
+        Args: { _user_id: string };
+        Returns: {
+          id: string;
+          role_in: string;
+          counterpart_label: string | null;
+          date: string;
+          time_slot: string;
+          status: string;
+          price: number;
+          frozen: boolean;
+        }[];
+      };
+      admin_list_user_reports: {
+        Args: { _user_id: string };
+        Returns: {
+          source: string;
+          report_id: string;
+          role_in: string;
+          category: string;
+          status: string;
+          created_at: string;
+        }[];
+      };
+      admin_list_user_warnings: {
+        Args: { _user_id: string };
+        Returns: {
+          id: string;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        }[];
+      };
+      admin_list_consent: {
+        Args: { _status?: string; _limit?: number };
+        Returns: {
+          student_id: string;
+          full_name: string | null;
+          grade: string | null;
+          dob_known: boolean;
+          status: string;
+          has_parent_contact: boolean;
+          granted_at: string | null;
+          last_revoked_at: string | null;
+          unresolved_fallout: number;
+        }[];
+      };
+      admin_list_consent_fallout: {
+        Args: { _include_resolved?: boolean };
+        Returns: {
+          event_id: string;
+          student_id: string;
+          student_label: string | null;
+          booking_id: string | null;
+          action: string;
+          revoked_at: string;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          resolution_note: string | null;
+        }[];
+      };
+      admin_revoke_consent: { Args: { _student_id: string; _reason: string }; Returns: undefined };
+      admin_resolve_consent_event: {
+        Args: { _event_id: string; _note?: string };
+        Returns: undefined;
+      };
+      admin_list_bookings_ledger: {
+        Args: {
+          _status?: string;
+          _from?: string;
+          _to?: string;
+          _frozen_only?: boolean;
+          _limit?: number;
+        };
+        Returns: {
+          id: string;
+          student_id: string | null;
+          student_label: string | null;
+          mentor_id: string | null;
+          mentor_label: string | null;
+          date: string;
+          time_slot: string;
+          duration: number;
+          status: string;
+          price: number;
+          paid: boolean;
+          frozen: boolean;
+          refund_pending: boolean;
+          created_at: string;
+        }[];
+      };
+      admin_get_booking: {
+        Args: { _booking_id: string };
+        Returns: {
+          id: string;
+          status: string;
+          date: string;
+          time_slot: string;
+          duration: number;
+          price: number;
+          student_id: string | null;
+          student_label: string | null;
+          mentor_id: string | null;
+          mentor_label: string | null;
+          paid_at: string | null;
+          frozen_at: string | null;
+          has_payment: boolean;
+          refund_status: string | null;
+          refund_amount_inr: number | null;
+          subject: string | null;
+          description: string | null;
+          reschedule_count: number | null;
+          created_at: string;
+        }[];
+      };
+      admin_list_booking_joins: {
+        Args: { _booking_id: string };
+        Returns: {
+          role: string;
+          user_id: string | null;
+          user_label: string | null;
+          issued_at: string;
+          token_exp: string | null;
+        }[];
+      };
+      admin_overview_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          open_safeguarding: number;
+          pending_verifications: number;
+          consent_pending: number;
+          consent_fallout_open: number;
+          accounts_moderated: number;
+          refunds_owed_count: number;
+          refunds_owed_inr: number;
+          payouts_accrued_count: number;
+          payouts_accrued_inr: number;
+        }[];
+      };
+      admin_payments_summary: {
+        Args: Record<string, never>;
+        Returns: {
+          gross_captured_inr: number;
+          mentor_share_accrued_inr: number;
+          platform_fee_inr: number;
+          captured_count: number;
+          total_refunded_inr: number;
+          clawback_owed_inr: number;
+          refund_owed_inr: number;
+          refund_owed_count: number;
+          refund_processed_count: number;
+          refund_failed_count: number;
+          payout_scheduled_inr: number;
+          payout_scheduled_count: number;
+          payout_paid_inr: number;
+          payout_paid_count: number;
+          payout_failed_count: number;
+        }[];
+      };
+      admin_list_payment_ledger: {
+        Args: { _event_type?: string; _from?: string; _to?: string; _limit?: number };
+        Returns: {
+          id: string;
+          created_at: string;
+          event_type: string;
+          booking_id: string | null;
+          student_label: string | null;
+          mentor_label: string | null;
+          amount_inr: number | null;
+          mentor_share_inr: number | null;
+          platform_fee_inr: number | null;
+          razorpay_payment_id: string | null;
+          razorpay_refund_id: string | null;
+        }[];
+      };
+      admin_list_refund_intents: {
+        Args: { _status?: string; _limit?: number };
+        Returns: {
+          id: string;
+          booking_id: string | null;
+          student_label: string | null;
+          mentor_label: string | null;
+          amount_inr: number;
+          tier: string | null;
+          reason: string | null;
+          source: string | null;
+          status: string;
+          created_at: string;
+          processed_at: string | null;
+        }[];
+      };
+      admin_list_mentor_payouts: {
+        Args: { _status?: string; _limit?: number };
+        Returns: {
+          id: string;
+          mentor_id: string | null;
+          mentor_label: string | null;
+          amount_inr: number;
+          payout_date: string | null;
+          period_end: string | null;
+          status: string;
+          batch_id: string | null;
+          created_at: string;
+        }[];
+      };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
         // B (2026-06-04): optional specialty/university/min-rating filters.
