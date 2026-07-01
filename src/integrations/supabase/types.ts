@@ -2425,6 +2425,73 @@ export type Database = {
       };
       admin_approve_mentor: { Args: { _mentor_id: string }; Returns: undefined };
       admin_reject_mentor: { Args: { _mentor_id: string; _reason: string }; Returns: undefined };
+      admin_search_users: {
+        Args: { _query?: string; _role?: string; _limit?: number };
+        Returns: {
+          user_id: string;
+          role: string;
+          full_name: string | null;
+          sub_label: string | null;
+          account_state: string;
+          created_at: string;
+        }[];
+      };
+      admin_get_user_profile: {
+        Args: { _user_id: string };
+        Returns: {
+          user_id: string;
+          role: string;
+          full_name: string | null;
+          created_at: string;
+          account_state: string;
+          account_reason: string | null;
+          grade: string | null;
+          school: string | null;
+          requires_consent: boolean | null;
+          dob_known: boolean | null;
+          has_consent: boolean | null;
+          parental_consent_at: string | null;
+          university: string | null;
+          course: string | null;
+          year: string | null;
+          mentor_status: string | null;
+          tier: string | null;
+          is_adult: boolean | null;
+        }[];
+      };
+      admin_list_user_bookings: {
+        Args: { _user_id: string };
+        Returns: {
+          id: string;
+          role_in: string;
+          counterpart_label: string | null;
+          date: string;
+          time_slot: string;
+          status: string;
+          price: number;
+          frozen: boolean;
+        }[];
+      };
+      admin_list_user_reports: {
+        Args: { _user_id: string };
+        Returns: {
+          source: string;
+          report_id: string;
+          role_in: string;
+          category: string;
+          status: string;
+          created_at: string;
+        }[];
+      };
+      admin_list_user_warnings: {
+        Args: { _user_id: string };
+        Returns: {
+          id: string;
+          reason: string;
+          actor_id: string;
+          created_at: string;
+        }[];
+      };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
         // B (2026-06-04): optional specialty/university/min-rating filters.

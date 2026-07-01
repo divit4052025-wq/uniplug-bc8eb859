@@ -49,8 +49,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     label: "Users",
     to: "/admin/users",
     icon: Users,
-    status: "soon",
-    hint: "directory",
+    status: "active",
   },
   {
     key: "consent",

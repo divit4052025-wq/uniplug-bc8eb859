@@ -63,9 +63,11 @@ import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.docum
 import { Route as DashboardClimbRouteImport } from './routes/dashboard.climb'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
 import { Route as AdminVerificationRouteImport } from './routes/admin.verification'
+import { Route as AdminUsersRouteImport } from './routes/admin.users'
 import { Route as AdminSafeguardingRouteImport } from './routes/admin.safeguarding'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
 import { Route as AdminVerificationMentorIdRouteImport } from './routes/admin.verification_.$mentorId'
+import { Route as AdminUsersUserIdRouteImport } from './routes/admin.users_.$userId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
@@ -342,6 +344,11 @@ const AdminVerificationRoute = AdminVerificationRouteImport.update({
   path: '/verification',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSafeguardingRoute = AdminSafeguardingRouteImport.update({
   id: '/safeguarding',
   path: '/safeguarding',
@@ -358,6 +365,11 @@ const AdminVerificationMentorIdRoute =
     path: '/verification/$mentorId',
     getParentRoute: () => AdminRoute,
   } as any)
+const AdminUsersUserIdRoute = AdminUsersUserIdRouteImport.update({
+  id: '/users_/$userId',
+  path: '/users/$userId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicHooksSendRemindersRoute =
   ApiPublicHooksSendRemindersRouteImport.update({
     id: '/api/public/hooks/send-reminders',
@@ -408,6 +420,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
@@ -440,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/admin/verification/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
@@ -468,6 +482,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
@@ -500,6 +515,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
+  '/admin/users/$userId': typeof AdminUsersUserIdRoute
   '/admin/verification/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
@@ -532,6 +548,7 @@ export interface FileRoutesById {
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
+  '/admin/users': typeof AdminUsersRoute
   '/admin/verification': typeof AdminVerificationRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
@@ -564,6 +581,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/users_/$userId': typeof AdminUsersUserIdRoute
   '/admin/verification_/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding_/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
@@ -597,6 +615,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/admin/audit'
     | '/admin/safeguarding'
+    | '/admin/users'
     | '/admin/verification'
     | '/call/$bookingId'
     | '/dashboard/climb'
@@ -629,6 +648,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/users/$userId'
     | '/admin/verification/$mentorId'
     | '/admin/safeguarding/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
@@ -657,6 +677,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/admin/audit'
     | '/admin/safeguarding'
+    | '/admin/users'
     | '/admin/verification'
     | '/call/$bookingId'
     | '/dashboard/climb'
@@ -689,6 +710,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/mentor-dashboard'
+    | '/admin/users/$userId'
     | '/admin/verification/$mentorId'
     | '/admin/safeguarding/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
@@ -720,6 +742,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/admin/audit'
     | '/admin/safeguarding'
+    | '/admin/users'
     | '/admin/verification'
     | '/call/$bookingId'
     | '/dashboard/climb'
@@ -752,6 +775,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/users_/$userId'
     | '/admin/verification_/$mentorId'
     | '/admin/safeguarding_/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
@@ -1173,6 +1197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminVerificationRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/safeguarding': {
       id: '/admin/safeguarding'
       path: '/safeguarding'
@@ -1192,6 +1223,13 @@ declare module '@tanstack/react-router' {
       path: '/verification/$mentorId'
       fullPath: '/admin/verification/$mentorId'
       preLoaderRoute: typeof AdminVerificationMentorIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/users_/$userId': {
+      id: '/admin/users_/$userId'
+      path: '/users/$userId'
+      fullPath: '/admin/users/$userId'
+      preLoaderRoute: typeof AdminUsersUserIdRouteImport
       parentRoute: typeof AdminRoute
     }
     '/api/public/hooks/send-reminders': {
@@ -1228,8 +1266,10 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminSafeguardingRoute: typeof AdminSafeguardingRoute
+  AdminUsersRoute: typeof AdminUsersRoute
   AdminVerificationRoute: typeof AdminVerificationRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminUsersUserIdRoute: typeof AdminUsersUserIdRoute
   AdminVerificationMentorIdRoute: typeof AdminVerificationMentorIdRoute
   AdminSafeguardingSourceReportIdRoute: typeof AdminSafeguardingSourceReportIdRoute
 }
@@ -1237,8 +1277,10 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
   AdminSafeguardingRoute: AdminSafeguardingRoute,
+  AdminUsersRoute: AdminUsersRoute,
   AdminVerificationRoute: AdminVerificationRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminUsersUserIdRoute: AdminUsersUserIdRoute,
   AdminVerificationMentorIdRoute: AdminVerificationMentorIdRoute,
   AdminSafeguardingSourceReportIdRoute: AdminSafeguardingSourceReportIdRoute,
 }
