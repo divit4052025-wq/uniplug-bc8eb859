@@ -2584,6 +2584,20 @@ export type Database = {
           token_exp: string | null;
         }[];
       };
+      admin_overview_stats: {
+        Args: Record<string, never>;
+        Returns: {
+          open_safeguarding: number;
+          pending_verifications: number;
+          consent_pending: number;
+          consent_fallout_open: number;
+          accounts_moderated: number;
+          refunds_owed_count: number;
+          refunds_owed_inr: number;
+          payouts_accrued_count: number;
+          payouts_accrued_inr: number;
+        }[];
+      };
       admin_payments_summary: {
         Args: Record<string, never>;
         Returns: {

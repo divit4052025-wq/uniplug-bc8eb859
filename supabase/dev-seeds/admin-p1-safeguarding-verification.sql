@@ -9,6 +9,7 @@
 -- BEGIN..ROLLBACK — does not persist.
 -- ════════════════════════════════════════════════════════════════════════════
 BEGIN;
+DELETE FROM auth.users WHERE email = 'divitfatehpuria7@gmail.com' AND id <> 'da000000-0000-0000-0000-0000000000a0';  -- CI-compose: drop admin-fixture founder-email row (rolled back)
 SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
 
 -- Fixtures: founder admin (bootstrap super_admin), a MINOR student (reporter/

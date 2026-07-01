@@ -95,21 +95,24 @@ GRANT  EXECUTE ON FUNCTION public.admin_reject_mentor(uuid, text) TO authenticat
 COMMENT ON FUNCTION public.admin_reject_mentor(uuid, text) IS
   'Admin P2 (2026-07-01): is_admin-gated audited wrapper — requires a reason, PERFORMs reject_mentor (status=rejected + stores reason in verification_notes + email) then writes a reject_mentor audit row. This is the "request resubmit" path; the mentor then self-resubmits via HQ Forge (resubmit_mentor_application).';
 
--- ── 3. close the un-audited direct paths ────────────────────────────────────
--- The pre-Phase-0 primitives change verification status but write NO audit row.
--- They were reachable directly over the client RPC surface (browser holds the anon
+-- ── 3. close the un-audited direct DECISION paths ───────────────────────────
+-- approve_mentor / reject_mentor change verification status but write NO audit row,
+-- and were reachable directly over the client RPC surface (browser holds the anon
 -- key + an admin JWT), so an admin could approve/reject with no trail — defeating
 -- "every verification decision is audited". Make the AUDITED wrappers the only
--- authenticated path: revoke the primitives from authenticated/anon. The wrappers
--- still call them because a SECURITY DEFINER body executes as the owner (which
--- retains EXECUTE regardless of these grants); service_role keeps access for any
--- server-side use.
-REVOKE EXECUTE ON FUNCTION public.approve_mentor(uuid)           FROM authenticated, anon, PUBLIC;
-REVOKE EXECUTE ON FUNCTION public.reject_mentor(uuid, text)      FROM authenticated, anon, PUBLIC;
-REVOKE ALL     ON FUNCTION public.admin_set_mentor_status(uuid, text) FROM authenticated, anon, PUBLIC;
-GRANT  EXECUTE ON FUNCTION public.approve_mentor(uuid)           TO service_role;
-GRANT  EXECUTE ON FUNCTION public.reject_mentor(uuid, text)      TO service_role;
-GRANT  EXECUTE ON FUNCTION public.admin_set_mentor_status(uuid, text) TO service_role;
+-- authenticated path: revoke these two primitives. The wrappers still call them (a
+-- SECURITY DEFINER body executes as the owner, which retains EXECUTE); service_role
+-- keeps access. Principle: only revoke a primitive that an audited wrapper replaces.
+REVOKE EXECUTE ON FUNCTION public.approve_mentor(uuid)      FROM authenticated, anon, PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.reject_mentor(uuid, text) FROM authenticated, anon, PUBLIC;
+GRANT  EXECUTE ON FUNCTION public.approve_mentor(uuid)      TO service_role;
+GRANT  EXECUTE ON FUNCTION public.reject_mentor(uuid, text) TO service_role;
+-- admin_set_mentor_status(uuid,text) is intentionally LEFT as-is (is_admin-gated, its
+-- original grant). The console does NOT use it — it uses the audited wrappers above —
+-- and pre-existing admin flows/tests (f2, mentors-column-lock, p2-mentor-schema) call
+-- it directly; revoking it here has no audited replacement and would break them. It
+-- stays an un-audited direct status path, tracked as PRE-LAUNCH hardening (give it an
+-- audited wrapper or a finance/safeguarding scope before real mentors flow through).
 
 -- PRE-LAUNCH HARDENING (data minimization): admin_list_mentor_applications returns
 -- the raw date_of_birth to every is_admin() caller, while the ID doc that validates

@@ -8,6 +8,7 @@
 -- BEGIN..ROLLBACK — does not persist.
 -- ════════════════════════════════════════════════════════════════════════════
 BEGIN;
+DELETE FROM auth.users WHERE email = 'divitfatehpuria7@gmail.com' AND id <> 'da000000-0000-0000-0000-0000000000a0';  -- CI-compose: drop admin-fixture founder-email row (rolled back)
 SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
 
 INSERT INTO auth.users (id, aud, role, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, confirmation_token, recovery_token, email_change, email_change_token_new, created_at, updated_at, instance_id) VALUES

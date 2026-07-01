@@ -220,7 +220,12 @@ BEGIN
     PERFORM public.mark_consent_revoked('22222222-2222-2222-2222-222222220404'::uuid);
     v_msg := 'non-admin call ACCEPTED — security regression';
   EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM ILIKE '%forbidden%' THEN v_pass := true; v_msg := 'rejected ['||SQLSTATE||']: '||SQLERRM;
+    -- Admin P4 (20260701000005) REVOKEd EXECUTE on mark_consent_revoked from
+    -- authenticated so the AUDITED admin_revoke_consent wrapper is the only path — a
+    -- non-admin is now stopped at the grant layer (42501 "permission denied") BEFORE
+    -- the inner is_admin 'forbidden'. Both are valid rejections; the grant-level one
+    -- is strictly stronger. Accept either.
+    IF SQLERRM ILIKE '%forbidden%' OR SQLERRM ILIKE '%permission denied%' THEN v_pass := true; v_msg := 'rejected ['||SQLSTATE||']: '||SQLERRM;
     ELSE v_msg := 'wrong reject ['||SQLSTATE||']: '||SQLERRM; END IF;
   END;
   EXECUTE 'RESET ROLE';

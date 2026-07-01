@@ -7,6 +7,7 @@
 -- BEGIN..ROLLBACK — does not persist.
 -- ════════════════════════════════════════════════════════════════════════════
 BEGIN;
+DELETE FROM auth.users WHERE email = 'divitfatehpuria7@gmail.com' AND id <> 'da000000-0000-0000-0000-0000000000a0';  -- CI-compose: drop admin-fixture founder-email row (rolled back)
 SELECT set_config('request.jwt.claims', '{"role":"service_role"}', true);
 
 -- Fixtures: founder admin + three adult pending mentors (A2 blocks non-adult mentor
@@ -112,21 +113,22 @@ BEGIN
     CASE WHEN v_blocked THEN 'PASS' ELSE 'FAIL' END, 'empty-reason reject blocked='||v_blocked);
 END $$;
 
--- P2.07 (audit-bypass closed): even an admin, acting as the `authenticated` role,
--- can NOT call the un-audited primitives directly — EXECUTE is revoked, so the only
--- authenticated path is the audited wrapper (which reaches them as the owner).
+-- P2.07 (audit-bypass closed): even an admin, acting as the `authenticated` role, can
+-- NOT call the WRAPPED decision primitives (approve_mentor / reject_mentor) directly —
+-- EXECUTE is revoked, so the only authenticated path is the audited wrapper (which
+-- reaches them as the owner). (admin_set_mentor_status is intentionally left callable —
+-- it has no audited wrapper and pre-existing flows use it; see the P2 migration note.)
 DO $$
-DECLARE v_appr bool := false; v_rej bool := false; v_set bool := false;
+DECLARE v_appr bool := false; v_rej bool := false;
 BEGIN
   PERFORM set_config('request.jwt.claims','{"sub":"da000000-0000-0000-0000-0000000000a0","role":"authenticated"}', true);
   EXECUTE 'SET LOCAL ROLE authenticated';
   BEGIN PERFORM public.approve_mentor('da000000-0000-0000-0000-0000000000c1'); EXCEPTION WHEN insufficient_privilege THEN v_appr:=true; WHEN OTHERS THEN IF SQLERRM ILIKE '%permission denied%' THEN v_appr:=true; END IF; END;
   BEGIN PERFORM public.reject_mentor('da000000-0000-0000-0000-0000000000c1','x'); EXCEPTION WHEN insufficient_privilege THEN v_rej:=true; WHEN OTHERS THEN IF SQLERRM ILIKE '%permission denied%' THEN v_rej:=true; END IF; END;
-  BEGIN PERFORM public.admin_set_mentor_status('da000000-0000-0000-0000-0000000000c1','approved'); EXCEPTION WHEN insufficient_privilege THEN v_set:=true; WHEN OTHERS THEN IF SQLERRM ILIKE '%permission denied%' THEN v_set:=true; END IF; END;
   EXECUTE 'RESET ROLE'; PERFORM set_config('request.jwt.claims','{"role":"service_role"}', true);
   INSERT INTO _p2 VALUES ('P2.07_primitives_direct_call_denied',
-    CASE WHEN v_appr AND v_rej AND v_set THEN 'PASS' ELSE 'FAIL' END,
-    'approve_denied='||v_appr||' reject_denied='||v_rej||' set_status_denied='||v_set);
+    CASE WHEN v_appr AND v_rej THEN 'PASS' ELSE 'FAIL' END,
+    'approve_denied='||v_appr||' reject_denied='||v_rej);
 END $$;
 
 SELECT test_id, status, detail FROM _p2 ORDER BY test_id;

@@ -26,7 +26,8 @@ interface QueueRow {
   severity: string | null;
 }
 
-const STATUS_TABS = ["all", "new", "in_review", "actioned", "closed"] as const;
+// "open" = every non-closed status (matches the Overview's open_safeguarding count).
+const STATUS_TABS = ["open", "all", "new", "in_review", "actioned", "closed"] as const;
 
 const SEV_COLOR: Record<string, string> = {
   critical: "bg-[#b4453b]",
@@ -50,13 +51,15 @@ function age(ts: string): string {
 }
 
 function SafeguardingQueue() {
-  const [tab, setTab] = useState<(typeof STATUS_TABS)[number]>("all");
+  const [tab, setTab] = useState<(typeof STATUS_TABS)[number]>("open");
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["admin", "safeguarding-queue", tab],
     queryFn: async (): Promise<QueueRow[]> => {
+      // "open"/"all" fetch the whole queue (server-ordered open-first); a specific
+      // status is filtered server-side.
       const { data, error } = await supabase.rpc("admin_list_safeguarding_queue", {
-        _status: tab === "all" ? undefined : tab,
+        _status: tab === "all" || tab === "open" ? undefined : tab,
         _limit: 200,
       });
       if (error) throw error;
@@ -64,7 +67,8 @@ function SafeguardingQueue() {
     },
   });
 
-  const rows = data ?? [];
+  // "open" = every non-closed report, reproducing the Overview's open_safeguarding count.
+  const rows = (data ?? []).filter((r) => (tab === "open" ? r.status !== "closed" : true));
 
   return (
     <div>
