@@ -28,9 +28,10 @@ export const getMentorVerificationDocs = createServerFn({ method: "POST" })
       | { ok: true; idDocumentUrl: string | null; enrollmentLetterUrl: string | null }
       | { ok: false; reason: string }
     > => {
-      // Gate on the caller's admin status (reuses is_admin() = email allowlist).
-      const { data: isAdmin, error: adminErr } = await context.supabase.rpc("is_admin");
-      if (adminErr || !isAdmin) {
+      // Raw mentor ID documents are identity PII — SUPER-ADMIN only (per the
+      // access model), gated on the server-side role system, not a blanket admin.
+      const { data: isSuper, error: adminErr } = await context.supabase.rpc("is_super_admin");
+      if (adminErr || !isSuper) {
         return { ok: false, reason: "forbidden" };
       }
 
@@ -41,6 +42,17 @@ export const getMentorVerificationDocs = createServerFn({ method: "POST" })
         .maybeSingle();
       if (mErr || !mentor) {
         return { ok: false, reason: "not_found" };
+      }
+
+      // Log the doc view BEFORE minting URLs (audit-before-read): who viewed whose
+      // identity documents, when. Fail CLOSED — never hand over the docs unlogged.
+      const { error: logErr } = await context.supabase.rpc("log_admin_action", {
+        _action: "view_mentor_documents",
+        _target_type: "mentor",
+        _target_id: data.mentorId,
+      });
+      if (logErr) {
+        return { ok: false, reason: "forbidden" };
       }
 
       const sign = async (path: string | null): Promise<string | null> => {

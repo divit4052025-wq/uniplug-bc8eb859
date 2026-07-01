@@ -62,8 +62,10 @@ import { Route as DashboardDormRouteImport } from './routes/dashboard.dorm'
 import { Route as DashboardDocumentsRouteImport } from './routes/dashboard.documents'
 import { Route as DashboardClimbRouteImport } from './routes/dashboard.climb'
 import { Route as CallBookingIdRouteImport } from './routes/call.$bookingId'
+import { Route as AdminVerificationRouteImport } from './routes/admin.verification'
 import { Route as AdminSafeguardingRouteImport } from './routes/admin.safeguarding'
 import { Route as AdminAuditRouteImport } from './routes/admin.audit'
+import { Route as AdminVerificationMentorIdRouteImport } from './routes/admin.verification_.$mentorId'
 import { Route as ApiPublicHooksSendRemindersRouteImport } from './routes/api/public/hooks/send-reminders'
 import { Route as ApiPublicHooksSendEventEmailRouteImport } from './routes/api/public/hooks/send-event-email'
 import { Route as ApiPublicHooksRazorpayWebhookRouteImport } from './routes/api/public/hooks/razorpay-webhook'
@@ -335,6 +337,11 @@ const CallBookingIdRoute = CallBookingIdRouteImport.update({
   path: '/call/$bookingId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVerificationRoute = AdminVerificationRouteImport.update({
+  id: '/verification',
+  path: '/verification',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSafeguardingRoute = AdminSafeguardingRouteImport.update({
   id: '/safeguarding',
   path: '/safeguarding',
@@ -345,6 +352,12 @@ const AdminAuditRoute = AdminAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminVerificationMentorIdRoute =
+  AdminVerificationMentorIdRouteImport.update({
+    id: '/verification_/$mentorId',
+    path: '/verification/$mentorId',
+    getParentRoute: () => AdminRoute,
+  } as any)
 const ApiPublicHooksSendRemindersRoute =
   ApiPublicHooksSendRemindersRouteImport.update({
     id: '/api/public/hooks/send-reminders',
@@ -395,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
+  '/admin/verification': typeof AdminVerificationRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -426,6 +440,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/verification/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
@@ -453,6 +468,7 @@ export interface FileRoutesByTo {
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
+  '/admin/verification': typeof AdminVerificationRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -484,6 +500,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/dashboard': typeof DashboardIndexRoute
   '/mentor-dashboard': typeof MentorDashboardIndexRoute
+  '/admin/verification/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
@@ -515,6 +532,7 @@ export interface FileRoutesById {
   '/welcome': typeof WelcomeRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/safeguarding': typeof AdminSafeguardingRoute
+  '/admin/verification': typeof AdminVerificationRoute
   '/call/$bookingId': typeof CallBookingIdRoute
   '/dashboard/climb': typeof DashboardClimbRoute
   '/dashboard/documents': typeof DashboardDocumentsRoute
@@ -546,6 +564,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/mentor-dashboard/': typeof MentorDashboardIndexRoute
+  '/admin/verification_/$mentorId': typeof AdminVerificationMentorIdRoute
   '/admin/safeguarding_/$source/$reportId': typeof AdminSafeguardingSourceReportIdRoute
   '/api/public/hooks/razorpay-webhook': typeof ApiPublicHooksRazorpayWebhookRoute
   '/api/public/hooks/send-event-email': typeof ApiPublicHooksSendEventEmailRoute
@@ -578,6 +597,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/admin/audit'
     | '/admin/safeguarding'
+    | '/admin/verification'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -609,6 +629,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/verification/$mentorId'
     | '/admin/safeguarding/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
@@ -636,6 +657,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/admin/audit'
     | '/admin/safeguarding'
+    | '/admin/verification'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -667,6 +689,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/dashboard'
     | '/mentor-dashboard'
+    | '/admin/verification/$mentorId'
     | '/admin/safeguarding/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
@@ -697,6 +720,7 @@ export interface FileRouteTypes {
     | '/welcome'
     | '/admin/audit'
     | '/admin/safeguarding'
+    | '/admin/verification'
     | '/call/$bookingId'
     | '/dashboard/climb'
     | '/dashboard/documents'
@@ -728,6 +752,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/dashboard/'
     | '/mentor-dashboard/'
+    | '/admin/verification_/$mentorId'
     | '/admin/safeguarding_/$source/$reportId'
     | '/api/public/hooks/razorpay-webhook'
     | '/api/public/hooks/send-event-email'
@@ -1141,6 +1166,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CallBookingIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/verification': {
+      id: '/admin/verification'
+      path: '/verification'
+      fullPath: '/admin/verification'
+      preLoaderRoute: typeof AdminVerificationRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/safeguarding': {
       id: '/admin/safeguarding'
       path: '/safeguarding'
@@ -1153,6 +1185,13 @@ declare module '@tanstack/react-router' {
       path: '/audit'
       fullPath: '/admin/audit'
       preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/verification_/$mentorId': {
+      id: '/admin/verification_/$mentorId'
+      path: '/verification/$mentorId'
+      fullPath: '/admin/verification/$mentorId'
+      preLoaderRoute: typeof AdminVerificationMentorIdRouteImport
       parentRoute: typeof AdminRoute
     }
     '/api/public/hooks/send-reminders': {
@@ -1189,14 +1228,18 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAuditRoute: typeof AdminAuditRoute
   AdminSafeguardingRoute: typeof AdminSafeguardingRoute
+  AdminVerificationRoute: typeof AdminVerificationRoute
   AdminIndexRoute: typeof AdminIndexRoute
+  AdminVerificationMentorIdRoute: typeof AdminVerificationMentorIdRoute
   AdminSafeguardingSourceReportIdRoute: typeof AdminSafeguardingSourceReportIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAuditRoute: AdminAuditRoute,
   AdminSafeguardingRoute: AdminSafeguardingRoute,
+  AdminVerificationRoute: AdminVerificationRoute,
   AdminIndexRoute: AdminIndexRoute,
+  AdminVerificationMentorIdRoute: AdminVerificationMentorIdRoute,
   AdminSafeguardingSourceReportIdRoute: AdminSafeguardingSourceReportIdRoute,
 }
 

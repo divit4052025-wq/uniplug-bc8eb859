@@ -2401,6 +2401,30 @@ export type Database = {
           parent_email: string | null;
         }[];
       };
+      admin_list_mentor_applications: {
+        Args: { _status?: string; _mentor_id?: string };
+        Returns: {
+          id: string;
+          full_name: string | null;
+          email: string | null;
+          university: string | null;
+          course: string | null;
+          year: string | null;
+          college_email: string | null;
+          status: string;
+          tier: string;
+          date_of_birth: string | null;
+          is_adult: boolean;
+          verified_at: string | null;
+          verification_notes: string | null;
+          application_submitted_at: string | null;
+          has_id_doc: boolean;
+          has_enrollment_doc: boolean;
+          created_at: string;
+        }[];
+      };
+      admin_approve_mentor: { Args: { _mentor_id: string }; Returns: undefined };
+      admin_reject_mentor: { Args: { _mentor_id: string; _reason: string }; Returns: undefined };
       is_approved_mentor: { Args: { _mentor_id: string }; Returns: boolean };
       list_approved_mentor_profiles: {
         // B (2026-06-04): optional specialty/university/min-rating filters.

@@ -42,8 +42,7 @@ export const ADMIN_NAV: AdminNavItem[] = [
     label: "Verification",
     to: "/admin/verification",
     icon: BadgeCheck,
-    status: "soon",
-    hint: "mentor IDs",
+    status: "active",
   },
   {
     key: "users",
