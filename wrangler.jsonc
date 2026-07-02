@@ -4,4 +4,17 @@
   "compatibility_date": "2025-09-24",
   "compatibility_flags": ["nodejs_compat"],
   "main": "@tanstack/react-start/server-entry",
+  // Waitlist store (launch mode). A SEPARATE Cloudflare D1 database — it is NOT
+  // Supabase and never touches the hosted Supabase project. Reached in server
+  // code via `import { env } from "cloudflare:workers"` → env.DB (an object
+  // binding, so it is NOT on process.env). Local dev uses a miniflare-managed
+  // SQLite file under .wrangler/state; production uses the remote D1 above.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "uniplug-waitlist",
+      "database_id": "8f00ce01-fb64-4f42-9ecf-26f3925b10f7",
+      "migrations_dir": "migrations",
+    },
+  ],
 }
