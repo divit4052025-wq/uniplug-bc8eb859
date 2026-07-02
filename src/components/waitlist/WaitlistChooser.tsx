@@ -8,16 +8,6 @@ import { M, ArrowRight, ArrowLeft, LogoPill } from "./shared";
  * → /waitlist/mentor. The doors are real links (work with JS off; the gate
  * allows both routes).
  */
-const doorGlow = (bg: string): CSSProperties => ({
-  position: "absolute",
-  top: -40,
-  right: -10,
-  width: 210,
-  height: 230,
-  borderRadius: "120px 120px 20px 20px",
-  background: bg,
-  pointerEvents: "none",
-});
 const doorH3: CSSProperties = {
   fontFamily: "'Gabarito', sans-serif",
   fontWeight: 800,
@@ -130,12 +120,6 @@ export function WaitlistChooser() {
               className="uc-door"
               style={{ background: "linear-gradient(160deg, var(--cream), var(--offwhite) 70%)" }}
             >
-              <div
-                aria-hidden="true"
-                style={doorGlow(
-                  "radial-gradient(circle at 50% 40%, rgba(244,181,170,.5), rgba(244,181,170,.16) 60%, transparent 72%)",
-                )}
-              />
               <M
                 shape="sprout"
                 expression="happy"
@@ -164,12 +148,6 @@ export function WaitlistChooser() {
               className="uc-door"
               style={{ background: "linear-gradient(160deg, var(--blush), var(--cream) 82%)" }}
             >
-              <div
-                aria-hidden="true"
-                style={doorGlow(
-                  "radial-gradient(circle at 50% 40%, rgba(215,162,72,.42), rgba(215,162,72,.14) 60%, transparent 72%)",
-                )}
-              />
               <M
                 shape="mentor"
                 expression="guiding"

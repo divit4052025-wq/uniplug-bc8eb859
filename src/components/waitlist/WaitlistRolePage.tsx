@@ -140,7 +140,7 @@ export function WaitlistRolePage({ config }: { config: RoleConfig }) {
               zIndex: 3,
             }}
           >
-            <LogoPill size={22} fontSize={15} gap={9} />
+            <LogoPill size={22} />
             <Link
               to="/waitlist"
               className="up-btn up-btn--primary on-dark up-btn--sm"
@@ -162,32 +162,10 @@ export function WaitlistRolePage({ config }: { config: RoleConfig }) {
               zIndex: 3,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                gap: config.worldMascotGap,
-                alignItems: "flex-end",
-                marginBottom: 18,
-              }}
-            >
-              {config.worldMascots.map((wm) => (
-                <div key={wm.label} style={{ textAlign: "center" }}>
-                  <M shape={wm.shape} expression={wm.expression} size={wm.size} />
-                  <div
-                    style={{
-                      fontFamily: "'Quicksand', sans-serif",
-                      fontWeight: 600,
-                      fontSize: 10.5,
-                      letterSpacing: ".06em",
-                      color: "var(--paper)",
-                      opacity: 0.82,
-                      marginTop: 2,
-                    }}
-                  >
-                    {wm.label}
-                  </div>
-                </div>
-              ))}
+            {/* A single, small, unlabeled Founder mascot — a clean overlay of
+                Founder + kicker + headline (replaces the labeled lineup). */}
+            <div style={{ marginBottom: 18 }}>
+              <M shape="founder" expression="happy" size={64} />
             </div>
             <span
               className="up-kicker"

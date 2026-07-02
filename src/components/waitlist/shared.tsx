@@ -67,43 +67,24 @@ export function ArrowLeft({ size = 17 }: { size?: number }) {
 const pillStyle: CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
-  gap: 10,
   background: "var(--offwhite)",
   border: "1px solid var(--rule-soft)",
   boxShadow: "var(--shadow-sm)",
   borderRadius: 999,
-  padding: "9px 18px 9px 15px",
+  padding: "10px 16px",
   cursor: "pointer",
   textDecoration: "none",
 };
 
 /**
- * The logo pill → home. Uses the dark-ink glyph variant (umark-offwhite), which
- * is visible on the light/offwhite pill (verified against the real asset).
+ * The logo pill → home. Shows ONLY the "U." umark (umark-offwhite: the dark-ink
+ * serif glyph on transparent), matching the landing header exactly — no typed
+ * wordmark beside it.
  */
-export function LogoPill({
-  size = 24,
-  fontSize = 17,
-  gap = 10,
-}: {
-  size?: number;
-  fontSize?: number;
-  gap?: number;
-}) {
+export function LogoPill({ size = 24 }: { size?: number }) {
   return (
-    <Link to="/" aria-label="UniPlug home" style={{ ...pillStyle, gap }}>
+    <Link to="/" aria-label="UniPlug home" style={pillStyle}>
       <Logo variant="umark-offwhite" size={size} />
-      <span
-        style={{
-          fontFamily: "'Gabarito', sans-serif",
-          fontWeight: 800,
-          fontSize,
-          letterSpacing: "-.02em",
-          color: "var(--ink)",
-        }}
-      >
-        UniPlug<span style={{ color: "var(--rose-deep)" }}>.</span>
-      </span>
     </Link>
   );
 }
