@@ -657,3 +657,22 @@
 /* Login button */
 #uniplug-welcome .hbtn-login{background:var(--rose);color:var(--ink);padding:11px 19px}
 #uniplug-welcome .hbtn-login:hover{background:var(--rose-deep);color:var(--ink)}
+
+/* Waitlist UI fixes (2026-07-02) — landing-only, additive overrides. */
+
+/* A1 — Founder-quote panel: remove the decorative radial glow. During the
+   pinned scroll its transform lands it in the panel's bottom-right, bleeding a
+   warm corner glow onto the dark panel. Decorative + aria-hidden, so hiding it
+   changes nothing but the glow; the founder mascot keeps its own drop-shadow
+   halo, and the text/layout are untouched. */
+#uniplug-welcome .panel-quote .quote-glow{display:none}
+
+/* B3 — Header "Join the waitlist" CTA. In waitlist mode the .pill-actions
+   cluster holds a single button, so its frosted "pill" chrome wrapped a solid
+   dark button (a pill-inside-a-pill that read as cramped, and stood 57px tall
+   vs the 48px logo pill). Drop the cluster chrome and let the solid button be
+   ONE clean header pill, matched to the logo pill's height + shadow language.
+   Desktop only — .pill-actions is display:none below 860px (the Menu toggle
+   takes over). */
+#uniplug-welcome .pill-actions{background:none;border:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:0;gap:0}
+#uniplug-welcome .pill-actions .hbtn-solid{height:48px;padding:0 24px;box-shadow:0 6px 22px -14px rgba(26,26,26,.4)}

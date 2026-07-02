@@ -162,7 +162,20 @@ const scoped =
   // darkens to rose-deep, consistent with the solid button). ink-on-rose ≥ AA.
   `\n/* Login button */\n` +
   `${PREFIX} .hbtn-login{background:var(--rose);color:var(--ink);padding:11px 19px}\n` +
-  `${PREFIX} .hbtn-login:hover{background:var(--rose-deep);color:var(--ink)}\n`;
+  `${PREFIX} .hbtn-login:hover{background:var(--rose-deep);color:var(--ink)}\n` +
+  // Waitlist UI fixes (2026-07-02) — mirrors the same overrides hand-applied to
+  // the committed welcome.scoped.css so a regen stays consistent.
+  //   A1 — hide the founder-quote radial glow (the pinned-scroll transform
+  //        drops it into the panel's bottom-right, bleeding a warm corner glow
+  //        onto the dark panel; decorative + aria-hidden, mascot keeps its halo).
+  //   B3 — the single "Join the waitlist" CTA in .pill-actions: drop the frosted
+  //        cluster chrome so the solid button reads as one clean header pill,
+  //        matched to the logo pill's 48px height + shadow (desktop only —
+  //        .pill-actions is display:none < 860px).
+  `\n/* Waitlist UI fixes (2026-07-02) */\n` +
+  `${PREFIX} .panel-quote .quote-glow{display:none}\n` +
+  `${PREFIX} .pill-actions{background:none;border:none;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;padding:0;gap:0}\n` +
+  `${PREFIX} .pill-actions .hbtn-solid{height:48px;padding:0 24px;box-shadow:0 6px 22px -14px rgba(26,26,26,.4)}\n`;
 
 mkdirSync(join(REPO, "public/welcome-design"), { recursive: true });
 writeFileSync(join(REPO, "public/welcome-design/welcome.scoped.css"), scoped, "utf8");

@@ -43,40 +43,13 @@ export function WaitlistChooser() {
         data-screen-label="Role chooser"
         style={{
           position: "relative",
-          minHeight: "100vh",
+          minHeight: "100dvh",
           display: "flex",
           flexDirection: "column",
           overflow: "hidden",
           background: "var(--paper)",
         }}
       >
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            top: "-14%",
-            left: "8%",
-            width: "min(520px,52vw)",
-            height: "min(520px,52vw)",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(244,181,170,.34), transparent 66%)",
-            pointerEvents: "none",
-          }}
-        />
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            bottom: "-16%",
-            right: "6%",
-            width: "min(520px,52vw)",
-            height: "min(520px,52vw)",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(242,208,152,.34), transparent 66%)",
-            pointerEvents: "none",
-          }}
-        />
-
         <header
           style={{
             position: "relative",

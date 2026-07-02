@@ -421,3 +421,70 @@
     animation: none;
   }
 }
+
+/* ---------- Role page: locked full-viewport two-column ---------- */
+/* Desktop: a single locked 100dvh row. The two halves split 50/50 (flex:1 1 0,
+   no flex-basis wrap) and meet FLUSH — no seam, no max-height cap. The 3D world
+   fills its whole column (its canvas is absolute inset:0), top to bottom. The
+   content column centres its inner block and scrolls INTERNALLY if it ever
+   exceeds the viewport, so the section itself never over-scrolls.
+   Column order is data-driven (inline `order` per role); the mobile query
+   overrides it so the 3D hero is always on top when stacked. */
+.uc-waitlist .uc-role-section {
+  position: relative;
+  display: flex;
+  height: 100dvh;
+  overflow: hidden;
+}
+.uc-waitlist .uc-role-world {
+  position: relative;
+  flex: 1 1 50%;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #0f0e0d;
+}
+.uc-waitlist .uc-role-content {
+  flex: 1 1 50%;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding-inline: clamp(24px, 4vw, 64px);
+}
+
+/* Mobile / narrow: stack cleanly — 3D hero a fixed dvh block on top, content
+   fills the rest (no empty gap). The page scrolls normally; the route-scoped
+   html/body rule below stops any rubber-band sliver. */
+@media (max-width: 860px) {
+  .uc-waitlist .uc-role-section {
+    flex-direction: column;
+    height: auto;
+    min-height: 100dvh;
+    overflow: visible;
+  }
+  .uc-waitlist .uc-role-world,
+  .uc-waitlist .uc-role-content {
+    order: 0 !important;
+  }
+  .uc-waitlist .uc-role-world {
+    flex: 0 0 auto;
+    height: 52dvh;
+  }
+  .uc-waitlist .uc-role-content {
+    flex: 1 0 auto;
+    height: auto;
+    min-height: 48dvh;
+    overflow: visible;
+  }
+}
+
+/* Waitlist routes are locked, single-viewport screens: stop the document
+   rubber-band from exposing a contrasting sliver past a section's edges. This
+   sheet is route-scoped (loaded only on /waitlist* via each route's head
+   links), so this unscoped rule never affects the rest of the app. */
+html,
+body {
+  overscroll-behavior: none;
+}

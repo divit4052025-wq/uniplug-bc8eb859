@@ -110,30 +110,12 @@ export function WaitlistRolePage({ config }: { config: RoleConfig }) {
   return (
     <div className="uc-waitlist">
       <section
+        className="uc-role-section"
         data-screen-label={config.tone === "mentee" ? "Mentee waitlist" : "Mentor waitlist"}
-        style={{
-          position: "relative",
-          display: "flex",
-          flexWrap: "wrap",
-          alignItems: "stretch",
-          minHeight: "100vh",
-          background: config.sectionBg,
-        }}
+        style={{ background: config.sectionBg }}
       >
         {/* ---- world ---- */}
-        <div
-          style={{
-            position: "sticky",
-            top: 0,
-            alignSelf: "flex-start",
-            flex: "1 1 440px",
-            height: "100vh",
-            maxHeight: 920,
-            overflow: "hidden",
-            background: "#0f0e0d",
-            order: config.worldOrder,
-          }}
-        >
+        <div className="uc-role-world" style={{ order: config.worldOrder }}>
           <WaitlistHero3D world={config.world} />
           <div
             aria-hidden="true"
@@ -233,17 +215,17 @@ export function WaitlistRolePage({ config }: { config: RoleConfig }) {
 
         {/* ---- content ---- */}
         <div
-          style={{
-            flex: "1 1 420px",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            padding: "clamp(34px,5vh,64px) clamp(24px,4vw,64px)",
-            background: config.contentBg,
-            order: config.contentOrder,
-          }}
+          className="uc-role-content"
+          style={{ background: config.contentBg, order: config.contentOrder }}
         >
-          <div style={{ width: "100%", maxWidth: 480, margin: "0 auto" }}>
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 480,
+              margin: "auto",
+              paddingBlock: "clamp(34px,5vh,64px)",
+            }}
+          >
             {status !== "success" ? (
               <div>
                 <span className="up-kicker">Join the waitlist</span>

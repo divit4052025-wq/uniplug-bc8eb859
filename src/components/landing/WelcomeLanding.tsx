@@ -69,6 +69,18 @@ export function WelcomeLanding() {
     const mo = new MutationObserver(sync);
     mo.observe(document.body, { attributes: true, attributeFilter: ["class"] });
 
+    // Scroll-lock the landing at both ends: kill the document rubber-band so
+    // over-scrolling past the paper hero (top) or the dark closing panel
+    // (bottom) never exposes a contrasting sliver of the (near-white) page
+    // canvas. Set on the real scroll root (html/body) — the scoped design CSS
+    // maps to #uniplug-welcome, which is overflow:visible and not the scroller,
+    // so it can't reach here. Landing-only + restored on unmount.
+    const root = document.documentElement;
+    const prevRootOverscroll = root.style.overscrollBehaviorY;
+    const prevBodyOverscroll = document.body.style.overscrollBehaviorY;
+    root.style.overscrollBehaviorY = "none";
+    document.body.style.overscrollBehaviorY = "none";
+
     // Always open on the splash, not a restored scroll position.
     const prevRestore = window.history.scrollRestoration;
     try {
@@ -106,6 +118,8 @@ export function WelcomeLanding() {
       injected.forEach((s) => s.remove());
       for (const c of MIRROR_CLASSES) document.body.classList.remove(c);
       document.body.style.overflow = "";
+      root.style.overscrollBehaviorY = prevRootOverscroll;
+      document.body.style.overscrollBehaviorY = prevBodyOverscroll;
       try {
         window.history.scrollRestoration = prevRestore;
       } catch {
